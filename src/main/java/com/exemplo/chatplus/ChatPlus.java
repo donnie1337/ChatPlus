@@ -6,6 +6,7 @@ import com.exemplo.chatplus.command.LocalChatCommand;
 import com.exemplo.chatplus.command.StaffChatCommand;
 import com.exemplo.chatplus.config.ConfigManager;
 import com.exemplo.chatplus.listener.ChatListener;
+import com.exemplo.chatplus.service.ChatDelayService;
 import com.exemplo.chatplus.service.ChatService;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
@@ -13,11 +14,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * Entry point of ChatPlus.
- *
- * <p>This class only wires configuration, service and presentation
- * (commands/listener) together - it contains no chat logic of its own, so
- * it stays small even as the plugin grows (mute, moderation, a real
- * permissions integration, etc., per the project roadmap).</p>
  */
 public final class ChatPlus extends JavaPlugin {
 
@@ -28,7 +24,8 @@ public final class ChatPlus extends JavaPlugin {
         this.configManager = new ConfigManager(this);
         configManager.load();
 
-        ChatService chatService = new ChatService(configManager);
+        ChatDelayService chatDelayService = new ChatDelayService(configManager);
+        ChatService chatService = new ChatService(configManager, chatDelayService);
 
         registerCommand("l", new LocalChatCommand(configManager, chatService));
         registerCommand("g", new GlobalChatCommand(configManager, chatService));
@@ -43,7 +40,8 @@ public final class ChatPlus extends JavaPlugin {
             getLogger().warning("Comando /chat não encontrado no plugin.yml.");
         }
 
-        getServer().getPluginManager().registerEvents(new ChatListener(configManager, chatService), this);
+        getServer().getPluginManager().registerEvents(
+                new ChatListener(this, configManager, chatService, chatDelayService), this);
 
         getLogger().info("ChatPlus habilitado com sucesso.");
     }
