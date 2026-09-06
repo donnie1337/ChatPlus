@@ -23,6 +23,7 @@ public final class ConfigManager {
     private static final String PATH_LOCAL_RANGE = "chat.local.alcance";
     private static final String PATH_LOCAL_FORMAT = "chat.local.formato";
     private static final String PATH_MESSAGE_LIMIT = "chat.limite-mensagem";
+    private static final String PATH_CHAT_DELAY = "chat.delay-segundos";
 
     private static final String PATH_GLOBAL_ENABLED = "chat.global.ativado";
     private static final String PATH_GLOBAL_FORMAT = "chat.global.formato";
@@ -32,6 +33,8 @@ public final class ConfigManager {
 
     private static final int DEFAULT_RANGE = 50;
     private static final int DEFAULT_MESSAGE_LIMIT = 256;
+    private static final int DEFAULT_CHAT_DELAY_SECONDS = 2;
+    private static final int MAX_CHAT_DELAY_SECONDS = 60;
     private static final String DEFAULT_LOCAL_FORMAT = "&7[L] &f{player}&7: &f{message}";
     private static final String DEFAULT_GLOBAL_FORMAT = "&6[G] &f{player}&7: &f{message}";
     private static final String DEFAULT_STAFF_FORMAT = "&c[S] &f{player}&7: &f{message}";
@@ -97,6 +100,14 @@ public final class ConfigManager {
         return message != null && message.codePointCount(0, message.length()) <= getMaxMessageLength();
     }
 
+    public int getChatDelaySeconds() {
+        int delay = plugin.getConfig().getInt(PATH_CHAT_DELAY, DEFAULT_CHAT_DELAY_SECONDS);
+        if (delay < 0) {
+            return 0;
+        }
+        return Math.min(delay, MAX_CHAT_DELAY_SECONDS);
+    }
+
     public String getLocalChatFormat() {
         return getConfiguredString(PATH_LOCAL_FORMAT, DEFAULT_LOCAL_FORMAT);
     }
@@ -143,6 +154,7 @@ public final class ConfigManager {
         defaults.put("uso-chat-reload", "&cUso correto: /chat reload");
         defaults.put("mensagem-vazia", "&cVocê precisa informar uma mensagem.");
         defaults.put("mensagem-muito-longa", "&cA mensagem excede o limite permitido.");
+        defaults.put("chat-em-delay", "&cAguarde antes de enviar outra mensagem.");
         defaults.put("apenas-jogadores", "&cApenas jogadores podem utilizar este comando.");
         defaults.put("ninguem-por-perto", "&7Ninguém está por perto para ver sua mensagem.");
         defaults.put("reload-sucesso", "&aConfiguração recarregada com sucesso.");
