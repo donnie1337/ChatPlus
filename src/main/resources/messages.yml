@@ -6,6 +6,7 @@
 # =========================================================
 
 sem-permissao: "&cVocê não possui permissão para utilizar este chat."
+nao-autenticado: "&cVocê precisa estar autenticado para utilizar o chat."
 
 chat-global-desativado: "&cO chat global está desativado."
 chat-local-desativado: "&cO chat local está desativado."
