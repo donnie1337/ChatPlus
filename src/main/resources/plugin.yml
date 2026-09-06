@@ -19,18 +19,5 @@ commands:
     description: Gerencia o ChatPlus (recarregar configurações, etc).
     usage: /chat reload
 
-# Permissões puras da API Bukkit/Spigot. Nenhum grupo, rank ou banco de
-# dados de permissões é criado por este plugin - ele apenas consulta estes
-# nós através de CommandSender#hasPermission, então um plugin de
-# permissões separado (LuckPerms, PermissionsEx, um plugin próprio, etc.)
-# pode conceder/negar cada um livremente no futuro.
-permissions:
-  chat.global:
-    description: Permite utilizar o chat global (/g).
-    default: true
-  chat.staff:
-    description: Permite utilizar e visualizar o chat da staff (/s).
-    default: op
-  chat.admin:
-    description: Permite recarregar as configurações do ChatPlus (/chat reload).
-    default: op
+# As permissões estão temporariamente desativadas para a fase de testes.
+# O ChatPlus não exige nenhuma permissão para utilizar os comandos neste momento.
