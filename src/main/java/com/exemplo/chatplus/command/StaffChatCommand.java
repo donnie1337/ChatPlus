@@ -7,14 +7,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-/**
- * Handles {@code /s <mensagem>}. Requires the standard Bukkit permission
- * {@code chat.staff} both to send and to receive - a sender without the
- * permission is rejected here, and {@link ChatService#sendStaffMessage}
- * only delivers to online players who hold it.
- *
- * <p>Usable from the console, which is always treated as staff.</p>
- */
 public final class StaffChatCommand implements CommandExecutor {
 
     private final ConfigManager config;
@@ -40,6 +32,11 @@ public final class StaffChatCommand implements CommandExecutor {
         String message = MessageUtil.join(args, 0);
         if (message.isEmpty()) {
             sender.sendMessage(config.getMessage("mensagem-vazia"));
+            return true;
+        }
+
+        if (!config.isMessageLengthValid(message)) {
+            sender.sendMessage(config.getMessage("mensagem-muito-longa"));
             return true;
         }
 
