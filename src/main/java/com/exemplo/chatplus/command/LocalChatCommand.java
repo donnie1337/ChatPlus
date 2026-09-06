@@ -8,14 +8,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-/**
- * Handles {@code /l <mensagem>}. Always routes through the local chat,
- * independently of whatever the player types normally in chat - both paths
- * end up calling {@link ChatService#sendLocalMessage(Player, String)}.
- *
- * <p>Requires a physical location to compute distance, so - unlike
- * {@code /g} and {@code /s} - it cannot be used from the console.</p>
- */
 public final class LocalChatCommand implements CommandExecutor {
 
     private final ConfigManager config;
@@ -41,6 +33,11 @@ public final class LocalChatCommand implements CommandExecutor {
         String message = MessageUtil.join(args, 0);
         if (message.isEmpty()) {
             sender.sendMessage(config.getMessage("mensagem-vazia"));
+            return true;
+        }
+
+        if (!config.isMessageLengthValid(message)) {
+            sender.sendMessage(config.getMessage("mensagem-muito-longa"));
             return true;
         }
 
