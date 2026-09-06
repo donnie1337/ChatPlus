@@ -9,10 +9,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public final class ChatService {
+    private static final String CARGO_API = "com.cargoplus.api.CargoPlusAPI";
     private final ConfigManager config;
     private final ChatDelayService delayService;
 
@@ -34,8 +37,7 @@ public final class ChatService {
         long rangeSquared = (long) range * range;
         Location senderLocation = sender.getLocation();
         World senderWorld = senderLocation.getWorld();
-        String formatted = formatMessage(config.getLocalChatFormat(), sender.getName(), message,
-                senderWorld != null ? senderWorld.getName() : "");
+        String formatted = formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "");
         boolean deliveredToAnotherPlayer = false;
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.equals(sender)) {
@@ -64,7 +66,7 @@ public final class ChatService {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-        String formatted = formatMessage(config.getGlobalChatFormat(), resolveSenderName(sender), message, "");
+        String formatted = formatMessage(config.getGlobalChatFormat(), sender, message, "");
         for (Player online : Bukkit.getOnlinePlayers()) online.sendMessage(formatted);
         notifyConsole(sender, formatted);
     }
@@ -78,7 +80,7 @@ public final class ChatService {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-        String formatted = formatMessage(config.getStaffChatFormat(), resolveSenderName(sender), message, "");
+        String formatted = formatMessage(config.getStaffChatFormat(), sender, message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.hasPermission("chat.staff")) online.sendMessage(formatted);
         }
@@ -89,15 +91,27 @@ public final class ChatService {
         if (!(sender instanceof ConsoleCommandSender)) Bukkit.getConsoleSender().sendMessage(formatted);
     }
 
-    private String resolveSenderName(CommandSender sender) {
-        return sender instanceof ConsoleCommandSender ? "Console" : sender.getName();
-    }
-
-    private String formatMessage(String format, String player, String message, String world) {
+    private String formatMessage(String format, CommandSender sender, String message, String world) {
+        String playerName = sender instanceof ConsoleCommandSender ? "Console" : sender.getName();
+        String prefix = sender instanceof Player ? getCargoPrefix(((Player) sender).getUniqueId()) : "";
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("{player}", player);
+        placeholders.put("{player}", playerName);
         placeholders.put("{message}", message);
         placeholders.put("{world}", world);
+        placeholders.put("{prefix}", prefix);
         return MessageUtil.apply(format, placeholders);
+    }
+
+    private String getCargoPrefix(UUID uuid) {
+        try {
+            Class<?> apiClass = Class.forName(CARGO_API, false, getClass().getClassLoader());
+            Object api = Bukkit.getServicesManager().load(apiClass);
+            if (api == null) return "";
+            Method method = apiClass.getMethod("getPrefix", UUID.class);
+            Object value = method.invoke(api, uuid);
+            return value instanceof String ? (String) value : "";
+        } catch (ReflectiveOperationException | LinkageError ignored) {
+            return "";
+        }
     }
 }
