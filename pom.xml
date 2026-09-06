@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.exemplo</groupId>
@@ -14,21 +14,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <!--
-          Minecraft/Spigot 26.2 oficialmente requer Java 25 no servidor
-          (ver https://www.spigotmc.org/ e a página da versão 26.2 no
-          Minecraft Wiki). Compilar para 25 garante que o plugin carregue
-          tanto em servidores rodando exatamente Java 25 quanto em Java 26
-          (a JVM é retrocompatível: bytecode de destino 25 roda sem
-          problemas numa JVM 26).
-
-          Se o SEU servidor especificamente já roda em JDK 26 e você quer
-          usar alguma feature exclusiva do Java 26 no código, basta trocar
-          o valor abaixo para 26 - só lembre que, nesse caso, o plugin
-          deixará de carregar em servidores que ainda estejam em Java 25.
-        -->
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>26</maven.compiler.release>
     </properties>
 
     <repositories>
@@ -49,10 +35,6 @@
 
     <build>
         <finalName>${project.artifactId}-${project.version}</finalName>
-
-        <!-- Filtra plugin.yml para que ${project.version} vire a versão
-             real definida acima, então a versão do plugin só precisa ser
-             mantida em um único lugar (este arquivo). -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
