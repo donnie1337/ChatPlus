@@ -12,12 +12,23 @@ commands:
   g:
     description: Envia uma mensagem pelo chat global.
     usage: /g <mensagem>
+    permission: chat.global
   s:
     description: Envia uma mensagem pelo chat da staff.
     usage: /s <mensagem>
+    permission: chat.staff
   chat:
-    description: Gerencia o ChatPlus (recarregar configurações, etc).
+    description: Gerencia o ChatPlus.
     usage: /chat reload
+    permission: chat.admin
 
-# As permissões estão temporariamente desativadas para a fase de testes.
-# O ChatPlus não exige nenhuma permissão para utilizar os comandos neste momento.
+permissions:
+  chat.global:
+    description: Permite enviar mensagens no chat global.
+    default: false
+  chat.staff:
+    description: Permite enviar e receber mensagens no chat da staff.
+    default: false
+  chat.admin:
+    description: Permite administrar o ChatPlus.
+    default: op
