@@ -22,6 +22,7 @@ public final class ConfigManager {
     private static final String PATH_LOCAL_ENABLED = "chat.local.ativado";
     private static final String PATH_LOCAL_RANGE = "chat.local.alcance";
     private static final String PATH_LOCAL_FORMAT = "chat.local.formato";
+    private static final String PATH_MESSAGE_LIMIT = "chat.limite-mensagem";
 
     private static final String PATH_GLOBAL_ENABLED = "chat.global.ativado";
     private static final String PATH_GLOBAL_FORMAT = "chat.global.formato";
@@ -30,6 +31,7 @@ public final class ConfigManager {
     private static final String PATH_STAFF_FORMAT = "chat.staff.formato";
 
     private static final int DEFAULT_RANGE = 50;
+    private static final int DEFAULT_MESSAGE_LIMIT = 256;
     private static final String DEFAULT_LOCAL_FORMAT = "&7[L] &f{player}&7: &f{message}";
     private static final String DEFAULT_GLOBAL_FORMAT = "&6[G] &f{player}&7: &f{message}";
     private static final String DEFAULT_STAFF_FORMAT = "&c[S] &f{player}&7: &f{message}";
@@ -49,10 +51,6 @@ public final class ConfigManager {
         return plugin;
     }
 
-    /**
-     * Loads config.yml and messages.yml from disk, creating them from the
-     * bundled defaults first if they do not exist yet.
-     */
     public void load() {
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
@@ -88,6 +86,15 @@ public final class ConfigManager {
     public int getLocalChatRange() {
         int range = plugin.getConfig().getInt(PATH_LOCAL_RANGE, DEFAULT_RANGE);
         return range > 0 ? range : DEFAULT_RANGE;
+    }
+
+    public int getMaxMessageLength() {
+        int limit = plugin.getConfig().getInt(PATH_MESSAGE_LIMIT, DEFAULT_MESSAGE_LIMIT);
+        return limit > 0 ? Math.min(limit, 1024) : DEFAULT_MESSAGE_LIMIT;
+    }
+
+    public boolean isMessageLengthValid(String message) {
+        return message != null && message.codePointCount(0, message.length()) <= getMaxMessageLength();
     }
 
     public String getLocalChatFormat() {
@@ -135,6 +142,7 @@ public final class ConfigManager {
         defaults.put("uso-staff", "&cUso correto: /s <mensagem>");
         defaults.put("uso-chat-reload", "&cUso correto: /chat reload");
         defaults.put("mensagem-vazia", "&cVocê precisa informar uma mensagem.");
+        defaults.put("mensagem-muito-longa", "&cA mensagem excede o limite permitido.");
         defaults.put("apenas-jogadores", "&cApenas jogadores podem utilizar este comando.");
         defaults.put("ninguem-por-perto", "&7Ninguém está por perto para ver sua mensagem.");
         defaults.put("reload-sucesso", "&aConfiguração recarregada com sucesso.");
