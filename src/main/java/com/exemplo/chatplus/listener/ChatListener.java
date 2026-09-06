@@ -1,6 +1,7 @@
 package com.exemplo.chatplus.listener;
 
 import com.exemplo.chatplus.config.ConfigManager;
+import com.exemplo.chatplus.service.ChatDelayService;
 import com.exemplo.chatplus.service.ChatService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -8,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -19,11 +21,14 @@ public final class ChatListener implements Listener {
     private final JavaPlugin plugin;
     private final ConfigManager config;
     private final ChatService chatService;
+    private final ChatDelayService delayService;
 
-    public ChatListener(JavaPlugin plugin, ConfigManager config, ChatService chatService) {
+    public ChatListener(JavaPlugin plugin, ConfigManager config, ChatService chatService,
+                        ChatDelayService delayService) {
         this.plugin = plugin;
         this.config = config;
         this.chatService = chatService;
+        this.delayService = delayService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -56,5 +61,10 @@ public final class ChatListener implements Listener {
 
             chatService.sendLocalMessage(player, message);
         });
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        delayService.clear(event.getPlayer());
     }
 }
