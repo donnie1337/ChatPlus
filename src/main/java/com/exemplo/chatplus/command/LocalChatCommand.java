@@ -9,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public final class LocalChatCommand implements CommandExecutor {
-
     private final ConfigManager config;
     private final ChatService chatService;
 
@@ -24,28 +23,27 @@ public final class LocalChatCommand implements CommandExecutor {
             sender.sendMessage(config.getMessage("apenas-jogadores"));
             return true;
         }
-
+        if (!player.hasPermission("chat.local")) {
+            sender.sendMessage(config.getMessage("sem-permissao"));
+            return true;
+        }
         if (args.length == 0) {
             sender.sendMessage(config.getMessage("uso-local"));
             return true;
         }
-
         String message = MessageUtil.join(args, 0);
         if (message.isEmpty()) {
             sender.sendMessage(config.getMessage("mensagem-vazia"));
             return true;
         }
-
         if (!config.isMessageLengthValid(message)) {
             sender.sendMessage(config.getMessage("mensagem-muito-longa"));
             return true;
         }
-
         if (!config.isLocalChatEnabled()) {
             sender.sendMessage(config.getMessage("chat-local-desativado"));
             return true;
         }
-
         chatService.sendLocalMessage(player, message);
         return true;
     }
