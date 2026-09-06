@@ -19,11 +19,6 @@ public final class StaffChatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("chat.staff")) {
-            sender.sendMessage(config.getMessage("sem-permissao"));
-            return true;
-        }
-
         if (args.length == 0) {
             sender.sendMessage(config.getMessage("uso-staff"));
             return true;
