@@ -8,6 +8,7 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -104,11 +105,17 @@ public final class ChatService {
 
     private String getCargoPrefix(UUID uuid) {
         try {
-            Class<?> apiClass = Class.forName(CARGO_API, false, getClass().getClassLoader());
-            Object api = Bukkit.getServicesManager().load(apiClass);
-            if (api == null) return "";
-            Method method = apiClass.getMethod("getPrefix", UUID.class);
-            Object value = method.invoke(api, uuid);
+            Plugin cargoPlugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
+            if (cargoPlugin == null || !cargoPlugin.isEnabled()) return "";
+
+            Class<?> apiClass = Class.forName(CARGO_API, true, cargoPlugin.getClass().getClassLoader());
+            Object registration = Bukkit.getServicesManager().getRegistration(apiClass);
+            if (registration == null) return "";
+
+            Method providerMethod = registration.getClass().getMethod("getProvider");
+            Object api = providerMethod.invoke(registration);
+            Method prefixMethod = apiClass.getMethod("getPrefix", UUID.class);
+            Object value = prefixMethod.invoke(api, uuid);
             return value instanceof String ? (String) value : "";
         } catch (ReflectiveOperationException | LinkageError ignored) {
             return "";
