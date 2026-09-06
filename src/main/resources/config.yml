@@ -2,40 +2,29 @@
 #  ChatPlus - config.yml
 # =========================================================
 #
-# Cada canal pode ser ativado/desativado independentemente.
-# Os formatos são totalmente configuráveis.
-#
 # Placeholders disponíveis nos formatos:
+#   {prefix}  -> prefixo/cargo fornecido pelo CargoPlus
 #   {player}  -> nome do remetente
 #   {message} -> mensagem enviada
 #   {world}   -> mundo do remetente (local)
 #
-# Códigos de cor "&" funcionam nos formatos e em messages.yml.
-# A mensagem do jogador não interpreta códigos "&", evitando que
-# conteúdo enviado pelo usuário altere a formatação do canal.
-#
-# Use /chat reload depois de alterar este arquivo.
+# Se o CargoPlus não estiver instalado ou não possuir prefixo,
+# {prefix} será vazio.
 # =========================================================
 
 chat:
-  # Intervalo mínimo entre mensagens do mesmo jogador, em segundos.
-  # 0 desativa o delay. Valores acima de 60 são limitados a 60.
-  # O delay vale para local, global e staff. O console não possui delay.
   delay-segundos: 2
-
-  # Limite defensivo de tamanho das mensagens, em caracteres Unicode.
-  # Valores acima de 1024 são limitados automaticamente a 1024.
   limite-mensagem: 256
 
   local:
     ativado: true
     alcance: 50
-    formato: "&7[L] &f{player}&7: &f{message}"
+    formato: "&7[L] {prefix}&f{player}&7: &f{message}"
 
   global:
     ativado: true
-    formato: "&6[G] &f{player}&7: &f{message}"
+    formato: "&6[G] {prefix}&f{player}&7: &f{message}"
 
   staff:
     ativado: true
-    formato: "&c[S] &f{player}&7: &f{message}"
+    formato: "&c[S] {prefix}&f{player}&7: &f{message}"
