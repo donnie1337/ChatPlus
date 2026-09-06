@@ -17,15 +17,16 @@ import java.util.Map;
  *
  * <p>All Bukkit state access in this service is expected to happen on the
  * server's primary thread. The public methods defensively reschedule
- * themselves if an unexpected asynchronous caller reaches them, which keeps
- * the service safe even when another integration calls it incorrectly.</p>
+ * themselves if an unexpected asynchronous caller reaches them.</p>
  */
 public final class ChatService {
 
     private final ConfigManager config;
+    private final ChatDelayService delayService;
 
-    public ChatService(ConfigManager config) {
+    public ChatService(ConfigManager config, ChatDelayService delayService) {
         this.config = config;
+        this.delayService = delayService;
     }
 
     /**
@@ -36,6 +37,11 @@ public final class ChatService {
     public void sendLocalMessage(Player sender, String message) {
         if (!Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendLocalMessage(sender, message));
+            return;
+        }
+
+        if (!delayService.tryAcquire(sender)) {
+            sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
 
@@ -83,6 +89,11 @@ public final class ChatService {
             return;
         }
 
+        if (!delayService.tryAcquire(sender)) {
+            sender.sendMessage(config.getMessage("chat-em-delay"));
+            return;
+        }
+
         String formatted = formatMessage(config.getGlobalChatFormat(), resolveSenderName(sender), message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
             online.sendMessage(formatted);
@@ -98,6 +109,11 @@ public final class ChatService {
     public void sendStaffMessage(CommandSender sender, String message) {
         if (!Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffMessage(sender, message));
+            return;
+        }
+
+        if (!delayService.tryAcquire(sender)) {
+            sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
 
