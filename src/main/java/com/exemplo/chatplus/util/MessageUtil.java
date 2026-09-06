@@ -5,24 +5,14 @@ import org.bukkit.ChatColor;
 import java.util.Map;
 
 /**
- * Small set of static helpers for turning raw strings from config.yml /
- * messages.yml into what the player actually sees.
- *
- * <p>Colorizing text and substituting {placeholder} tokens is a pure,
- * stateless operation used everywhere in the plugin (channel formats,
- * messages.yml entries, etc.), so a static utility is enough - there is
- * no reason to instantiate anything here.</p>
+ * Helpers for safe message formatting and command argument handling.
  */
 public final class MessageUtil {
 
     private MessageUtil() {
-        // Utility class, not meant to be instantiated.
+        // Utility class.
     }
 
-    /**
-     * Translates '&' colour codes (e.g. &a, &l, &c) into the section-symbol
-     * codes the client understands.
-     */
     public static String colorize(String text) {
         if (text == null || text.isEmpty()) {
             return "";
@@ -31,33 +21,36 @@ public final class MessageUtil {
     }
 
     /**
-     * Replaces every {placeholder} present in the template with the matching
-     * value from the given map, then colorizes the result.
-     *
-     * <p>Supporting a new placeholder anywhere in the plugin (channel
-     * formats, future messages, etc.) only requires adding another entry to
-     * the map passed in here - nothing in this method needs to change.</p>
+     * Colorizes the trusted template first and only then inserts placeholder
+     * values. This prevents player-controlled message text from introducing
+     * formatting codes into the channel format.
      */
     public static String apply(String template, Map<String, String> placeholders) {
-        if (template == null) {
+        if (template == null || template.isEmpty()) {
             return "";
         }
-        String result = template;
-        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            String value = entry.getValue() == null ? "" : entry.getValue();
-            result = result.replace(entry.getKey(), value);
+
+        String result = colorize(template);
+        if (placeholders == null || placeholders.isEmpty()) {
+            return result;
         }
-        return colorize(result);
+
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            String key = entry.getKey();
+            if (key == null || key.isEmpty()) {
+                continue;
+            }
+            String value = entry.getValue() == null ? "" : entry.getValue();
+            result = result.replace(key, value);
+        }
+        return result;
     }
 
-    /**
-     * Joins command arguments (e.g. from /l, /g, /s) back into a single
-     * message, starting at {@code startIndex}, and trims the result.
-     */
     public static String join(String[] args, int startIndex) {
-        if (args == null || args.length <= startIndex) {
+        if (args == null || startIndex < 0 || startIndex >= args.length) {
             return "";
         }
+
         StringBuilder builder = new StringBuilder();
         for (int i = startIndex; i < args.length; i++) {
             if (i > startIndex) {
