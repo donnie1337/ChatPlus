@@ -12,9 +12,7 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Owns the actual "who receives what, formatted how" logic for all channels. */
 public final class ChatService {
-
     private final ConfigManager config;
     private final ChatDelayService delayService;
 
@@ -28,43 +26,32 @@ public final class ChatService {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendLocalMessage(sender, message));
             return;
         }
-
         if (!delayService.tryAcquire(sender)) {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-
         int range = config.getLocalChatRange();
         long rangeSquared = (long) range * range;
         Location senderLocation = sender.getLocation();
         World senderWorld = senderLocation.getWorld();
-
         String formatted = formatMessage(config.getLocalChatFormat(), sender.getName(), message,
                 senderWorld != null ? senderWorld.getName() : "");
-
         boolean deliveredToAnotherPlayer = false;
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.equals(sender)) {
                 online.sendMessage(formatted);
                 continue;
             }
-
             World onlineWorld = online.getWorld();
-            if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) {
-                continue;
-            }
-
+            if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
             if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
                 online.sendMessage(formatted);
                 deliveredToAnotherPlayer = true;
             }
         }
-
         if (!deliveredToAnotherPlayer) {
             String alone = config.getMessage("ninguem-por-perto");
-            if (!alone.isEmpty()) {
-                sender.sendMessage(alone);
-            }
+            if (!alone.isEmpty()) sender.sendMessage(alone);
         }
     }
 
@@ -73,42 +60,33 @@ public final class ChatService {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendGlobalMessage(sender, message));
             return;
         }
-
         if (!delayService.tryAcquire(sender)) {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-
         String formatted = formatMessage(config.getGlobalChatFormat(), resolveSenderName(sender), message, "");
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            online.sendMessage(formatted);
-        }
+        for (Player online : Bukkit.getOnlinePlayers()) online.sendMessage(formatted);
         notifyConsole(sender, formatted);
     }
 
-    /** Delivers staff chat to every online player during the testing phase. */
     public void sendStaffMessage(CommandSender sender, String message) {
         if (!Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffMessage(sender, message));
             return;
         }
-
         if (!delayService.tryAcquire(sender)) {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-
         String formatted = formatMessage(config.getStaffChatFormat(), resolveSenderName(sender), message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
-            online.sendMessage(formatted);
+            if (online.hasPermission("chat.staff")) online.sendMessage(formatted);
         }
         notifyConsole(sender, formatted);
     }
 
     private void notifyConsole(CommandSender sender, String formatted) {
-        if (!(sender instanceof ConsoleCommandSender)) {
-            Bukkit.getConsoleSender().sendMessage(formatted);
-        }
+        if (!(sender instanceof ConsoleCommandSender)) Bukkit.getConsoleSender().sendMessage(formatted);
     }
 
     private String resolveSenderName(CommandSender sender) {
