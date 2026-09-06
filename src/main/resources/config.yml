@@ -1,0 +1,62 @@
+# =========================================================
+#  ChatPlus - config.yml
+# =========================================================
+#
+# Cada canal (local, global, staff) pode ser ativado/desativado
+# independentemente e possui um "formato" totalmente livre.
+#
+# As identificações [L], [G] e [S] usadas abaixo NÃO são fixas
+# no código: são apenas o valor padrão do campo "formato" e
+# podem ser trocadas, estilizadas com cores/símbolos, ou
+# removidas por completo. Exemplos:
+#
+#   formato: "&8[&aLOCAL&8] &f{player}&7: &f{message}"
+#   formato: "&a❮L❯ &f{player}&7: &f{message}"
+#   formato: "&f{player}&7: &f{message}"   # sem identificação alguma
+#
+# Placeholders disponíveis em qualquer "formato":
+#   {player}  -> nome do jogador que enviou a mensagem
+#   {message} -> conteúdo da mensagem
+#   {world}   -> mundo em que o remetente está (chat local)
+#
+# Códigos de cor "&" (ex: &a, &c, &l, &r) funcionam em qualquer
+# "formato" aqui e em qualquer mensagem de messages.yml.
+#
+# Depois de alterar este arquivo, use /chat reload para aplicar
+# as mudanças sem reiniciar o servidor. Se uma chave estiver
+# ausente ou com um valor inválido, o ChatPlus usa um valor
+# padrão seguro em vez de falhar ao iniciar.
+# =========================================================
+
+chat:
+
+  # ---------------------------------------------------
+  # Chat local: o que o jogador digita normalmente no chat
+  # (e também o comando /l) chega apenas a quem estiver
+  # dentro do raio abaixo, no mesmo mundo do remetente.
+  # ---------------------------------------------------
+  local:
+    ativado: true
+
+    # Raio, em blocos, de alcance do chat local.
+    alcance: 50
+
+    formato: "&7[L] &f{player}&7: &f{message}"
+
+  # ---------------------------------------------------
+  # Chat global (/g): enviado para todos os jogadores online,
+  # independentemente da distância ou do mundo. Requer a
+  # permissão Bukkit "chat.global" para ser enviado.
+  # ---------------------------------------------------
+  global:
+    ativado: true
+    formato: "&6[G] &f{player}&7: &f{message}"
+
+  # ---------------------------------------------------
+  # Chat da staff (/s): visível apenas para quem possuir a
+  # permissão Bukkit "chat.staff" (também necessária para
+  # enviar mensagens neste canal).
+  # ---------------------------------------------------
+  staff:
+    ativado: true
+    formato: "&c[S] &f{player}&7: &f{message}"

@@ -1,0 +1,36 @@
+name: ChatPlus
+version: '${project.version}'
+main: com.exemplo.chatplus.ChatPlus
+api-version: '26.2'
+description: Sistema de chat local, global e da staff para Spigot puro.
+author: exemplo
+
+commands:
+  l:
+    description: Envia uma mensagem pelo chat local.
+    usage: /l <mensagem>
+  g:
+    description: Envia uma mensagem pelo chat global.
+    usage: /g <mensagem>
+  s:
+    description: Envia uma mensagem pelo chat da staff.
+    usage: /s <mensagem>
+  chat:
+    description: Gerencia o ChatPlus (recarregar configurações, etc).
+    usage: /chat reload
+
+# Permissões puras da API Bukkit/Spigot. Nenhum grupo, rank ou banco de
+# dados de permissões é criado por este plugin - ele apenas consulta estes
+# nós através de CommandSender#hasPermission, então um plugin de
+# permissões separado (LuckPerms, PermissionsEx, um plugin próprio, etc.)
+# pode conceder/negar cada um livremente no futuro.
+permissions:
+  chat.global:
+    description: Permite utilizar o chat global (/g).
+    default: true
+  chat.staff:
+    description: Permite utilizar e visualizar o chat da staff (/s).
+    default: op
+  chat.admin:
+    description: Permite recarregar as configurações do ChatPlus (/chat reload).
+    default: op
