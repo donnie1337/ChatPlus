@@ -11,6 +11,7 @@ commands:
   l:
     description: Envia uma mensagem pelo chat local.
     usage: /l <mensagem>
+    permission: chat.local
   g:
     description: Envia uma mensagem pelo chat global.
     usage: /g <mensagem>
@@ -25,6 +26,9 @@ commands:
     permission: chat.admin
 
 permissions:
+  chat.local:
+    description: Permite enviar mensagens no chat local.
+    default: false
   chat.global:
     description: Permite enviar mensagens no chat global.
     default: false
