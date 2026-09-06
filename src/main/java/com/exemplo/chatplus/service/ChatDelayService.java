@@ -41,15 +41,15 @@ public final class ChatDelayService {
             return true;
         }
 
-        long now = System.currentTimeMillis();
-        long cooldownMillis = delaySeconds * 1000L;
+        long now = System.nanoTime();
+        long cooldownNanos = delaySeconds * 1_000_000_000L;
         Long availableAt = cooldowns.get(player.getUniqueId());
 
         if (availableAt != null && availableAt > now) {
             return false;
         }
 
-        cooldowns.put(player.getUniqueId(), now + cooldownMillis);
+        cooldowns.put(player.getUniqueId(), now + cooldownNanos);
 
         // Small defensive cleanup; no scheduled task is needed.
         if (cooldowns.size() > 1024) {
