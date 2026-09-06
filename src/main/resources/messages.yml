@@ -1,10 +1,8 @@
 # =========================================================
 #  ChatPlus - messages.yml
 # =========================================================
-#
-# Todas as mensagens exibidas aos jogadores ficam aqui, com
-# suporte total a códigos de cor "&". Depois de editar, use
-# /chat reload para aplicar as mudanças sem reiniciar o servidor.
+# Todas as mensagens exibidas pelo plugin ficam aqui.
+# Use /chat reload para aplicar alterações sem reiniciar.
 # =========================================================
 
 sem-permissao: "&cVocê não possui permissão para utilizar este chat."
@@ -19,14 +17,10 @@ uso-staff: "&cUso correto: /s <mensagem>"
 uso-chat-reload: "&cUso correto: /chat reload"
 
 mensagem-vazia: "&cVocê precisa informar uma mensagem."
+mensagem-muito-longa: "&cA mensagem excede o limite permitido."
 
-# Exibida a quem tentar usar /l pelo console: o chat local
-# depende de uma localização no mundo, que o console não tem.
 apenas-jogadores: "&cApenas jogadores podem utilizar este comando."
 
-# Exibida ao remetente do chat local quando nenhum outro jogador
-# está dentro do alcance configurado. Deixe em branco ("") para
-# desativar este aviso.
 ninguem-por-perto: "&7Ninguém está por perto para ver sua mensagem."
 
 reload-sucesso: "&aConfiguração recarregada com sucesso."
