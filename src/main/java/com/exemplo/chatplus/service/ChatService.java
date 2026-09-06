@@ -30,6 +30,10 @@ public final class ChatService {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendLocalMessage(sender, message));
             return;
         }
+        if (!isAuthenticated(sender)) {
+            sender.sendMessage(config.getMessage("nao-autenticado"));
+            return;
+        }
         if (!delayService.tryAcquire(sender)) {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
@@ -63,12 +67,18 @@ public final class ChatService {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendGlobalMessage(sender, message));
             return;
         }
+        if (sender instanceof Player player && !isAuthenticated(player)) {
+            sender.sendMessage(config.getMessage("nao-autenticado"));
+            return;
+        }
         if (!delayService.tryAcquire(sender)) {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
         String formatted = formatMessage(config.getGlobalChatFormat(), sender, message, "");
-        for (Player online : Bukkit.getOnlinePlayers()) online.sendMessage(formatted);
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            if (!(online.isOnline()) || (isAuthenticated(online))) online.sendMessage(formatted);
+        }
         notifyConsole(sender, formatted);
     }
 
@@ -77,19 +87,36 @@ public final class ChatService {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffMessage(sender, message));
             return;
         }
+        if (sender instanceof Player player && !isAuthenticated(player)) {
+            sender.sendMessage(config.getMessage("nao-autenticado"));
+            return;
+        }
         if (!delayService.tryAcquire(sender)) {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
         String formatted = formatMessage(config.getStaffChatFormat(), sender, message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.hasPermission("chat.staff")) online.sendMessage(formatted);
+            if (online.hasPermission("chat.staff") && isAuthenticated(online)) online.sendMessage(formatted);
         }
         notifyConsole(sender, formatted);
     }
 
     private void notifyConsole(CommandSender sender, String formatted) {
         if (!(sender instanceof ConsoleCommandSender)) Bukkit.getConsoleSender().sendMessage(formatted);
+    }
+
+    private boolean isAuthenticated(Player player) {
+        if (player == null || !player.isOnline()) return false;
+        Plugin auth = Bukkit.getPluginManager().getPlugin("AuthSystem");
+        if (auth == null || !auth.isEnabled()) return false;
+        try {
+            Method method = auth.getClass().getMethod("isAuthenticated", Player.class);
+            Object result = method.invoke(auth, player);
+            return result instanceof Boolean && (Boolean) result;
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return false;
+        }
     }
 
     private String formatMessage(String format, CommandSender sender, String message, String world) {
