@@ -18,6 +18,11 @@
 # =========================================================
 
 chat:
+  # Intervalo mínimo entre mensagens do mesmo jogador, em segundos.
+  # 0 desativa o delay. Valores acima de 60 são limitados a 60.
+  # O delay vale para local, global e staff. O console não possui delay.
+  delay-segundos: 2
+
   # Limite defensivo de tamanho das mensagens, em caracteres Unicode.
   # Valores acima de 1024 são limitados automaticamente a 1024.
   limite-mensagem: 256
