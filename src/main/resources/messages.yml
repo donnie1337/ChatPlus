@@ -18,6 +18,7 @@ uso-chat-reload: "&cUso correto: /chat reload"
 
 mensagem-vazia: "&cVocê precisa informar uma mensagem."
 mensagem-muito-longa: "&cA mensagem excede o limite permitido."
+chat-em-delay: "&cAguarde antes de enviar outra mensagem."
 
 apenas-jogadores: "&cApenas jogadores podem utilizar este comando."
 
