@@ -11,13 +11,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * Intercepts the vanilla Spigot chat event and turns every normal message a
- * player types into a local chat message.
- *
- * <p>The event may be asynchronous. Therefore this listener does not touch
- * the Bukkit API beyond the event data itself: it cancels the event, captures
- * the immutable input it needs, and delegates the actual delivery to the
- * server's main thread through {@link ChatService}.</p>
+ * Intercepts the vanilla Spigot chat event and routes normal chat through the
+ * local channel on the server's primary thread.
  */
 public final class ChatListener implements Listener {
 
@@ -42,10 +37,15 @@ public final class ChatListener implements Listener {
             return;
         }
 
-        // AsyncPlayerChatEvent can run off the primary thread. Only capture
-        // event data here; all Bukkit state access happens on the main thread.
+        // Capture only immutable event data here. Bukkit state/config access
+        // is deferred to the primary thread because this event may be async.
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (!player.isOnline()) {
+                return;
+            }
+
+            if (!config.isMessageLengthValid(message)) {
+                player.sendMessage(config.getMessage("mensagem-muito-longa"));
                 return;
             }
 
