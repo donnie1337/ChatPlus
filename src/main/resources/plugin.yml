@@ -5,6 +5,7 @@ api-version: '26.2'
 description: Sistema de chat local, global e da staff para Spigot puro.
 author: donnie1337
 softdepend:
+  - AuthSystem
   - CargoPlus
 
 commands:
