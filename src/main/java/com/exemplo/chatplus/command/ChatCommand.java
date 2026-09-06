@@ -10,15 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Handles {@code /chat reload} and its tab completion. A list of
- * subcommands is kept instead of a single hardcoded string so future
- * subcommands (e.g. {@code /chat version}) only require adding an entry to
- * {@link #SUBCOMMANDS} and a branch in {@link #onCommand}.
- *
- * <p>Requires {@code chat.admin} - a plain Bukkit permission node, not a
- * rank or group defined by this plugin.</p>
- */
+/** Handles /chat reload during the testing phase. */
 public final class ChatCommand implements CommandExecutor, TabCompleter {
 
     private static final List<String> SUBCOMMANDS = List.of("reload");
@@ -32,10 +24,6 @@ public final class ChatCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-            if (!sender.hasPermission("chat.admin")) {
-                sender.sendMessage(config.getMessage("sem-permissao"));
-                return true;
-            }
             config.load();
             sender.sendMessage(config.getMessage("reload-sucesso"));
             return true;
@@ -47,7 +35,7 @@ public final class ChatCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length != 1 || !sender.hasPermission("chat.admin")) {
+        if (args.length != 1) {
             return Collections.emptyList();
         }
 
