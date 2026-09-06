@@ -3,7 +3,9 @@ version: '${project.version}'
 main: com.exemplo.chatplus.ChatPlus
 api-version: '26.2'
 description: Sistema de chat local, global e da staff para Spigot puro.
-author: exemplo
+author: donnie1337
+softdepend:
+  - CargoPlus
 
 commands:
   l:
@@ -30,5 +32,5 @@ permissions:
     description: Permite enviar e receber mensagens no chat da staff.
     default: false
   chat.admin:
-    description: Permite administrar o ChatPlus.
-    default: op
+    description: Permite administrar o ChatPlus. Reservada ao Dono via CargoPlus.
+    default: false
