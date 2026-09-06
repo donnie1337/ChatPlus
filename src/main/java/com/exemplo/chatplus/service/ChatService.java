@@ -12,13 +12,7 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Owns the actual "who receives what, formatted how" logic for all channels.
- *
- * <p>All Bukkit state access in this service is expected to happen on the
- * server's primary thread. The public methods defensively reschedule
- * themselves if an unexpected asynchronous caller reaches them.</p>
- */
+/** Owns the actual "who receives what, formatted how" logic for all channels. */
 public final class ChatService {
 
     private final ConfigManager config;
@@ -29,11 +23,6 @@ public final class ChatService {
         this.delayService = delayService;
     }
 
-    /**
-     * Delivers a local chat message: only players in the same world as the
-     * sender, within the configured range, receive it. The sender always
-     * sees their own message, regardless of who else is in range.
-     */
     public void sendLocalMessage(Player sender, String message) {
         if (!Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendLocalMessage(sender, message));
@@ -47,7 +36,6 @@ public final class ChatService {
 
         int range = config.getLocalChatRange();
         long rangeSquared = (long) range * range;
-
         Location senderLocation = sender.getLocation();
         World senderWorld = senderLocation.getWorld();
 
@@ -80,9 +68,6 @@ public final class ChatService {
         }
     }
 
-    /**
-     * Delivers a global chat message to every online player.
-     */
     public void sendGlobalMessage(CommandSender sender, String message) {
         if (!Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendGlobalMessage(sender, message));
@@ -98,14 +83,10 @@ public final class ChatService {
         for (Player online : Bukkit.getOnlinePlayers()) {
             online.sendMessage(formatted);
         }
-
         notifyConsole(sender, formatted);
     }
 
-    /**
-     * Delivers a staff chat message only to online players holding
-     * {@code chat.staff}, plus the console.
-     */
+    /** Delivers staff chat to every online player during the testing phase. */
     public void sendStaffMessage(CommandSender sender, String message) {
         if (!Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffMessage(sender, message));
@@ -119,11 +100,8 @@ public final class ChatService {
 
         String formatted = formatMessage(config.getStaffChatFormat(), resolveSenderName(sender), message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.hasPermission("chat.staff")) {
-                online.sendMessage(formatted);
-            }
+            online.sendMessage(formatted);
         }
-
         notifyConsole(sender, formatted);
     }
 
