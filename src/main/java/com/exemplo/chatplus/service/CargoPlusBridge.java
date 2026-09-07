@@ -19,13 +19,21 @@ public final class CargoPlusBridge {
     private Class<?> apiClass;
     private Object api;
     private Plugin cargoPlugin;
+    private Method getProviderMethod;
+    private Method getPrefixMethod;
+    private Method getNicknameColorMethod;
+    private Method getChatColorMethod;
+    private Method setChatColorMethod;
+    private Method getChatColorsMethod;
+    private Method getDefaultChatColorMethod;
+    private Plugin utilPlugin;
+    private Method getCorConfigMethod;
 
     public synchronized boolean refresh() {
         Plugin plugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
         if (plugin == null || !plugin.isEnabled()) {
-            cargoPlugin = null;
-            apiClass = null;
-            api = null;
+            clearCargoCache();
+            refreshUtilCache();
             return false;
         }
 
@@ -33,47 +41,59 @@ public final class CargoPlusBridge {
             Class<?> clazz = Class.forName(API_CLASS_NAME, true, plugin.getClass().getClassLoader());
             var registration = Bukkit.getServicesManager().getRegistration(clazz);
             if (registration == null) {
+                clearCargoCache();
                 cargoPlugin = plugin;
                 apiClass = clazz;
-                api = null;
                 return false;
             }
-            Object provider = registration.getClass().getMethod("getProvider").invoke(registration);
+            Method providerMethod = registration.getClass().getMethod("getProvider");
+            Object provider = providerMethod.invoke(registration);
             cargoPlugin = plugin;
             apiClass = clazz;
             api = provider;
+            getProviderMethod = providerMethod;
+            if (provider != null) {
+                Class<?> providerClass = provider.getClass();
+                getPrefixMethod = providerClass.getMethod("getPrefix", UUID.class);
+                getNicknameColorMethod = providerClass.getMethod("getNicknameColor", UUID.class);
+                getChatColorMethod = providerClass.getMethod("getChatColor", UUID.class);
+                setChatColorMethod = providerClass.getMethod("setChatColor", UUID.class, String.class);
+                getChatColorsMethod = providerClass.getMethod("getChatColors");
+                getDefaultChatColorMethod = providerClass.getMethod("getDefaultChatColor");
+            }
+            refreshUtilCache();
             return provider != null;
         } catch (ReflectiveOperationException | LinkageError ex) {
+            clearCargoCache();
             cargoPlugin = plugin;
-            apiClass = null;
-            api = null;
+            refreshUtilCache();
             return false;
         }
     }
 
     public String getPrefix(UUID uuid) {
-        Object value = invoke("getPrefix", new Class<?>[]{UUID.class}, uuid);
+        Object value = invoke(getPrefixMethod, uuid);
         return value instanceof String ? (String) value : "";
     }
 
     public String getNicknameColor(UUID uuid) {
-        Object value = invoke("getNicknameColor", new Class<?>[]{UUID.class}, uuid);
+        Object value = invoke(getNicknameColorMethod, uuid);
         return value instanceof String ? (String) value : "";
     }
 
     public String getChatColor(UUID uuid) {
-        Object value = invoke("getChatColor", new Class<?>[]{UUID.class}, uuid);
+        Object value = invoke(getChatColorMethod, uuid);
         return value instanceof String ? (String) value : "";
     }
 
     public boolean setChatColor(Player player, String color) {
         if (player == null) return false;
-        Object value = invoke("setChatColor", new Class<?>[]{UUID.class, String.class}, player.getUniqueId(), color);
+        Object value = invoke(setChatColorMethod, player.getUniqueId(), color);
         return value instanceof Boolean && (Boolean) value;
     }
 
     public Map<String, String> getChatColors() {
-        Object value = invoke("getChatColors", new Class<?>[0]);
+        Object value = invoke(getChatColorsMethod);
         if (!(value instanceof Map<?, ?> source)) return Collections.emptyMap();
         Map<String, String> result = new LinkedHashMap<>();
         for (Map.Entry<?, ?> entry : source.entrySet()) {
@@ -85,7 +105,7 @@ public final class CargoPlusBridge {
     }
 
     public String getDefaultChatColor() {
-        Object value = invoke("getDefaultChatColor", new Class<?>[0]);
+        Object value = invoke(getDefaultChatColorMethod);
         return value instanceof String ? ((String) value).toLowerCase(Locale.ROOT) : "branco";
     }
 
@@ -94,26 +114,73 @@ public final class CargoPlusBridge {
      * O ChatPlus não mantém uma segunda paleta/configuração quando o SistemaUtil está ativo.
      */
     public synchronized FileConfiguration getCorConfig() {
-        Plugin util = Bukkit.getPluginManager().getPlugin("SistemaUtil");
-        if (util == null || !util.isEnabled()) return null;
-        try {
-            Method method = util.getClass().getMethod("getCorConfig");
-            Object value = method.invoke(util);
-            return value instanceof FileConfiguration config ? config : null;
-        } catch (ReflectiveOperationException | LinkageError ex) {
-            return null;
+        if (refreshUtilCache() && utilPlugin != null && getCorConfigMethod != null) {
+            try {
+                Object value = getCorConfigMethod.invoke(utilPlugin);
+                return value instanceof FileConfiguration config ? config : null;
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                getCorConfigMethod = null;
+            }
         }
+        return null;
     }
 
-    private synchronized Object invoke(String methodName, Class<?>[] parameterTypes, Object... args) {
-        if (api == null || apiClass == null || cargoPlugin == null || !cargoPlugin.isEnabled()) {
-            if (!refresh()) return null;
+    private synchronized Object invoke(Method method, Object... args) {
+        if (method == null || api == null || apiClass == null || cargoPlugin == null || !cargoPlugin.isEnabled()) {
+            if (!refresh() || methodForRetry(method) == null) return null;
+            method = methodForRetry(method);
         }
         try {
-            return apiClass.getMethod(methodName, parameterTypes).invoke(api, args);
+            return method.invoke(api, args);
         } catch (ReflectiveOperationException | LinkageError ex) {
             api = null;
             return null;
         }
+    }
+
+    private Method methodForRetry(Method previous) {
+        if (previous == null) return null;
+        String name = previous.getName();
+        return switch (name) {
+            case "getPrefix" -> getPrefixMethod;
+            case "getNicknameColor" -> getNicknameColorMethod;
+            case "getChatColor" -> getChatColorMethod;
+            case "setChatColor" -> setChatColorMethod;
+            case "getChatColors" -> getChatColorsMethod;
+            case "getDefaultChatColor" -> getDefaultChatColorMethod;
+            default -> null;
+        };
+    }
+
+    private boolean refreshUtilCache() {
+        Plugin util = Bukkit.getPluginManager().getPlugin("SistemaUtil");
+        if (util == null || !util.isEnabled()) {
+            utilPlugin = null;
+            getCorConfigMethod = null;
+            return false;
+        }
+        if (utilPlugin == util && getCorConfigMethod != null) return true;
+        try {
+            utilPlugin = util;
+            getCorConfigMethod = util.getClass().getMethod("getCorConfig");
+            return true;
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            utilPlugin = util;
+            getCorConfigMethod = null;
+            return false;
+        }
+    }
+
+    private void clearCargoCache() {
+        apiClass = null;
+        api = null;
+        cargoPlugin = null;
+        getProviderMethod = null;
+        getPrefixMethod = null;
+        getNicknameColorMethod = null;
+        getChatColorMethod = null;
+        setChatColorMethod = null;
+        getChatColorsMethod = null;
+        getDefaultChatColorMethod = null;
     }
 }
