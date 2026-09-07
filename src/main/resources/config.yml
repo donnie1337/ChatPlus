@@ -16,6 +16,25 @@ chat:
   delay-segundos: 2
   limite-mensagem: 256
 
+  # Cor do texto que o jogador envia no chat.
+  # A escolha é feita pelo /cor e é persistida pelo CargoPlus.
+  cor-padrao: "branco"
+  cores:
+    branco: "&f"
+    cinza: "&7"
+    vermelho: "&c"
+    vermelho-escuro: "&4"
+    verde: "&a"
+    verde-escuro: "&2"
+    azul: "&9"
+    azul-claro: "&b"
+    amarelo: "&e"
+    dourado: "&6"
+    rosa: "&d"
+    roxo: "&5"
+    aqua: "&3"
+    preto: "&0"
+
   local:
     ativado: true
     alcance: 50
