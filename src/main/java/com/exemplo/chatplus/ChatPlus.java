@@ -77,6 +77,9 @@ public final class ChatPlus extends JavaPlugin {
         PluginCommand command = getCommand(name);
         if (command != null) {
             command.setExecutor(executor);
+            if ("cor".equalsIgnoreCase(name)) {
+                command.setPermission(null);
+            }
             if (executor instanceof org.bukkit.command.TabCompleter completer) {
                 command.setTabCompleter(completer);
             }
