@@ -12,6 +12,8 @@ import com.exemplo.chatplus.listener.UnknownCommandListener;
 import com.exemplo.chatplus.service.ChatColorService;
 import com.exemplo.chatplus.service.ChatDelayService;
 import com.exemplo.chatplus.service.ChatService;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
@@ -69,6 +71,18 @@ public final class ChatPlus extends JavaPlugin {
     public String getCurrentChatColorName(Player player) {
         if (chatColorService == null || player == null) return "branco";
         return chatColorService.getCurrentColorName(player);
+    }
+
+    /**
+     * Public integration API for other plugins that need to display system
+     * messages through ChatPlus without depending on its internal classes.
+     * Interactive Adventure components are preserved, including click events.
+     */
+    public void sendSystemMessage(Player player, Component message) {
+        if (player == null || !player.isOnline() || message == null) return;
+        final String prefix = configManager != null ? configManager.getMessage("prefixo-sistema") : "";
+        final Component prefixComponent = LegacyComponentSerializer.legacySection().deserialize(prefix);
+        player.sendMessage(prefixComponent.append(message));
     }
 
     public void openChatColorGui(Player player) {
