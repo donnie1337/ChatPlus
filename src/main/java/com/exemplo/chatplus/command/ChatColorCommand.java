@@ -40,6 +40,6 @@ public final class ChatColorCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return sender.hasPermission("cargoplus.cor") ? Collections.emptyList() : Collections.emptyList();
+        return Collections.emptyList();
     }
 }
