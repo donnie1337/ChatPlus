@@ -20,6 +20,12 @@ import java.util.Map;
 
 public final class ChatColorGui implements Listener {
     private static final String TITLE = "§8Escolha a cor do chat";
+    private static final int INVENTORY_SIZE = 36;
+    private static final int[] COLOR_SLOTS = {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24
+    };
+
     private final JavaPlugin plugin;
     private final ChatColorService colors;
 
@@ -29,11 +35,13 @@ public final class ChatColorGui implements Listener {
     }
 
     public void open(Player player) {
-        Inventory inventory = plugin.getServer().createInventory(null, 27, TITLE);
-        int slot = 10;
+        Inventory inventory = plugin.getServer().createInventory(null, INVENTORY_SIZE, TITLE);
         String selected = colors.getCurrentColorName(player);
+        int index = 0;
 
         for (Map.Entry<String, String> entry : colors.getColors().entrySet()) {
+            if (index >= COLOR_SLOTS.length) break;
+
             ChatColor color = colors.resolve(entry.getKey());
             ItemStack item = new ItemStack(woolFor(color));
             ItemMeta meta = item.getItemMeta();
@@ -50,12 +58,10 @@ public final class ChatColorGui implements Listener {
             }
             meta.setLore(lore);
             item.setItemMeta(meta);
-            inventory.setItem(slot, item);
-
-            slot++;
-            if (slot == 17) slot = 19;
-            if (slot > 25) break;
+            inventory.setItem(COLOR_SLOTS[index], item);
+            index++;
         }
+
         player.openInventory(inventory);
     }
 
@@ -65,10 +71,7 @@ public final class ChatColorGui implements Listener {
         event.setCancelled(true);
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        // A GUI e somente o inventario superior. Cliques no inventario do
-        // jogador nunca podem selecionar uma cor nem mover itens.
         if (event.getClickedInventory() != event.getView().getTopInventory()) return;
-
         if (event.getCursor() != null && !event.getCursor().getType().isAir()) return;
 
         ItemStack clicked = event.getCurrentItem();
