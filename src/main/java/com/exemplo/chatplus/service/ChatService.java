@@ -110,7 +110,7 @@ public final class ChatService {
 
     private boolean isAuthenticated(Player player) {
         if (player == null || !player.isOnline()) return false;
-        Plugin auth = Bukkit.getPluginManager().getPlugin("AuthSystem");
+        Plugin auth = Bukkit.getPluginManager().getPlugin("LoginPlus");
         if (auth == null || !auth.isEnabled()) {
             authPlugin = null;
             authCheckMethod = null;
