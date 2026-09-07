@@ -8,6 +8,7 @@ import com.exemplo.chatplus.command.LocalChatCommand;
 import com.exemplo.chatplus.command.StaffChatCommand;
 import com.exemplo.chatplus.config.ConfigManager;
 import com.exemplo.chatplus.listener.ChatListener;
+import com.exemplo.chatplus.listener.UnknownCommandListener;
 import com.exemplo.chatplus.service.ChatColorService;
 import com.exemplo.chatplus.service.ChatDelayService;
 import com.exemplo.chatplus.service.ChatService;
@@ -50,6 +51,7 @@ public final class ChatPlus extends JavaPlugin {
         getServer().getPluginManager().registerEvents(chatColorGui, this);
         getServer().getPluginManager().registerEvents(
                 new ChatListener(this, configManager, chatService, chatDelayService), this);
+        getServer().getPluginManager().registerEvents(new UnknownCommandListener(configManager), this);
 
         getLogger().info("ChatPlus habilitado com sucesso.");
     }
