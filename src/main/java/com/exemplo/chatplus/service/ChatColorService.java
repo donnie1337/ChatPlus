@@ -16,19 +16,24 @@ public final class ChatColorService {
     }
 
     public Map<String, String> getColors() {
+        var config = cargo.getCorConfig();
+        if (config == null) return Map.of();
+
         Map<String, String> result = new LinkedHashMap<>();
-        for (Map.Entry<String, String> entry : cargo.getChatColors().entrySet()) {
-            ChatColor color = parse(entry.getValue());
-            if (color != null && !entry.getKey().equalsIgnoreCase("preto")) {
-                result.put(entry.getKey().toLowerCase(Locale.ROOT), color.toString());
-            }
+        for (String name : config.getConfigurationSection("colors") == null
+                ? java.util.List.<String>of()
+                : config.getConfigurationSection("colors").getKeys(false)) {
+            if (name.equalsIgnoreCase("preto")) continue;
+            String raw = config.getString("colors." + name);
+            ChatColor color = parse(raw);
+            if (color != null) result.put(name.toLowerCase(Locale.ROOT), color.toString());
         }
         return result;
     }
 
     public ChatColor resolve(String name) {
-        String normalized = name == null ? "" : name.toLowerCase(Locale.ROOT);
-        if (normalized.equals("preto")) return ChatColor.WHITE;
+        if (name == null || name.isBlank()) return ChatColor.WHITE;
+        String normalized = name.trim().toLowerCase(Locale.ROOT);
         String value = getColors().get(normalized);
         ChatColor color = parse(value);
         return color == null ? ChatColor.WHITE : color;
@@ -53,8 +58,34 @@ public final class ChatColorService {
         return cargo.setChatColor(player, normalized);
     }
 
+    public String getTitle() {
+        var config = cargo.getCorConfig();
+        String raw = config == null ? "&8Escolha a cor da sua mensagem" :
+                config.getString("gui.titulo", "&8Escolha a cor da sua mensagem");
+        return ChatColor.translateAlternateColorCodes('&', raw == null ? "" : raw);
+    }
+
+    public int getInventorySize() {
+        var config = cargo.getCorConfig();
+        int size = config == null ? 36 : config.getInt("gui.tamanho", 36);
+        if (size < 9 || size > 54 || size % 9 != 0) return 36;
+        return size;
+    }
+
+    public java.util.List<Integer> getSlots() {
+        var config = cargo.getCorConfig();
+        if (config == null) return java.util.List.of();
+        return config.getIntegerList("gui.slots");
+    }
+
+    public boolean closeAfterSelection() {
+        var config = cargo.getCorConfig();
+        return config == null || config.getBoolean("gui.close-after-selection", true);
+    }
+
     private String defaultAllowedColor() {
-        String fallback = cargo.getDefaultChatColor();
+        var config = cargo.getCorConfig();
+        String fallback = config == null ? "branco" : config.getString("default-color", "branco");
         if (fallback != null) {
             String normalized = fallback.trim().toLowerCase(Locale.ROOT);
             if (getColors().containsKey(normalized)) return normalized;
