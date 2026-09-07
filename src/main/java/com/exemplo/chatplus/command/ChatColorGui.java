@@ -65,9 +65,11 @@ public final class ChatColorGui implements Listener {
         event.setCancelled(true);
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        if (event.getClickedInventory() == event.getView().getTopInventory()
-                && event.getCursor() != null
-                && !event.getCursor().getType().isAir()) return;
+        // A GUI e somente o inventario superior. Cliques no inventario do
+        // jogador nunca podem selecionar uma cor nem mover itens.
+        if (event.getClickedInventory() != event.getView().getTopInventory()) return;
+
+        if (event.getCursor() != null && !event.getCursor().getType().isAir()) return;
 
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || clicked.getType().isAir() || !clicked.hasItemMeta()) return;
