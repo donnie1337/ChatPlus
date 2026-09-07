@@ -19,7 +19,6 @@ public final class CargoPlusBridge {
     private Class<?> apiClass;
     private Object api;
     private Plugin cargoPlugin;
-    private Method getProviderMethod;
     private Method getPrefixMethod;
     private Method getNicknameColorMethod;
     private Method getChatColorMethod;
@@ -44,14 +43,15 @@ public final class CargoPlusBridge {
                 clearCargoCache();
                 cargoPlugin = plugin;
                 apiClass = clazz;
+                refreshUtilCache();
                 return false;
             }
+
             Method providerMethod = registration.getClass().getMethod("getProvider");
             Object provider = providerMethod.invoke(registration);
             cargoPlugin = plugin;
             apiClass = clazz;
             api = provider;
-            getProviderMethod = providerMethod;
             if (provider != null) {
                 Class<?> providerClass = provider.getClass();
                 getPrefixMethod = providerClass.getMethod("getPrefix", UUID.class);
@@ -72,28 +72,28 @@ public final class CargoPlusBridge {
     }
 
     public String getPrefix(UUID uuid) {
-        Object value = invoke(getPrefixMethod, uuid);
+        Object value = invoke("getPrefix", uuid);
         return value instanceof String ? (String) value : "";
     }
 
     public String getNicknameColor(UUID uuid) {
-        Object value = invoke(getNicknameColorMethod, uuid);
+        Object value = invoke("getNicknameColor", uuid);
         return value instanceof String ? (String) value : "";
     }
 
     public String getChatColor(UUID uuid) {
-        Object value = invoke(getChatColorMethod, uuid);
+        Object value = invoke("getChatColor", uuid);
         return value instanceof String ? (String) value : "";
     }
 
     public boolean setChatColor(Player player, String color) {
         if (player == null) return false;
-        Object value = invoke(setChatColorMethod, player.getUniqueId(), color);
+        Object value = invoke("setChatColor", player.getUniqueId(), color);
         return value instanceof Boolean && (Boolean) value;
     }
 
     public Map<String, String> getChatColors() {
-        Object value = invoke(getChatColorsMethod);
+        Object value = invoke("getChatColors");
         if (!(value instanceof Map<?, ?> source)) return Collections.emptyMap();
         Map<String, String> result = new LinkedHashMap<>();
         for (Map.Entry<?, ?> entry : source.entrySet()) {
@@ -105,7 +105,7 @@ public final class CargoPlusBridge {
     }
 
     public String getDefaultChatColor() {
-        Object value = invoke(getDefaultChatColorMethod);
+        Object value = invoke("getDefaultChatColor");
         return value instanceof String ? ((String) value).toLowerCase(Locale.ROOT) : "branco";
     }
 
@@ -114,34 +114,22 @@ public final class CargoPlusBridge {
      * O ChatPlus não mantém uma segunda paleta/configuração quando o SistemaUtil está ativo.
      */
     public synchronized FileConfiguration getCorConfig() {
-        if (refreshUtilCache() && utilPlugin != null && getCorConfigMethod != null) {
-            try {
-                Object value = getCorConfigMethod.invoke(utilPlugin);
-                return value instanceof FileConfiguration config ? config : null;
-            } catch (ReflectiveOperationException | LinkageError ex) {
-                getCorConfigMethod = null;
-            }
-        }
-        return null;
-    }
-
-    private synchronized Object invoke(Method method, Object... args) {
-        if (method == null || api == null || apiClass == null || cargoPlugin == null || !cargoPlugin.isEnabled()) {
-            if (!refresh() || methodForRetry(method) == null) return null;
-            method = methodForRetry(method);
-        }
+        if (!refreshUtilCache() || utilPlugin == null || getCorConfigMethod == null) return null;
         try {
-            return method.invoke(api, args);
+            Object value = getCorConfigMethod.invoke(utilPlugin);
+            return value instanceof FileConfiguration config ? config : null;
         } catch (ReflectiveOperationException | LinkageError ex) {
-            api = null;
+            getCorConfigMethod = null;
             return null;
         }
     }
 
-    private Method methodForRetry(Method previous) {
-        if (previous == null) return null;
-        String name = previous.getName();
-        return switch (name) {
+    private synchronized Object invoke(String methodName, Object... args) {
+        if (api == null || apiClass == null || cargoPlugin == null || !cargoPlugin.isEnabled()) {
+            if (!refresh()) return null;
+        }
+
+        Method method = switch (methodName) {
             case "getPrefix" -> getPrefixMethod;
             case "getNicknameColor" -> getNicknameColorMethod;
             case "getChatColor" -> getChatColorMethod;
@@ -150,6 +138,14 @@ public final class CargoPlusBridge {
             case "getDefaultChatColor" -> getDefaultChatColorMethod;
             default -> null;
         };
+        if (method == null || api == null) return null;
+
+        try {
+            return method.invoke(api, args);
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            api = null;
+            return null;
+        }
     }
 
     private boolean refreshUtilCache() {
@@ -175,7 +171,6 @@ public final class CargoPlusBridge {
         apiClass = null;
         api = null;
         cargoPlugin = null;
-        getProviderMethod = null;
         getPrefixMethod = null;
         getNicknameColorMethod = null;
         getChatColorMethod = null;
