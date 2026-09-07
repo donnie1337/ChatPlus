@@ -8,21 +8,19 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public final class ChatService {
-    private static final String CARGO_API = "com.cargoplus.api.CargoPlusAPI";
     private final ConfigManager config;
     private final ChatDelayService delayService;
+    private final CargoPlusBridge cargo;
 
     public ChatService(ConfigManager config, ChatDelayService delayService) {
         this.config = config;
         this.delayService = delayService;
+        this.cargo = new CargoPlusBridge();
     }
 
     public void sendLocalMessage(Player sender, String message) {
@@ -108,10 +106,10 @@ public final class ChatService {
 
     private boolean isAuthenticated(Player player) {
         if (player == null || !player.isOnline()) return false;
-        Plugin auth = Bukkit.getPluginManager().getPlugin("AuthSystem");
+        org.bukkit.plugin.Plugin auth = Bukkit.getPluginManager().getPlugin("AuthSystem");
         if (auth == null || !auth.isEnabled()) return false;
         try {
-            Method method = auth.getClass().getMethod("isAuthenticated", Player.class);
+            var method = auth.getClass().getMethod("isAuthenticated", Player.class);
             Object result = method.invoke(auth, player);
             return result instanceof Boolean && (Boolean) result;
         } catch (ReflectiveOperationException | LinkageError ex) {
@@ -122,71 +120,21 @@ public final class ChatService {
     private String formatMessage(String format, CommandSender sender, String message, String world) {
         String playerName;
         String chatColor = "";
+        String prefix = "";
         if (sender instanceof ConsoleCommandSender) {
             playerName = "Console";
         } else {
             Player player = (Player) sender;
-            UUID uuid = player.getUniqueId();
-            playerName = getCargoNameColor(uuid) + sender.getName();
-            chatColor = getCargoChatColor(uuid);
+            playerName = cargo.getNicknameColor(player.getUniqueId()) + sender.getName();
+            chatColor = cargo.getChatColor(player.getUniqueId());
+            prefix = cargo.getPrefix(player.getUniqueId());
         }
-        String prefix = sender instanceof Player ? getCargoPrefix(((Player) sender).getUniqueId()) : "";
+
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("{player}", playerName);
-        placeholders.put("{message}", chatColor + message);
+        placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message));
         placeholders.put("{world}", world);
         placeholders.put("{prefix}", prefix);
         return MessageUtil.apply(format, placeholders);
-    }
-
-    private Object cargoApi() throws ReflectiveOperationException {
-        Plugin cargoPlugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
-        if (cargoPlugin == null || !cargoPlugin.isEnabled()) return null;
-        Class<?> apiClass = Class.forName(CARGO_API, true, cargoPlugin.getClass().getClassLoader());
-        var registration = Bukkit.getServicesManager().getRegistration(apiClass);
-        if (registration == null) return null;
-        return registration.getClass().getMethod("getProvider").invoke(registration);
-    }
-
-    private Class<?> cargoApiClass() throws ReflectiveOperationException {
-        Plugin cargoPlugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
-        if (cargoPlugin == null || !cargoPlugin.isEnabled()) return null;
-        return Class.forName(CARGO_API, true, cargoPlugin.getClass().getClassLoader());
-    }
-
-    private String getCargoPrefix(UUID uuid) {
-        try {
-            Class<?> apiClass = cargoApiClass();
-            Object api = cargoApi();
-            if (apiClass == null || api == null) return "";
-            Object value = apiClass.getMethod("getPrefix", UUID.class).invoke(api, uuid);
-            return value instanceof String ? (String) value : "";
-        } catch (ReflectiveOperationException | LinkageError ignored) {
-            return "";
-        }
-    }
-
-    private String getCargoNameColor(UUID uuid) {
-        try {
-            Class<?> apiClass = cargoApiClass();
-            Object api = cargoApi();
-            if (apiClass == null || api == null) return "";
-            Object value = apiClass.getMethod("getNicknameColor", UUID.class).invoke(api, uuid);
-            return value instanceof String ? (String) value : "";
-        } catch (ReflectiveOperationException | LinkageError ignored) {
-            return "";
-        }
-    }
-
-    private String getCargoChatColor(UUID uuid) {
-        try {
-            Class<?> apiClass = cargoApiClass();
-            Object api = cargoApi();
-            if (apiClass == null || api == null) return "";
-            Object value = apiClass.getMethod("getChatColor", UUID.class).invoke(api, uuid);
-            return value instanceof String ? (String) value : "";
-        } catch (ReflectiveOperationException | LinkageError ignored) {
-            return "";
-        }
     }
 }
