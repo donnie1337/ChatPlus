@@ -19,13 +19,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public final class ChatColorGui implements Listener {
-    private static final String TITLE = "§8Escolha a cor do chat";
-    private static final int INVENTORY_SIZE = 36;
-    private static final int[] COLOR_SLOTS = {
-            10, 11, 12, 13, 14, 15, 16,
-            19, 20, 21, 22, 23, 24
-    };
-
     private final JavaPlugin plugin;
     private final ChatColorService colors;
 
@@ -35,12 +28,14 @@ public final class ChatColorGui implements Listener {
     }
 
     public void open(Player player) {
-        Inventory inventory = plugin.getServer().createInventory(null, INVENTORY_SIZE, TITLE);
+        String title = colors.getTitle();
+        Inventory inventory = plugin.getServer().createInventory(null, colors.getInventorySize(), title);
+        List<Integer> slots = colors.getSlots();
         String selected = colors.getCurrentColorName(player);
         int index = 0;
 
         for (Map.Entry<String, String> entry : colors.getColors().entrySet()) {
-            if (index >= COLOR_SLOTS.length) break;
+            if (index >= slots.size()) break;
 
             ChatColor color = colors.resolve(entry.getKey());
             ItemStack item = new ItemStack(woolFor(color));
@@ -49,7 +44,7 @@ public final class ChatColorGui implements Listener {
 
             meta.setDisplayName(color + entry.getKey());
             List<String> lore = new ArrayList<>();
-            lore.add("§7Cor do texto que você digita no chat.");
+            lore.add("§7Cor aplicada somente à mensagem do chat.");
             lore.add("§7Exemplo: " + color + "Sua mensagem");
             if (entry.getKey().equalsIgnoreCase(selected)) {
                 lore.add("§a✓ Cor atualmente selecionada");
@@ -58,7 +53,7 @@ public final class ChatColorGui implements Listener {
             }
             meta.setLore(lore);
             item.setItemMeta(meta);
-            inventory.setItem(COLOR_SLOTS[index], item);
+            inventory.setItem(slots.get(index), item);
             index++;
         }
 
@@ -67,10 +62,10 @@ public final class ChatColorGui implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (!TITLE.equals(event.getView().getTitle())) return;
+        String title = colors.getTitle();
+        if (!title.equals(event.getView().getTitle())) return;
         event.setCancelled(true);
         if (!(event.getWhoClicked() instanceof Player player)) return;
-
         if (event.getClickedInventory() != event.getView().getTopInventory()) return;
         if (event.getCursor() != null && !event.getCursor().getType().isAir()) return;
 
@@ -84,13 +79,13 @@ public final class ChatColorGui implements Listener {
         if (colors.setColor(player, selected)) {
             player.sendMessage(ChatColor.GREEN + "Cor do chat alterada para "
                     + colors.resolve(selected) + selected + "§r.");
-            player.closeInventory();
+            if (colors.closeAfterSelection()) player.closeInventory();
         }
     }
 
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
-        if (TITLE.equals(event.getView().getTitle())) event.setCancelled(true);
+        if (colors.getTitle().equals(event.getView().getTitle())) event.setCancelled(true);
     }
 
     private static Material woolFor(ChatColor color) {
