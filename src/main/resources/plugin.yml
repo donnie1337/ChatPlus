@@ -2,7 +2,7 @@ name: ChatPlus
 version: '${project.version}'
 main: com.exemplo.chatplus.ChatPlus
 api-version: '26.2'
-description: Sistema de chat local, global e da staff para Spigot puro.
+description: Sistema de chat local, global, staff e cores do texto.
 author: donnie1337
 softdepend:
   - AuthSystem
@@ -21,6 +21,10 @@ commands:
     description: Envia uma mensagem pelo chat da staff.
     usage: /s <mensagem>
     permission: chat.staff
+  cor:
+    description: Abre o menu para escolher a cor do texto do chat.
+    usage: /cor
+    permission: cargoplus.cor
   chat:
     description: Gerencia o ChatPlus.
     usage: /chat reload
@@ -38,4 +42,7 @@ permissions:
     default: false
   chat.admin:
     description: Permite administrar o ChatPlus. Reservada ao Dono via CargoPlus.
+    default: false
+  cargoplus.cor:
+    description: Permite escolher a cor do próprio texto no chat.
     default: false
