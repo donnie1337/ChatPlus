@@ -9,6 +9,9 @@ sem-permissao: "&cVocê não possui permissão para utilizar este chat."
 nao-autenticado: "&cVocê precisa estar autenticado para utilizar o chat."
 comando-desconhecido: "&c• &4ERRO &8| &fComando desconhecido ou incompleto."
 
+# Prefixo usado por outros plugins ao enviar mensagens de sistema através da API pública do ChatPlus.
+prefixo-sistema: "&8[&6Servidor&8] &r"
+
 chat-global-desativado: "&cO chat global está desativado."
 chat-local-desativado: "&cO chat local está desativado."
 chat-staff-desativado: "&cO chat da staff está desativado."
