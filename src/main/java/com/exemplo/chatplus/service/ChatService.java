@@ -8,7 +8,9 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +18,8 @@ public final class ChatService {
     private final ConfigManager config;
     private final ChatDelayService delayService;
     private final CargoPlusBridge cargo;
+    private volatile Plugin authPlugin;
+    private volatile Method authCheckMethod;
 
     public ChatService(ConfigManager config, ChatDelayService delayService) {
         this.config = config;
@@ -106,10 +110,31 @@ public final class ChatService {
 
     private boolean isAuthenticated(Player player) {
         if (player == null || !player.isOnline()) return false;
-        org.bukkit.plugin.Plugin auth = Bukkit.getPluginManager().getPlugin("AuthSystem");
-        if (auth == null || !auth.isEnabled()) return false;
+        Plugin auth = Bukkit.getPluginManager().getPlugin("AuthSystem");
+        if (auth == null || !auth.isEnabled()) {
+            authPlugin = null;
+            authCheckMethod = null;
+            return false;
+        }
+
+        Method method = authCheckMethod;
+        if (authPlugin != auth || method == null) {
+            synchronized (this) {
+                if (authPlugin != auth || authCheckMethod == null) {
+                    try {
+                        authPlugin = auth;
+                        authCheckMethod = auth.getClass().getMethod("isAuthenticated", Player.class);
+                    } catch (ReflectiveOperationException | LinkageError ex) {
+                        authPlugin = auth;
+                        authCheckMethod = null;
+                    }
+                }
+                method = authCheckMethod;
+            }
+        }
+
+        if (method == null) return false;
         try {
-            var method = auth.getClass().getMethod("isAuthenticated", Player.class);
             Object result = method.invoke(auth, player);
             return result instanceof Boolean && (Boolean) result;
         } catch (ReflectiveOperationException | LinkageError ex) {
