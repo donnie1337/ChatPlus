@@ -11,13 +11,17 @@ import com.exemplo.chatplus.listener.ChatListener;
 import com.exemplo.chatplus.service.ChatColorService;
 import com.exemplo.chatplus.service.ChatDelayService;
 import com.exemplo.chatplus.service.ChatService;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /** Entry point of ChatPlus. */
 public final class ChatPlus extends JavaPlugin {
     private ConfigManager configManager;
+    private ChatColorService chatColorService;
+    private ChatColorGui chatColorGui;
 
     @Override
     public void onEnable() {
@@ -26,8 +30,8 @@ public final class ChatPlus extends JavaPlugin {
 
         ChatDelayService chatDelayService = new ChatDelayService(configManager);
         ChatService chatService = new ChatService(configManager, chatDelayService);
-        ChatColorService chatColorService = new ChatColorService();
-        ChatColorGui chatColorGui = new ChatColorGui(this, chatColorService);
+        this.chatColorService = new ChatColorService();
+        this.chatColorGui = new ChatColorGui(this, chatColorService);
 
         registerCommand("l", new LocalChatCommand(configManager, chatService));
         registerCommand("g", new GlobalChatCommand(configManager, chatService));
@@ -53,6 +57,20 @@ public final class ChatPlus extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("ChatPlus desabilitado.");
+    }
+
+    public String getCurrentChatColor(Player player) {
+        if (chatColorService == null || player == null) return ChatColor.WHITE.toString();
+        return chatColorService.resolve(chatColorService.getCurrentColorName(player)).toString();
+    }
+
+    public String getCurrentChatColorName(Player player) {
+        if (chatColorService == null || player == null) return "branco";
+        return chatColorService.getCurrentColorName(player);
+    }
+
+    public void openChatColorGui(Player player) {
+        if (chatColorGui != null && player != null) chatColorGui.open(player);
     }
 
     private void registerCommand(String name, CommandExecutor executor) {
