@@ -5,9 +5,9 @@ api-version: '26.2'
 description: Sistema de chat local, global, staff e cores do texto.
 author: donnie1337
 softdepend:
-  - AuthSystem
+  - LoginPlus
   - CargoPlus
-  - SistemaUtil
+  - UtilidadesPlus
 
 commands:
   l:
