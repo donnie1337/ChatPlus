@@ -19,15 +19,16 @@ public final class MessageUtil {
     }
 
     /**
-     * Removes player-controlled legacy formatting codes before the message is
-     * inserted into a trusted chat template. The chat color is then supplied
-     * exclusively by CargoPlus based on the player's saved /cor selection.
+     * Removes all player-controlled legacy color/formatting sequences,
+     * including the six-digit legacy hex form, before insertion into a
+     * trusted template. The chat color is supplied exclusively by CargoPlus.
      */
     public static String sanitizePlayerText(String text) {
         if (text == null || text.isEmpty()) {
             return "";
         }
-        return text.replaceAll("(?i)[&§][0-9A-FK-OR]", "");
+        String sanitized = text.replaceAll("(?i)(?:[&§]x(?:[&§][0-9a-f]){6}|[&§][0-9a-fk-or])", "");
+        return sanitized.replace("\u00a7", "");
     }
 
     /**
