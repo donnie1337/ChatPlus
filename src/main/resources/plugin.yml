@@ -25,7 +25,6 @@ commands:
   cor:
     description: Abre o menu para escolher a cor do texto do chat.
     usage: /cor
-    permission: cargoplus.cor
   chat:
     description: Gerencia o ChatPlus.
     usage: /chat reload
