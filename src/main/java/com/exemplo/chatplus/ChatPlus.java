@@ -15,11 +15,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- * Entry point of ChatPlus.
- */
+/** Entry point of ChatPlus. */
 public final class ChatPlus extends JavaPlugin {
-
     private ConfigManager configManager;
 
     @Override
@@ -29,7 +26,7 @@ public final class ChatPlus extends JavaPlugin {
 
         ChatDelayService chatDelayService = new ChatDelayService(configManager);
         ChatService chatService = new ChatService(configManager, chatDelayService);
-        ChatColorService chatColorService = new ChatColorService(configManager);
+        ChatColorService chatColorService = new ChatColorService();
         ChatColorGui chatColorGui = new ChatColorGui(this, chatColorService);
 
         registerCommand("l", new LocalChatCommand(configManager, chatService));
@@ -43,7 +40,7 @@ public final class ChatPlus extends JavaPlugin {
             chatPluginCommand.setExecutor(chatCommand);
             chatPluginCommand.setTabCompleter(chatCommand);
         } else {
-            getLogger().warning("Comando /chat não encontrado no plugin.yml.");
+            getLogger().warning("Comando /chat nao encontrado no plugin.yml.");
         }
 
         getServer().getPluginManager().registerEvents(chatColorGui, this);
@@ -66,7 +63,7 @@ public final class ChatPlus extends JavaPlugin {
                 command.setTabCompleter(completer);
             }
         } else {
-            getLogger().warning("Comando /" + name + " não encontrado no plugin.yml.");
+            getLogger().warning("Comando /" + name + " nao encontrado no plugin.yml.");
         }
     }
 }
