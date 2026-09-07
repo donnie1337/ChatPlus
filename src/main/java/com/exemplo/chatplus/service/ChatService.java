@@ -120,7 +120,7 @@ public final class ChatService {
     }
 
     private String formatMessage(String format, CommandSender sender, String message, String world) {
-        String playerName = sender instanceof ConsoleCommandSender ? "Console" : sender.getName();
+        String playerName = sender instanceof ConsoleCommandSender ? "Console" : getCargoNameColor(((Player) sender).getUniqueId()) + sender.getName();
         String prefix = sender instanceof Player ? getCargoPrefix(((Player) sender).getUniqueId()) : "";
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("{player}", playerName);
@@ -139,10 +139,25 @@ public final class ChatService {
             Object registration = Bukkit.getServicesManager().getRegistration(apiClass);
             if (registration == null) return "";
 
-            Method providerMethod = registration.getClass().getMethod("getProvider");
-            Object api = providerMethod.invoke(registration);
-            Method prefixMethod = apiClass.getMethod("getPrefix", UUID.class);
-            Object value = prefixMethod.invoke(api, uuid);
+            Object api = registration.getClass().getMethod("getProvider").invoke(registration);
+            Object value = apiClass.getMethod("getPrefix", UUID.class).invoke(api, uuid);
+            return value instanceof String ? (String) value : "";
+        } catch (ReflectiveOperationException | LinkageError ignored) {
+            return "";
+        }
+    }
+
+    private String getCargoNameColor(UUID uuid) {
+        try {
+            Plugin cargoPlugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
+            if (cargoPlugin == null || !cargoPlugin.isEnabled()) return "";
+
+            Class<?> apiClass = Class.forName(CARGO_API, true, cargoPlugin.getClass().getClassLoader());
+            Object registration = Bukkit.getServicesManager().getRegistration(apiClass);
+            if (registration == null) return "";
+
+            Object api = registration.getClass().getMethod("getProvider").invoke(registration);
+            Object value = apiClass.getMethod("getNicknameColor", UUID.class).invoke(api, uuid);
             return value instanceof String ? (String) value : "";
         } catch (ReflectiveOperationException | LinkageError ignored) {
             return "";
