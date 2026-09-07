@@ -3,14 +3,16 @@ package com.exemplo.chatplus.service;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-/** Centraliza a integracao opcional do ChatPlus com o CargoPlus. */
+/** Centraliza as integrações opcionais do ChatPlus com CargoPlus e SistemaUtil. */
 public final class CargoPlusBridge {
     private static final String API_CLASS_NAME = "com.cargoplus.api.CargoPlusAPI";
 
@@ -76,7 +78,7 @@ public final class CargoPlusBridge {
         Map<String, String> result = new LinkedHashMap<>();
         for (Map.Entry<?, ?> entry : source.entrySet()) {
             if (entry.getKey() instanceof String key && entry.getValue() instanceof String color) {
-                result.put(key.toLowerCase(java.util.Locale.ROOT), color);
+                result.put(key.toLowerCase(Locale.ROOT), color);
             }
         }
         return result;
@@ -84,7 +86,23 @@ public final class CargoPlusBridge {
 
     public String getDefaultChatColor() {
         Object value = invoke("getDefaultChatColor", new Class<?>[0]);
-        return value instanceof String ? ((String) value).toLowerCase(java.util.Locale.ROOT) : "branco";
+        return value instanceof String ? ((String) value).toLowerCase(Locale.ROOT) : "branco";
+    }
+
+    /**
+     * Lê a configuração exclusiva do /cor no SistemaUtil.
+     * O ChatPlus não mantém uma segunda paleta/configuração quando o SistemaUtil está ativo.
+     */
+    public synchronized FileConfiguration getCorConfig() {
+        Plugin util = Bukkit.getPluginManager().getPlugin("SistemaUtil");
+        if (util == null || !util.isEnabled()) return null;
+        try {
+            Method method = util.getClass().getMethod("getCorConfig");
+            Object value = method.invoke(util);
+            return value instanceof FileConfiguration config ? config : null;
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return null;
+        }
     }
 
     private synchronized Object invoke(String methodName, Class<?>[] parameterTypes, Object... args) {
