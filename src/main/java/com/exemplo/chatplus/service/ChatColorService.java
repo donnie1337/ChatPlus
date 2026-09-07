@@ -1,6 +1,5 @@
 package com.exemplo.chatplus.service;
 
-import com.exemplo.chatplus.config.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -10,11 +9,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public final class ChatColorService {
-    private final ConfigManager config;
     private final CargoPlusBridge cargo;
 
-    public ChatColorService(ConfigManager config) {
-        this.config = config;
+    public ChatColorService() {
         this.cargo = new CargoPlusBridge();
     }
 
@@ -34,6 +31,7 @@ public final class ChatColorService {
     }
 
     public String getCurrentColorName(Player player) {
+        if (player == null) return cargo.getDefaultChatColor();
         String code = cargo.getChatColor(player.getUniqueId());
         ChatColor current = parse(code);
         if (current != null) {
