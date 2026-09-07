@@ -4,9 +4,7 @@ import org.bukkit.ChatColor;
 
 import java.util.Map;
 
-/**
- * Helpers for safe message formatting and command argument handling.
- */
+/** Helpers for safe message formatting and command argument handling. */
 public final class MessageUtil {
 
     private MessageUtil() {
@@ -21,9 +19,20 @@ public final class MessageUtil {
     }
 
     /**
+     * Removes player-controlled legacy formatting codes before the message is
+     * inserted into a trusted chat template. The chat color is then supplied
+     * exclusively by CargoPlus based on the player's saved /cor selection.
+     */
+    public static String sanitizePlayerText(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+        return text.replaceAll("(?i)[&§][0-9A-FK-OR]", "");
+    }
+
+    /**
      * Colorizes the trusted template first and only then inserts placeholder
-     * values. This prevents player-controlled message text from introducing
-     * formatting codes into the channel format.
+     * values. Placeholder text is never interpreted as part of the template.
      */
     public static String apply(String template, Map<String, String> placeholders) {
         if (template == null || template.isEmpty()) {
