@@ -8,12 +8,8 @@
 #   {message} -> mensagem enviada
 #   {world}   -> mundo do remetente (local)
 #
-# A paleta de cores do /cor pertence ao CargoPlus e e exposta
-# pelo CargoPlusAPI. O ChatPlus apenas apresenta e aplica a selecao.
-#
-# As mensagens de entrada e saida NAO possuem cor configuravel.
-# A cor e obtida automaticamente do cargo do jogador pelo CargoPlus.
-# As mensagens de entrada sao escolhidas aleatoriamente da lista.
+# As mensagens de entrada e saída são gerenciadas pelo UtilidadesPlus,
+# incluindo a lista de mensagens variadas e as preferências do /configurar.
 # =========================================================
 
 chat:
@@ -32,17 +28,3 @@ chat:
   staff:
     ativado: true
     formato: "&c[S] {prefix}&f{player}&7: &f{message}"
-
-entrada:
-  ativado: true
-  mensagens:
-    - "entrou no servidor!"
-    - "acabou de chegar no servidor!"
-    - "está online!"
-    - "voltou para o servidor!"
-    - "chegou para jogar!"
-    - "entrou na aventura!"
-    - "está de volta!"
-
-saida:
-  ativado: false
