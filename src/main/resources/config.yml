@@ -10,6 +10,9 @@
 #
 # A paleta de cores do /cor pertence ao CargoPlus e e exposta
 # pelo CargoPlusAPI. O ChatPlus apenas apresenta e aplica a selecao.
+#
+# As mensagens de entrada e saida NAO possuem cor configuravel.
+# A cor e obtida automaticamente do cargo do jogador pelo CargoPlus.
 # =========================================================
 
 chat:
@@ -28,3 +31,9 @@ chat:
   staff:
     ativado: true
     formato: "&c[S] {prefix}&f{player}&7: &f{message}"
+
+entrada:
+  ativado: true
+
+saida:
+  ativado: true
