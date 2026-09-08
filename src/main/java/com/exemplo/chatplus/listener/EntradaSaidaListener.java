@@ -3,7 +3,6 @@ package com.exemplo.chatplus.listener;
 import com.exemplo.chatplus.config.ConfigManager;
 import com.exemplo.chatplus.service.CargoPlusBridge;
 import com.exemplo.chatplus.util.MessageUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,8 +11,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-/** Exibe mensagens fixas de entrada e saída usando a cor oficial do cargo. */
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
+/** Exibe mensagens de entrada e saída usando a cor oficial do cargo. */
 public final class EntradaSaidaListener implements Listener {
+    private static final String DEFAULT_JOIN_MESSAGE = "entrou no servidor!";
+
     private final ConfigManager config;
     private final CargoPlusBridge cargo = new CargoPlusBridge();
 
@@ -29,8 +33,7 @@ public final class EntradaSaidaListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        String message = formatMessage(player, "entrou no servidor!");
-        event.setJoinMessage(message);
+        event.setJoinMessage(formatMessage(player, getRandomJoinMessage(player)));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -44,6 +47,20 @@ public final class EntradaSaidaListener implements Listener {
         event.setQuitMessage(formatMessage(player, "saiu do servidor!"));
     }
 
+    private String getRandomJoinMessage(Player player) {
+        List<String> messages = config.getPlugin().getConfig().getStringList("entrada.mensagens");
+        List<String> validMessages = messages.stream()
+                .filter(message -> message != null && !message.isBlank())
+                .toList();
+
+        if (validMessages.isEmpty()) {
+            return DEFAULT_JOIN_MESSAGE;
+        }
+
+        String message = validMessages.get(ThreadLocalRandom.current().nextInt(validMessages.size()));
+        return message.replace("{player}", player.getName());
+    }
+
     private String formatMessage(Player player, String action) {
         String color = cargo.getNicknameColor(player.getUniqueId());
         String prefix = cargo.getPrefix(player.getUniqueId());
@@ -51,6 +68,6 @@ public final class EntradaSaidaListener implements Listener {
         if (cleanPrefix == null || cleanPrefix.isBlank()) {
             cleanPrefix = "[" + cargo.getGroup(player.getUniqueId()) + "]";
         }
-        return color + cleanPrefix + " " + player.getName() + " " + action;
+        return color + cleanPrefix + " " + player.getName() + " " + MessageUtil.colorize(action);
     }
 }
