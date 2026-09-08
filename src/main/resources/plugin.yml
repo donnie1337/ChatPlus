@@ -7,7 +7,7 @@ author: donnie1337
 softdepend:
   - LoginPlus
   - CargoPlus
-  - SistemaUtil
+  - UtilidadesPlus
 
 commands:
   l:
