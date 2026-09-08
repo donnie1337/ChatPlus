@@ -18,7 +18,7 @@ public final class ChatCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("chat.admin")) {
+        if (!sender.hasPermission("chatplus.admin")) {
             sender.sendMessage(config.getMessage("sem-permissao"));
             return true;
         }
@@ -33,7 +33,7 @@ public final class ChatCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("chat.admin") || args.length != 1) return Collections.emptyList();
+        if (!sender.hasPermission("chatplus.admin") || args.length != 1) return Collections.emptyList();
         List<String> suggestions = new ArrayList<>();
         String typed = args[0].toLowerCase();
         for (String subcommand : SUBCOMMANDS) if (subcommand.startsWith(typed)) suggestions.add(subcommand);
