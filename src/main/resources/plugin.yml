@@ -43,3 +43,6 @@ permissions:
   chat.admin:
     description: Permite administrar o ChatPlus. Reservada ao Dono via CargoPlus.
     default: false
+  chatplus.cor:
+    description: Permite escolher a cor das mensagens do chat.
+    default: false
