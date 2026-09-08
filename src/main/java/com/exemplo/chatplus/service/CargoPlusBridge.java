@@ -3,7 +3,6 @@ package com.exemplo.chatplus.service;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.configuration.file.FileConfiguration;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -12,7 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-/** Centraliza as integrações opcionais do ChatPlus com CargoPlus e SistemaUtil. */
+/** Centraliza a integracao do ChatPlus com o CargoPlus. */
 public final class CargoPlusBridge {
     private static final String API_CLASS_NAME = "com.cargoplus.api.CargoPlusAPI";
 
@@ -26,14 +25,11 @@ public final class CargoPlusBridge {
     private Method setChatColorMethod;
     private Method getChatColorsMethod;
     private Method getDefaultChatColorMethod;
-    private Plugin utilPlugin;
-    private Method getCorConfigMethod;
 
     public synchronized boolean refresh() {
         Plugin plugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
         if (plugin == null || !plugin.isEnabled()) {
             clearCargoCache();
-            refreshUtilCache();
             return false;
         }
 
@@ -44,7 +40,6 @@ public final class CargoPlusBridge {
                 clearCargoCache();
                 cargoPlugin = plugin;
                 apiClass = clazz;
-                refreshUtilCache();
                 return false;
             }
 
@@ -63,12 +58,10 @@ public final class CargoPlusBridge {
                 getChatColorsMethod = providerClass.getMethod("getChatColors");
                 getDefaultChatColorMethod = providerClass.getMethod("getDefaultChatColor");
             }
-            refreshUtilCache();
             return provider != null;
         } catch (ReflectiveOperationException | LinkageError ex) {
             clearCargoCache();
             cargoPlugin = plugin;
-            refreshUtilCache();
             return false;
         }
     }
@@ -116,17 +109,6 @@ public final class CargoPlusBridge {
         return value instanceof String ? ((String) value).toLowerCase(Locale.ROOT) : "branco";
     }
 
-    public synchronized FileConfiguration getCorConfig() {
-        if (!refreshUtilCache() || utilPlugin == null || getCorConfigMethod == null) return null;
-        try {
-            Object value = getCorConfigMethod.invoke(utilPlugin);
-            return value instanceof FileConfiguration config ? config : null;
-        } catch (ReflectiveOperationException | LinkageError ex) {
-            getCorConfigMethod = null;
-            return null;
-        }
-    }
-
     private synchronized Object invoke(String methodName, Object... args) {
         if (api == null || apiClass == null || cargoPlugin == null || !cargoPlugin.isEnabled()) {
             if (!refresh()) return null;
@@ -149,25 +131,6 @@ public final class CargoPlusBridge {
         } catch (ReflectiveOperationException | LinkageError ex) {
             api = null;
             return null;
-        }
-    }
-
-    private boolean refreshUtilCache() {
-        Plugin util = Bukkit.getPluginManager().getPlugin("SistemaUtil");
-        if (util == null || !util.isEnabled()) {
-            utilPlugin = null;
-            getCorConfigMethod = null;
-            return false;
-        }
-        if (utilPlugin == util && getCorConfigMethod != null) return true;
-        try {
-            utilPlugin = util;
-            getCorConfigMethod = util.getClass().getMethod("getCorConfig");
-            return true;
-        } catch (ReflectiveOperationException | LinkageError ex) {
-            utilPlugin = util;
-            getCorConfigMethod = null;
-            return false;
         }
     }
 
