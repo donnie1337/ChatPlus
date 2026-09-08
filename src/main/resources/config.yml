@@ -2,14 +2,16 @@
 #  ChatPlus - config.yml
 # =========================================================
 #
-# Placeholders disponiveis nos formatos:
+# Placeholders disponíveis nos formatos:
 #   {prefix}  -> prefixo/cargo fornecido pelo CargoPlus
 #   {player}  -> nome do remetente
+#   {suffix}  -> sufixos/ícones conquistados pelo jogador
 #   {message} -> mensagem enviada
 #   {world}   -> mundo do remetente (local)
 #
-# As mensagens de entrada e saída são gerenciadas pelo UtilidadesPlus,
-# incluindo a lista de mensagens variadas e as preferências do /configurar.
+# Os ícones são fornecidos pelo SistemaUtil. O ChatPlus não depende de um
+# plugin de fontes externo: se SistemaUtil estiver ativo, usa a mesma identidade
+# visual do MOTD/TAB.
 # =========================================================
 
 chat:
@@ -19,12 +21,42 @@ chat:
   local:
     ativado: true
     alcance: 50
-    formato: "&7[L] {prefix}&f{player}&7: &f{message}"
+    formato: "&7[L] {prefix}&f{player}{suffix}&7: &f{message}"
 
   global:
     ativado: true
-    formato: "&6[G] {prefix}&f{player}&7: &f{message}"
+    formato: "&6[G] {prefix}&f{player}{suffix}&7: &f{message}"
 
   staff:
     ativado: true
-    formato: "&c[S] {prefix}&f{player}&7: &f{message}"
+    formato: "&c[S] {prefix}&f{player}{suffix}&7: &f{message}"
+
+# =========================================================
+#  SUFIXOS / ÍCONES
+# =========================================================
+#
+# Cada regra é ativada por uma permissão. Isso mantém o ChatPlus desacoplado
+# do mcMMO/economia: o sistema de ranking pode simplesmente conceder/remover
+# a permissão do TOP 1.
+#
+# Exemplo futuro:
+#   sistemachat.sufixo.mcmmmo.mineracao.top1
+#   sistemachat.sufixo.money.top1
+#
+# Várias regras podem aparecer juntas; prioridade maior vem primeiro.
+# =========================================================
+
+sufixos:
+  ativado: true
+  lista:
+    mcmmo-mineracao-top1:
+      prioridade: 100
+      permissao: "sistemachat.sufixo.mcmmmo.mineracao.top1"
+      icone: "picareta"
+      texto: ""
+
+    money-top1:
+      prioridade: 90
+      permissao: "sistemachat.sufixo.money.top1"
+      icone: "cifrao"
+      texto: ""
