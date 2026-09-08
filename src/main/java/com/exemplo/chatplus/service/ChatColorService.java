@@ -4,11 +4,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public final class ChatColorService {
+    private static final List<Integer> GUI_SLOTS = List.of(
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24
+    );
+
     private final CargoPlusBridge cargo;
 
     public ChatColorService() {
@@ -16,17 +23,15 @@ public final class ChatColorService {
     }
 
     public Map<String, String> getColors() {
-        var config = cargo.getCorConfig();
-        if (config == null) return Map.of();
+        Map<String, String> configured = cargo.getChatColors();
+        if (configured.isEmpty()) return Map.of();
 
         Map<String, String> result = new LinkedHashMap<>();
-        for (String name : config.getConfigurationSection("colors") == null
-                ? java.util.List.<String>of()
-                : config.getConfigurationSection("colors").getKeys(false)) {
-            if (name.equalsIgnoreCase("preto")) continue;
-            String raw = config.getString("colors." + name);
-            ChatColor color = parse(raw);
-            if (color != null) result.put(name.toLowerCase(Locale.ROOT), color.toString());
+        for (Map.Entry<String, String> entry : configured.entrySet()) {
+            String name = entry.getKey().trim().toLowerCase(Locale.ROOT);
+            if (name.equals("preto")) continue;
+            ChatColor color = parse(entry.getValue());
+            if (color != null) result.put(name, color.toString());
         }
         return result;
     }
@@ -59,33 +64,23 @@ public final class ChatColorService {
     }
 
     public String getTitle() {
-        var config = cargo.getCorConfig();
-        String raw = config == null ? "&8Escolha a cor da sua mensagem" :
-                config.getString("gui.titulo", "&8Escolha a cor da sua mensagem");
-        return ChatColor.translateAlternateColorCodes('&', raw == null ? "" : raw);
+        return ChatColor.translateAlternateColorCodes('&', "&8Selecione a cor da sua mensagem");
     }
 
     public int getInventorySize() {
-        var config = cargo.getCorConfig();
-        int size = config == null ? 36 : config.getInt("gui.tamanho", 36);
-        if (size < 9 || size > 54 || size % 9 != 0) return 36;
-        return size;
+        return 36;
     }
 
-    public java.util.List<Integer> getSlots() {
-        var config = cargo.getCorConfig();
-        if (config == null) return java.util.List.of();
-        return config.getIntegerList("gui.slots");
+    public List<Integer> getSlots() {
+        return new ArrayList<>(GUI_SLOTS);
     }
 
     public boolean closeAfterSelection() {
-        var config = cargo.getCorConfig();
-        return config == null || config.getBoolean("gui.close-after-selection", true);
+        return true;
     }
 
     private String defaultAllowedColor() {
-        var config = cargo.getCorConfig();
-        String fallback = config == null ? "branco" : config.getString("default-color", "branco");
+        String fallback = cargo.getDefaultChatColor();
         if (fallback != null) {
             String normalized = fallback.trim().toLowerCase(Locale.ROOT);
             if (getColors().containsKey(normalized)) return normalized;
