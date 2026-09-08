@@ -25,6 +25,7 @@ commands:
   cor:
     description: Abre o menu para escolher a cor do texto do chat.
     usage: /cor
+    permission: chatplus.cor
   chat:
     description: Gerencia o ChatPlus.
     usage: /chat reload
@@ -33,10 +34,10 @@ commands:
 permissions:
   chatplus.local:
     description: Permite enviar mensagens no chat local.
-    default: false
+    default: true
   chatplus.global:
     description: Permite enviar mensagens no chat global.
-    default: false
+    default: true
   chatplus.staff:
     description: Permite enviar e receber mensagens no chat da staff.
     default: false
