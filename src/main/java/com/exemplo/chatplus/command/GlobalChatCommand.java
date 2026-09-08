@@ -19,7 +19,7 @@ public final class GlobalChatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("chat.global")) {
+        if (!sender.hasPermission("chatplus.global")) {
             sender.sendMessage(config.getMessage("sem-permissao"));
             return true;
         }
