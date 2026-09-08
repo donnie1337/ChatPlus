@@ -2,12 +2,12 @@ name: ChatPlus
 version: '${project.version}'
 main: com.exemplo.chatplus.ChatPlus
 api-version: '26.2'
-description: Sistema de chat local, global, staff e cores do texto.
+description: Sistema de chat local, global, staff, cores, ícones e sufixos.
 author: donnie1337
 softdepend:
   - LoginPlus
   - CargoPlus
-  - UtilidadesPlus
+  - SistemaUtil
 
 commands:
   l:
