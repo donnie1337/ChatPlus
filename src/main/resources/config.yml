@@ -36,4 +36,4 @@ entrada:
   ativado: true
 
 saida:
-  ativado: true
+  ativado: false
