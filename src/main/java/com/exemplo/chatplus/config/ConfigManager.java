@@ -31,6 +31,9 @@ public final class ConfigManager {
     private static final String PATH_STAFF_ENABLED = "chat.staff.ativado";
     private static final String PATH_STAFF_FORMAT = "chat.staff.formato";
 
+    private static final String PATH_JOIN_ENABLED = "entrada.ativado";
+    private static final String PATH_QUIT_ENABLED = "saida.ativado";
+
     private static final int DEFAULT_RANGE = 50;
     private static final int DEFAULT_MESSAGE_LIMIT = 256;
     private static final int DEFAULT_CHAT_DELAY_SECONDS = 2;
@@ -126,6 +129,14 @@ public final class ConfigManager {
 
     public String getStaffChatFormat() {
         return getConfiguredString(PATH_STAFF_FORMAT, DEFAULT_STAFF_FORMAT);
+    }
+
+    public boolean isJoinMessageEnabled() {
+        return plugin.getConfig().getBoolean(PATH_JOIN_ENABLED, true);
+    }
+
+    public boolean isQuitMessageEnabled() {
+        return plugin.getConfig().getBoolean(PATH_QUIT_ENABLED, true);
     }
 
     public String getMessage(String key) {
