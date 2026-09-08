@@ -26,7 +26,7 @@ public final class ChatColorCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.RED + "Este comando só pode ser usado por jogadores.");
             return true;
         }
-        if (!player.hasPermission("sistemautil.cor")) {
+        if (!player.hasPermission("chatplus.cor")) {
             player.sendMessage(ChatColor.RED + "Você não tem permissão para usar este comando.");
             return true;
         }
