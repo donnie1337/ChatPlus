@@ -22,6 +22,7 @@ import java.util.Map;
 
 public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
+    private static final String STAFF_PERMISSION = "chatplus.staff";
     private final ConfigManager config;
     private final ChatDelayService delayService;
     private final CargoPlusBridge cargo;
@@ -106,7 +107,7 @@ public final class ChatService {
         }
         BaseComponent[] formatted = formatMessage(config.getStaffChatFormat(), sender, message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.hasPermission("chat.staff") && isAuthenticated(online)) online.spigot().sendMessage(formatted);
+            if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) online.spigot().sendMessage(formatted);
         }
         notifyConsole(sender, TextComponent.toLegacyText(formatted));
     }
