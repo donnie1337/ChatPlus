@@ -14,34 +14,26 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-/**
- * Centralises every access to config.yml and messages.yml.
- */
+/** Centralises every access to config.yml and messages.yml. */
 public final class ConfigManager {
-
     private static final String PATH_LOCAL_ENABLED = "chat.local.ativado";
     private static final String PATH_LOCAL_RANGE = "chat.local.alcance";
     private static final String PATH_LOCAL_FORMAT = "chat.local.formato";
     private static final String PATH_MESSAGE_LIMIT = "chat.limite-mensagem";
     private static final String PATH_CHAT_DELAY = "chat.delay-segundos";
-
     private static final String PATH_GLOBAL_ENABLED = "chat.global.ativado";
     private static final String PATH_GLOBAL_FORMAT = "chat.global.formato";
-
     private static final String PATH_STAFF_ENABLED = "chat.staff.ativado";
     private static final String PATH_STAFF_FORMAT = "chat.staff.formato";
-
     private static final String PATH_JOIN_ENABLED = "entrada.ativado";
     private static final String PATH_QUIT_ENABLED = "saida.ativado";
-
     private static final int DEFAULT_RANGE = 50;
     private static final int DEFAULT_MESSAGE_LIMIT = 256;
     private static final int DEFAULT_CHAT_DELAY_SECONDS = 2;
     private static final int MAX_CHAT_DELAY_SECONDS = 60;
-    private static final String DEFAULT_LOCAL_FORMAT = "&7[L] &f{player}&7: &f{message}";
-    private static final String DEFAULT_GLOBAL_FORMAT = "&6[G] &f{player}&7: &f{message}";
-    private static final String DEFAULT_STAFF_FORMAT = "&c[S] &f{player}&7: &f{message}";
-
+    private static final String DEFAULT_LOCAL_FORMAT = "&7[L] {prefix}&f{player}{suffix}&7: &f{message}";
+    private static final String DEFAULT_GLOBAL_FORMAT = "&6[G] {prefix}&f{player}{suffix}&7: &f{message}";
+    private static final String DEFAULT_STAFF_FORMAT = "&c[S] {prefix}&f{player}{suffix}&7: &f{message}";
     private static final Map<String, String> DEFAULT_MESSAGES = buildDefaultMessages();
 
     private final JavaPlugin plugin;
@@ -52,107 +44,43 @@ public final class ConfigManager {
         this.plugin = plugin;
         this.messagesFile = new File(plugin.getDataFolder(), "messages.yml");
     }
-
-    public JavaPlugin getPlugin() {
-        return plugin;
-    }
-
-    public void load() {
-        plugin.saveDefaultConfig();
-        plugin.reloadConfig();
-        loadMessages();
-    }
-
+    public JavaPlugin getPlugin() { return plugin; }
+    public void load() { plugin.saveDefaultConfig(); plugin.reloadConfig(); loadMessages(); }
     private void loadMessages() {
-        if (!messagesFile.exists()) {
-            plugin.saveResource("messages.yml", false);
-        }
-
+        if (!messagesFile.exists()) plugin.saveResource("messages.yml", false);
         FileConfiguration loaded = YamlConfiguration.loadConfiguration(messagesFile);
-
         try (InputStream defaultStream = plugin.getResource("messages.yml")) {
             if (defaultStream != null) {
-                YamlConfiguration defaults = YamlConfiguration.loadConfiguration(
-                        new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
+                YamlConfiguration defaults = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
                 loaded.setDefaults(defaults);
             }
         } catch (Exception exception) {
-            plugin.getLogger().log(Level.WARNING,
-                    "Não foi possível carregar os valores padrão de messages.yml, usando apenas o arquivo em disco.",
-                    exception);
+            plugin.getLogger().log(Level.WARNING, "Não foi possível carregar os valores padrão de messages.yml, usando apenas o arquivo em disco.", exception);
         }
-
         this.messages = loaded;
     }
-
-    public boolean isLocalChatEnabled() {
-        return plugin.getConfig().getBoolean(PATH_LOCAL_ENABLED, true);
-    }
-
-    public int getLocalChatRange() {
-        int range = plugin.getConfig().getInt(PATH_LOCAL_RANGE, DEFAULT_RANGE);
-        return range > 0 ? range : DEFAULT_RANGE;
-    }
-
-    public int getMaxMessageLength() {
-        int limit = plugin.getConfig().getInt(PATH_MESSAGE_LIMIT, DEFAULT_MESSAGE_LIMIT);
-        return limit > 0 ? Math.min(limit, 1024) : DEFAULT_MESSAGE_LIMIT;
-    }
-
-    public boolean isMessageLengthValid(String message) {
-        return message != null && message.codePointCount(0, message.length()) <= getMaxMessageLength();
-    }
-
-    public int getChatDelaySeconds() {
-        int delay = plugin.getConfig().getInt(PATH_CHAT_DELAY, DEFAULT_CHAT_DELAY_SECONDS);
-        if (delay < 0) {
-            return 0;
-        }
-        return Math.min(delay, MAX_CHAT_DELAY_SECONDS);
-    }
-
-    public String getLocalChatFormat() {
-        return getConfiguredString(PATH_LOCAL_FORMAT, DEFAULT_LOCAL_FORMAT);
-    }
-
-    public boolean isGlobalChatEnabled() {
-        return plugin.getConfig().getBoolean(PATH_GLOBAL_ENABLED, true);
-    }
-
-    public String getGlobalChatFormat() {
-        return getConfiguredString(PATH_GLOBAL_FORMAT, DEFAULT_GLOBAL_FORMAT);
-    }
-
-    public boolean isStaffChatEnabled() {
-        return plugin.getConfig().getBoolean(PATH_STAFF_ENABLED, true);
-    }
-
-    public String getStaffChatFormat() {
-        return getConfiguredString(PATH_STAFF_FORMAT, DEFAULT_STAFF_FORMAT);
-    }
-
-    public boolean isJoinMessageEnabled() {
-        return plugin.getConfig().getBoolean(PATH_JOIN_ENABLED, true);
-    }
-
-    public boolean isQuitMessageEnabled() {
-        return plugin.getConfig().getBoolean(PATH_QUIT_ENABLED, true);
-    }
-
+    public boolean isLocalChatEnabled() { return plugin.getConfig().getBoolean(PATH_LOCAL_ENABLED, true); }
+    public int getLocalChatRange() { int range = plugin.getConfig().getInt(PATH_LOCAL_RANGE, DEFAULT_RANGE); return range > 0 ? range : DEFAULT_RANGE; }
+    public int getMaxMessageLength() { int limit = plugin.getConfig().getInt(PATH_MESSAGE_LIMIT, DEFAULT_MESSAGE_LIMIT); return limit > 0 ? Math.min(limit, 1024) : DEFAULT_MESSAGE_LIMIT; }
+    public boolean isMessageLengthValid(String message) { return message != null && message.codePointCount(0, message.length()) <= getMaxMessageLength(); }
+    public int getChatDelaySeconds() { int delay = plugin.getConfig().getInt(PATH_CHAT_DELAY, DEFAULT_CHAT_DELAY_SECONDS); return delay < 0 ? 0 : Math.min(delay, MAX_CHAT_DELAY_SECONDS); }
+    public String getLocalChatFormat() { return getConfiguredString(PATH_LOCAL_FORMAT, DEFAULT_LOCAL_FORMAT); }
+    public boolean isGlobalChatEnabled() { return plugin.getConfig().getBoolean(PATH_GLOBAL_ENABLED, true); }
+    public String getGlobalChatFormat() { return getConfiguredString(PATH_GLOBAL_FORMAT, DEFAULT_GLOBAL_FORMAT); }
+    public boolean isStaffChatEnabled() { return plugin.getConfig().getBoolean(PATH_STAFF_ENABLED, true); }
+    public String getStaffChatFormat() { return getConfiguredString(PATH_STAFF_FORMAT, DEFAULT_STAFF_FORMAT); }
+    public boolean isJoinMessageEnabled() { return plugin.getConfig().getBoolean(PATH_JOIN_ENABLED, true); }
+    public boolean isQuitMessageEnabled() { return plugin.getConfig().getBoolean(PATH_QUIT_ENABLED, true); }
+    public boolean isSuffixEnabled() { return plugin.getConfig().getBoolean("sufixos.ativado", true); }
     public String getMessage(String key) {
         String fallback = DEFAULT_MESSAGES.getOrDefault(key, "");
         String raw = messages != null ? messages.getString(key, fallback) : fallback;
-        if (raw == null) {
-            raw = fallback;
-        }
-        return MessageUtil.colorize(raw);
+        return MessageUtil.colorize(raw == null ? fallback : raw);
     }
-
     private String getConfiguredString(String path, String fallback) {
         String value = plugin.getConfig().getString(path);
         return value == null || value.isBlank() ? fallback : value;
     }
-
     private static Map<String, String> buildDefaultMessages() {
         Map<String, String> defaults = new LinkedHashMap<>();
         defaults.put("sem-permissao", "&cVocê não possui permissão para utilizar este chat.");
