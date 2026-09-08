@@ -5,7 +5,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
 
-/** Integra o ChatPlus ao sistema visual central do SistemaUtil sem dependência de compilação. */
+/** Integra o ChatPlus ao sistema visual central do UtilidadesPlus sem dependência de compilação. */
 public final class VisualIdentityBridge {
     private Plugin utilPlugin;
     private Method getVisualText;
@@ -13,7 +13,7 @@ public final class VisualIdentityBridge {
     private Method format;
 
     public synchronized void refresh() {
-        Plugin plugin = Bukkit.getPluginManager().getPlugin("SistemaUtil");
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("UtilidadesPlus");
         if (plugin == null || !plugin.isEnabled()) {
             utilPlugin = null;
             getVisualText = null;
