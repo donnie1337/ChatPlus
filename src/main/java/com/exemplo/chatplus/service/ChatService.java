@@ -2,6 +2,10 @@ package com.exemplo.chatplus.service;
 
 import com.exemplo.chatplus.config.ConfigManager;
 import com.exemplo.chatplus.util.MessageUtil;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -11,10 +15,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class ChatService {
+    private static final String PREFIX_PLACEHOLDER = "{prefix}";
     private final ConfigManager config;
     private final ChatDelayService delayService;
     private final CargoPlusBridge cargo;
@@ -44,17 +51,17 @@ public final class ChatService {
         long rangeSquared = (long) range * range;
         Location senderLocation = sender.getLocation();
         World senderWorld = senderLocation.getWorld();
-        String formatted = formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "");
+        BaseComponent[] formatted = formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "");
         boolean deliveredToAnotherPlayer = false;
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.equals(sender)) {
-                online.sendMessage(formatted);
+                online.spigot().sendMessage(formatted);
                 continue;
             }
             World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
             if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
-                online.sendMessage(formatted);
+                online.spigot().sendMessage(formatted);
                 deliveredToAnotherPlayer = true;
             }
         }
@@ -77,11 +84,11 @@ public final class ChatService {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-        String formatted = formatMessage(config.getGlobalChatFormat(), sender, message, "");
+        BaseComponent[] formatted = formatMessage(config.getGlobalChatFormat(), sender, message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.isOnline() && isAuthenticated(online)) online.sendMessage(formatted);
+            if (online.isOnline() && isAuthenticated(online)) online.spigot().sendMessage(formatted);
         }
-        notifyConsole(sender, formatted);
+        notifyConsole(sender, TextComponent.toLegacyText(formatted));
     }
 
     public void sendStaffMessage(CommandSender sender, String message) {
@@ -97,11 +104,11 @@ public final class ChatService {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-        String formatted = formatMessage(config.getStaffChatFormat(), sender, message, "");
+        BaseComponent[] formatted = formatMessage(config.getStaffChatFormat(), sender, message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.hasPermission("chat.staff") && isAuthenticated(online)) online.sendMessage(formatted);
+            if (online.hasPermission("chat.staff") && isAuthenticated(online)) online.spigot().sendMessage(formatted);
         }
-        notifyConsole(sender, formatted);
+        notifyConsole(sender, TextComponent.toLegacyText(formatted));
     }
 
     private void notifyConsole(CommandSender sender, String formatted) {
@@ -142,10 +149,11 @@ public final class ChatService {
         }
     }
 
-    private String formatMessage(String format, CommandSender sender, String message, String world) {
+    private BaseComponent[] formatMessage(String format, CommandSender sender, String message, String world) {
         String playerName;
         String chatColor = "";
         String prefix = "";
+        String group = "desconhecido";
         if (sender instanceof ConsoleCommandSender) {
             playerName = "Console";
         } else {
@@ -153,13 +161,44 @@ public final class ChatService {
             playerName = cargo.getNicknameColor(player.getUniqueId()) + sender.getName();
             chatColor = cargo.getChatColor(player.getUniqueId());
             prefix = cargo.getPrefix(player.getUniqueId());
+            group = cargo.getGroup(player.getUniqueId());
         }
 
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("{player}", playerName);
         placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message));
         placeholders.put("{world}", world);
-        placeholders.put("{prefix}", prefix);
-        return MessageUtil.apply(format, placeholders);
+
+        String template = MessageUtil.colorize(format == null ? "" : format);
+        if (sender instanceof Player && template.contains(PREFIX_PLACEHOLDER)) {
+            String before = template.substring(0, template.indexOf(PREFIX_PLACEHOLDER));
+            String after = template.substring(template.indexOf(PREFIX_PLACEHOLDER) + PREFIX_PLACEHOLDER.length());
+            placeholders.put(PREFIX_PLACEHOLDER, "");
+            before = MessageUtil.apply(before, placeholders);
+            after = MessageUtil.apply(after, placeholders);
+
+            List<BaseComponent> components = new ArrayList<>();
+            addLegacy(components, before);
+
+            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(prefix);
+            HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    new ComponentBuilder("§fCargo: §e" + group).create());
+            for (BaseComponent component : prefixComponents) {
+                component.setHoverEvent(hover);
+                components.add(component);
+            }
+
+            addLegacy(components, after);
+            return components.toArray(BaseComponent[]::new);
+        }
+
+        placeholders.put(PREFIX_PLACEHOLDER, prefix);
+        return TextComponent.fromLegacyText(MessageUtil.apply(template, placeholders));
+    }
+
+    private void addLegacy(List<BaseComponent> components, String text) {
+        if (text == null || text.isEmpty()) return;
+        BaseComponent[] parsed = TextComponent.fromLegacyText(text);
+        for (BaseComponent component : parsed) components.add(component);
     }
 }
