@@ -37,7 +37,7 @@ permissions:
     default: true
   chatplus.global:
     description: Permite enviar mensagens no chat global.
-    default: true
+    default: false
   chatplus.staff:
     description: Permite enviar e receber mensagens no chat da staff.
     default: false
