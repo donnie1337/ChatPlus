@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,6 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 
 public final class ChatColorGui implements Listener {
+    private static final String PERMISSION = "chatplus.cor";
+
     private final JavaPlugin plugin;
     private final ChatColorService colors;
 
@@ -28,8 +31,10 @@ public final class ChatColorGui implements Listener {
     }
 
     public void open(Player player) {
+        if (!player.hasPermission(PERMISSION)) return;
+
         String title = colors.getTitle();
-        Inventory inventory = plugin.getServer().createInventory(null, colors.getInventorySize(), title);
+        Inventory inventory = plugin.getServer().createInventory(new ChatColorHolder(), colors.getInventorySize(), title);
         List<Integer> slots = colors.getSlots();
         String selected = colors.getCurrentColorName(player);
         int index = 0;
@@ -62,11 +67,16 @@ public final class ChatColorGui implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        String title = colors.getTitle();
-        if (!title.equals(event.getView().getTitle())) return;
+        Inventory top = event.getView().getTopInventory();
+        if (!(top.getHolder() instanceof ChatColorHolder)) return;
         event.setCancelled(true);
+
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        if (event.getClickedInventory() != event.getView().getTopInventory()) return;
+        if (!player.hasPermission(PERMISSION)) {
+            player.closeInventory();
+            return;
+        }
+        if (event.getClickedInventory() != top) return;
         if (event.getCursor() != null && !event.getCursor().getType().isAir()) return;
 
         ItemStack clicked = event.getCurrentItem();
@@ -85,7 +95,7 @@ public final class ChatColorGui implements Listener {
 
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
-        if (colors.getTitle().equals(event.getView().getTitle())) event.setCancelled(true);
+        if (event.getView().getTopInventory().getHolder() instanceof ChatColorHolder) event.setCancelled(true);
     }
 
     private static Material woolFor(ChatColor color) {
@@ -104,5 +114,12 @@ public final class ChatColorGui implements Listener {
             case DARK_PURPLE -> Material.PURPLE_WOOL;
             default -> Material.WHITE_WOOL;
         };
+    }
+
+    private static final class ChatColorHolder implements InventoryHolder {
+        @Override
+        public Inventory getInventory() {
+            return null;
+        }
     }
 }
