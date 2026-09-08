@@ -13,34 +13,34 @@ commands:
   l:
     description: Envia uma mensagem pelo chat local.
     usage: /l <mensagem>
-    permission: chat.local
+    permission: chatplus.local
   g:
     description: Envia uma mensagem pelo chat global.
     usage: /g <mensagem>
-    permission: chat.global
+    permission: chatplus.global
   s:
     description: Envia uma mensagem pelo chat da staff.
     usage: /s <mensagem>
-    permission: chat.staff
+    permission: chatplus.staff
   cor:
     description: Abre o menu para escolher a cor do texto do chat.
     usage: /cor
   chat:
     description: Gerencia o ChatPlus.
     usage: /chat reload
-    permission: chat.admin
+    permission: chatplus.admin
 
 permissions:
-  chat.local:
+  chatplus.local:
     description: Permite enviar mensagens no chat local.
     default: false
-  chat.global:
+  chatplus.global:
     description: Permite enviar mensagens no chat global.
     default: false
-  chat.staff:
+  chatplus.staff:
     description: Permite enviar e receber mensagens no chat da staff.
     default: false
-  chat.admin:
+  chatplus.admin:
     description: Permite administrar o ChatPlus. Reservada ao Dono via CargoPlus.
     default: false
   chatplus.cor:
