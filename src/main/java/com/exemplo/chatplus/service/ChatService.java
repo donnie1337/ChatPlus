@@ -22,9 +22,12 @@ import java.util.Map;
 
 public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
+    private static final String SUFFIX_PLACEHOLDER = "{suffix}";
     private final ConfigManager config;
     private final ChatDelayService delayService;
     private final CargoPlusBridge cargo;
+    private final VisualIdentityBridge visual;
+    private final SuffixService suffixService;
     private volatile Plugin authPlugin;
     private volatile Method authCheckMethod;
 
@@ -32,6 +35,8 @@ public final class ChatService {
         this.config = config;
         this.delayService = delayService;
         this.cargo = new CargoPlusBridge();
+        this.visual = new VisualIdentityBridge();
+        this.suffixService = new SuffixService(config, visual);
     }
 
     public void sendLocalMessage(Player sender, String message) {
@@ -39,14 +44,8 @@ public final class ChatService {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendLocalMessage(sender, message));
             return;
         }
-        if (!isAuthenticated(sender)) {
-            sender.sendMessage(config.getMessage("nao-autenticado"));
-            return;
-        }
-        if (!delayService.tryAcquire(sender)) {
-            sender.sendMessage(config.getMessage("chat-em-delay"));
-            return;
-        }
+        if (!isAuthenticated(sender)) { sender.sendMessage(config.getMessage("nao-autenticado")); return; }
+        if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
         int range = config.getLocalChatRange();
         long rangeSquared = (long) range * range;
         Location senderLocation = sender.getLocation();
@@ -54,16 +53,10 @@ public final class ChatService {
         BaseComponent[] formatted = formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "");
         boolean deliveredToAnotherPlayer = false;
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.equals(sender)) {
-                online.spigot().sendMessage(formatted);
-                continue;
-            }
+            if (online.equals(sender)) { online.spigot().sendMessage(formatted); continue; }
             World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
-            if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
-                online.spigot().sendMessage(formatted);
-                deliveredToAnotherPlayer = true;
-            }
+            if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) { online.spigot().sendMessage(formatted); deliveredToAnotherPlayer = true; }
         }
         if (!deliveredToAnotherPlayer) {
             String alone = config.getMessage("ninguem-por-perto");
@@ -72,42 +65,20 @@ public final class ChatService {
     }
 
     public void sendGlobalMessage(CommandSender sender, String message) {
-        if (!Bukkit.isPrimaryThread()) {
-            Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendGlobalMessage(sender, message));
-            return;
-        }
-        if (sender instanceof Player player && !isAuthenticated(player)) {
-            sender.sendMessage(config.getMessage("nao-autenticado"));
-            return;
-        }
-        if (!delayService.tryAcquire(sender)) {
-            sender.sendMessage(config.getMessage("chat-em-delay"));
-            return;
-        }
+        if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendGlobalMessage(sender, message)); return; }
+        if (sender instanceof Player player && !isAuthenticated(player)) { sender.sendMessage(config.getMessage("nao-autenticado")); return; }
+        if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
         BaseComponent[] formatted = formatMessage(config.getGlobalChatFormat(), sender, message, "");
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.isOnline() && isAuthenticated(online)) online.spigot().sendMessage(formatted);
-        }
+        for (Player online : Bukkit.getOnlinePlayers()) if (online.isOnline() && isAuthenticated(online)) online.spigot().sendMessage(formatted);
         notifyConsole(sender, TextComponent.toLegacyText(formatted));
     }
 
     public void sendStaffMessage(CommandSender sender, String message) {
-        if (!Bukkit.isPrimaryThread()) {
-            Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffMessage(sender, message));
-            return;
-        }
-        if (sender instanceof Player player && !isAuthenticated(player)) {
-            sender.sendMessage(config.getMessage("nao-autenticado"));
-            return;
-        }
-        if (!delayService.tryAcquire(sender)) {
-            sender.sendMessage(config.getMessage("chat-em-delay"));
-            return;
-        }
+        if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffMessage(sender, message)); return; }
+        if (sender instanceof Player player && !isAuthenticated(player)) { sender.sendMessage(config.getMessage("nao-autenticado")); return; }
+        if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
         BaseComponent[] formatted = formatMessage(config.getStaffChatFormat(), sender, message, "");
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.hasPermission("chat.staff") && isAuthenticated(online)) online.spigot().sendMessage(formatted);
-        }
+        for (Player online : Bukkit.getOnlinePlayers()) if (online.hasPermission("chat.staff") && isAuthenticated(online)) online.spigot().sendMessage(formatted);
         notifyConsole(sender, TextComponent.toLegacyText(formatted));
     }
 
@@ -118,41 +89,27 @@ public final class ChatService {
     private boolean isAuthenticated(Player player) {
         if (player == null || !player.isOnline()) return false;
         Plugin auth = Bukkit.getPluginManager().getPlugin("LoginPlus");
-        if (auth == null || !auth.isEnabled()) {
-            authPlugin = null;
-            authCheckMethod = null;
-            return false;
-        }
-
+        if (auth == null || !auth.isEnabled()) { authPlugin = null; authCheckMethod = null; return false; }
         Method method = authCheckMethod;
         if (authPlugin != auth || method == null) {
             synchronized (this) {
                 if (authPlugin != auth || authCheckMethod == null) {
-                    try {
-                        authPlugin = auth;
-                        authCheckMethod = auth.getClass().getMethod("isAuthenticated", Player.class);
-                    } catch (ReflectiveOperationException | LinkageError ex) {
-                        authPlugin = auth;
-                        authCheckMethod = null;
-                    }
+                    try { authPlugin = auth; authCheckMethod = auth.getClass().getMethod("isAuthenticated", Player.class); }
+                    catch (ReflectiveOperationException | LinkageError ex) { authPlugin = auth; authCheckMethod = null; }
                 }
                 method = authCheckMethod;
             }
         }
-
         if (method == null) return false;
-        try {
-            Object result = method.invoke(auth, player);
-            return result instanceof Boolean && (Boolean) result;
-        } catch (ReflectiveOperationException | LinkageError ex) {
-            return false;
-        }
+        try { Object result = method.invoke(auth, player); return result instanceof Boolean && (Boolean) result; }
+        catch (ReflectiveOperationException | LinkageError ex) { return false; }
     }
 
     private BaseComponent[] formatMessage(String format, CommandSender sender, String message, String world) {
         String playerName;
         String chatColor = "";
         String prefix = "";
+        String suffix = "";
         String group = "desconhecido";
         if (sender instanceof ConsoleCommandSender) {
             playerName = "Console";
@@ -161,6 +118,7 @@ public final class ChatService {
             playerName = cargo.getNicknameColor(player.getUniqueId()) + sender.getName();
             chatColor = cargo.getChatColor(player.getUniqueId());
             prefix = cargo.getPrefix(player.getUniqueId());
+            suffix = suffixService.resolve(player);
             group = cargo.getGroup(player.getUniqueId());
         }
 
@@ -168,32 +126,28 @@ public final class ChatService {
         placeholders.put("{player}", playerName);
         placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message));
         placeholders.put("{world}", world);
+        placeholders.put(SUFFIX_PLACEHOLDER, suffix);
 
         String template = MessageUtil.colorize(format == null ? "" : format);
         if (sender instanceof Player && template.contains(PREFIX_PLACEHOLDER)) {
             String before = template.substring(0, template.indexOf(PREFIX_PLACEHOLDER));
             String after = template.substring(template.indexOf(PREFIX_PLACEHOLDER) + PREFIX_PLACEHOLDER.length());
             placeholders.put(PREFIX_PLACEHOLDER, "");
-            before = MessageUtil.apply(before, placeholders);
-            after = MessageUtil.apply(after, placeholders);
+            before = visual.format(MessageUtil.apply(before, placeholders));
+            after = visual.format(MessageUtil.apply(after, placeholders));
 
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
-
-            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(prefix);
-            HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new ComponentBuilder("§fCargo: §e" + group).create());
-            for (BaseComponent component : prefixComponents) {
-                component.setHoverEvent(hover);
-                components.add(component);
-            }
-
+            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(visual.format(prefix));
+            HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fCargo: §e" + group).create());
+            for (BaseComponent component : prefixComponents) { component.setHoverEvent(hover); components.add(component); }
+            addLegacy(components, visual.format(suffix));
             addLegacy(components, after);
             return components.toArray(BaseComponent[]::new);
         }
 
         placeholders.put(PREFIX_PLACEHOLDER, prefix);
-        return TextComponent.fromLegacyText(MessageUtil.apply(template, placeholders));
+        return TextComponent.fromLegacyText(visual.format(MessageUtil.apply(template, placeholders)));
     }
 
     private void addLegacy(List<BaseComponent> components, String text) {
