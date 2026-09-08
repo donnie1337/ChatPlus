@@ -19,6 +19,7 @@ public final class CargoPlusBridge {
     private Class<?> apiClass;
     private Object api;
     private Plugin cargoPlugin;
+    private Method getGroupMethod;
     private Method getPrefixMethod;
     private Method getNicknameColorMethod;
     private Method getChatColorMethod;
@@ -54,6 +55,7 @@ public final class CargoPlusBridge {
             api = provider;
             if (provider != null) {
                 Class<?> providerClass = provider.getClass();
+                getGroupMethod = providerClass.getMethod("getGroup", UUID.class);
                 getPrefixMethod = providerClass.getMethod("getPrefix", UUID.class);
                 getNicknameColorMethod = providerClass.getMethod("getNicknameColor", UUID.class);
                 getChatColorMethod = providerClass.getMethod("getChatColor", UUID.class);
@@ -69,6 +71,11 @@ public final class CargoPlusBridge {
             refreshUtilCache();
             return false;
         }
+    }
+
+    public String getGroup(UUID uuid) {
+        Object value = invoke("getGroup", uuid);
+        return value instanceof String && !((String) value).isBlank() ? (String) value : "desconhecido";
     }
 
     public String getPrefix(UUID uuid) {
@@ -109,10 +116,6 @@ public final class CargoPlusBridge {
         return value instanceof String ? ((String) value).toLowerCase(Locale.ROOT) : "branco";
     }
 
-    /**
-     * Lê a configuração exclusiva do /cor no SistemaUtil.
-     * O ChatPlus não mantém uma segunda paleta/configuração quando o SistemaUtil está ativo.
-     */
     public synchronized FileConfiguration getCorConfig() {
         if (!refreshUtilCache() || utilPlugin == null || getCorConfigMethod == null) return null;
         try {
@@ -130,6 +133,7 @@ public final class CargoPlusBridge {
         }
 
         Method method = switch (methodName) {
+            case "getGroup" -> getGroupMethod;
             case "getPrefix" -> getPrefixMethod;
             case "getNicknameColor" -> getNicknameColorMethod;
             case "getChatColor" -> getChatColorMethod;
@@ -171,6 +175,7 @@ public final class CargoPlusBridge {
         apiClass = null;
         api = null;
         cargoPlugin = null;
+        getGroupMethod = null;
         getPrefixMethod = null;
         getNicknameColorMethod = null;
         getChatColorMethod = null;
