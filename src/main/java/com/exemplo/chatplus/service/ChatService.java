@@ -62,12 +62,21 @@ public final class ChatService {
                 online.spigot().sendMessage(formatted);
                 continue;
             }
-            if (senderVanished || isVanished(online)) continue;
+            boolean recipientVanished = isVanished(online);
+
+            // A vanished sender must remain invisible to normal players.
+            if (senderVanished && !recipientVanished) continue;
+
             World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
             if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
                 online.spigot().sendMessage(formatted);
-                deliveredToAnotherPlayer = true;
+
+                // Vanished recipients can read local chat without being considered
+                // visible recipients for a normal sender.
+                if (!(!senderVanished && recipientVanished)) {
+                    deliveredToAnotherPlayer = true;
+                }
             }
         }
         if (!deliveredToAnotherPlayer) {
