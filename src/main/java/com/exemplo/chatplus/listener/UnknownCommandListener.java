@@ -30,34 +30,49 @@ public final class UnknownCommandListener implements Listener {
         this.commandMap = resolveCommandMap();
     }
 
+    /**
+     * Bloqueia comandos nativos protegidos antes que CargoPlus/Paper possa produzir
+     * uma mensagem própria. Comandos cancelados por LoginPlus continuam preservados.
+     */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
+    public void onProtectedServerCommand(PlayerCommandPreprocessEvent event) {
+        if (event.isCancelled()) return;
+        Player player = event.getPlayer();
+        String message = event.getMessage();
+        if (message == null || message.isBlank() || !message.startsWith("/")) return;
+        if (isValidTpaTriggerSyntax(message)) return;
+
+        String commandLabel = message.substring(1).trim().split("\\s+", 2)[0];
+        if (commandLabel.isBlank()) return;
+        String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
+        if (!isProtectedServerCommand(normalizedLabel)) return;
+        if (player.hasPermission(SERVER_COMMAND_PERMISSION)) return;
+
+        hideCommand(player, event);
+    }
+
+    /**
+     * Trata comandos comuns sem permissão no fim da cadeia de eventos, inclusive
+     * quando outro plugin os cancela antes deste listener.
+     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
         String message = event.getMessage();
-        if (message == null || message.isBlank() || !message.startsWith("/")) {
-            return;
-        }
-
-        // O botão do TPA usa /trigger como transporte interno. O EssentialsPlus
-        // valida o token e cancela o evento antes que o comando vanilla execute.
-        // Apenas o formato exato do comando interno pode passar daqui.
-        if (isValidTpaTriggerSyntax(message)) {
-            return;
-        }
+        if (message == null || message.isBlank() || !message.startsWith("/")) return;
+        if (isValidTpaTriggerSyntax(message)) return;
 
         String commandLabel = message.substring(1).trim().split("\\s+", 2)[0];
-        if (commandLabel.isBlank()) {
-            return;
-        }
-
+        if (commandLabel.isBlank()) return;
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
         if (isProtectedServerCommand(normalizedLabel)) {
-            if (!player.hasPermission(SERVER_COMMAND_PERMISSION)) {
-                hideCommand(player, event);
-            }
+            // O handler LOWEST já tratou jogadores sem a permissão. Para DEV,
+            // o comando segue normalmente.
             return;
         }
+
+        if (event.isCancelled()) return;
 
         Command command = commandMap == null ? null : commandMap.getCommand(normalizedLabel);
         if (command == null || !hasPermission(player, command, commandLabel)) {
@@ -99,9 +114,7 @@ public final class UnknownCommandListener implements Listener {
         if (separator > 0 && separator < label.length() - 1) {
             String namespace = label.substring(0, separator);
             for (String protectedNamespace : PROTECTED_NAMESPACES) {
-                if (protectedNamespace.equals(namespace)) {
-                    return true;
-                }
+                if (protectedNamespace.equals(namespace)) return true;
             }
         }
 
