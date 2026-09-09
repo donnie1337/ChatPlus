@@ -13,13 +13,10 @@ import org.bukkit.event.player.PlayerCommandSendEvent;
 
 import java.lang.reflect.Method;
 import java.util.Locale;
-import java.util.Set;
 
-/** Oculta comandos e detalhes de comandos para jogadores que não fazem parte da staff. */
+/** Centraliza a ocultação de comandos sem permissão para jogadores. */
 public final class UnknownCommandListener implements Listener {
-    private static final Set<String> HIDDEN_INFORMATION_COMMANDS = Set.of(
-            "help", "?", "plugins", "pl", "bukkit:help", "bukkit:plugins"
-    );
+    private static final String FALLBACK_PERMISSION_PREFIX = "chatplus.command.";
 
     private final ConfigManager configManager;
     private final CommandMap commandMap;
@@ -32,38 +29,18 @@ public final class UnknownCommandListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
-        if (isStaff(player)) {
-            return;
-        }
-
         String message = event.getMessage();
-        if (message == null || message.isBlank() || !message.startsWith("/")) {
+        if (message == null || message.isBlank() || !message.startsWith("/") || commandMap == null) {
             return;
         }
 
         String commandLabel = message.substring(1).trim().split("\\s+", 2)[0];
-        if (commandLabel.isBlank() || commandMap == null) {
+        if (commandLabel.isBlank()) {
             return;
         }
 
-        String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
-        Command command = commandMap.getCommand(normalizedLabel);
-
-        // Comandos de descoberta nunca devem revelar que existem para jogadores comuns.
-        if (HIDDEN_INFORMATION_COMMANDS.contains(normalizedLabel)) {
-            hideCommand(player, event);
-            return;
-        }
-
-        // Se o jogador não pode executar o comando, ele recebe exatamente a mesma resposta
-        // de um comando inexistente, sem revelar permissão, uso, aliases ou detalhes internos.
-        if (command != null && !command.testPermissionSilent(player)) {
-            hideCommand(player, event);
-            return;
-        }
-
-        // Comandos inexistentes continuam sendo tratados pelo mesmo padrão.
-        if (command == null) {
+        Command command = commandMap.getCommand(commandLabel.toLowerCase(Locale.ROOT));
+        if (command == null || !hasPermission(player, command, commandLabel)) {
             hideCommand(player, event);
         }
     }
@@ -71,19 +48,29 @@ public final class UnknownCommandListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerCommandSend(PlayerCommandSendEvent event) {
         Player player = event.getPlayer();
-        if (isStaff(player) || commandMap == null) {
+        if (commandMap == null) {
             return;
         }
 
         event.getCommands().removeIf(label -> {
-            String normalizedLabel = label.toLowerCase(Locale.ROOT);
-            if (HIDDEN_INFORMATION_COMMANDS.contains(normalizedLabel)) {
-                return true;
-            }
-
-            Command command = commandMap.getCommand(normalizedLabel);
-            return command != null && !command.testPermissionSilent(player);
+            Command command = commandMap.getCommand(label.toLowerCase(Locale.ROOT));
+            return command == null || !hasPermission(player, command, label);
         });
+    }
+
+    private boolean hasPermission(Player player, Command command, String label) {
+        String permission = command.getPermission();
+        if (permission == null || permission.isBlank()) {
+            permission = fallbackPermission(label);
+        }
+        return player.hasPermission(permission);
+    }
+
+    private String fallbackPermission(String label) {
+        String normalized = label.toLowerCase(Locale.ROOT)
+                .replace(':', '.')
+                .replace('/', '.');
+        return FALLBACK_PERMISSION_PREFIX + normalized;
     }
 
     private void hideCommand(Player player, PlayerCommandPreprocessEvent event) {
@@ -91,12 +78,6 @@ public final class UnknownCommandListener implements Listener {
         String prefix = configManager.getMessage("prefixo-sistema");
         String message = configManager.getMessage("comando-desconhecido");
         player.sendMessage(prefix + message);
-    }
-
-    private boolean isStaff(Player player) {
-        return player.isOp()
-                || player.hasPermission("chatplus.staff")
-                || player.hasPermission("chatplus.admin");
     }
 
     private CommandMap resolveCommandMap() {
