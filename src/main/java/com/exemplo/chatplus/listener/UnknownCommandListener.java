@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerCommandSendEvent;
 
-import java.lang.reflect.Method;
 import java.util.Locale;
 
 /** Centraliza a ocultação de comandos sem permissão para jogadores. */
@@ -24,13 +23,9 @@ public final class UnknownCommandListener implements Listener {
 
     public UnknownCommandListener(ConfigManager configManager) {
         this.configManager = configManager;
-        this.commandMap = resolveCommandMap();
+        this.commandMap = Bukkit.getServer().getCommandMap();
     }
 
-    /**
-     * Bloqueia comandos nativos protegidos antes que CargoPlus/Paper possa produzir
-     * uma mensagem própria. Comandos cancelados por LoginPlus continuam preservados.
-     */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
     public void onProtectedServerCommand(PlayerCommandPreprocessEvent event) {
         if (event.isCancelled()) return;
@@ -47,10 +42,6 @@ public final class UnknownCommandListener implements Listener {
         hideCommand(player, event);
     }
 
-    /**
-     * Trata comandos comuns sem permissão no fim da cadeia de eventos, inclusive
-     * quando outro plugin os cancela antes deste listener.
-     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
@@ -61,15 +52,9 @@ public final class UnknownCommandListener implements Listener {
         if (commandLabel.isBlank()) return;
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
-        if (isProtectedServerCommand(normalizedLabel)) {
-            // O handler LOWEST já tratou jogadores sem a permissão. Para DEV,
-            // o comando segue normalmente.
-            return;
-        }
+        if (isProtectedServerCommand(normalizedLabel) || event.isCancelled()) return;
 
-        if (event.isCancelled()) return;
-
-        Command command = commandMap == null ? null : commandMap.getCommand(normalizedLabel);
+        Command command = commandMap.getCommand(normalizedLabel);
         if (command == null || !hasPermission(player, command, commandLabel)) {
             hideCommand(player, event);
         }
@@ -78,12 +63,6 @@ public final class UnknownCommandListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerCommandSend(PlayerCommandSendEvent event) {
         Player player = event.getPlayer();
-        if (commandMap == null) {
-            event.getCommands().removeIf(label -> isProtectedServerCommand(label.toLowerCase(Locale.ROOT))
-                    && !player.hasPermission(SERVER_COMMAND_PERMISSION));
-            return;
-        }
-
         event.getCommands().removeIf(label -> {
             String normalizedLabel = label.toLowerCase(Locale.ROOT);
             Command command = commandMap.getCommand(normalizedLabel);
@@ -98,9 +77,7 @@ public final class UnknownCommandListener implements Listener {
 
     private boolean hasPermission(Player player, Command command, String label) {
         String permission = command.getPermission();
-        if (permission == null || permission.isBlank()) {
-            permission = fallbackPermission(label);
-        }
+        if (permission == null || permission.isBlank()) permission = fallbackPermission(label);
         return player.hasPermission(permission);
     }
 
@@ -131,16 +108,5 @@ public final class UnknownCommandListener implements Listener {
         String prefix = configManager.getMessage("prefixo-sistema");
         String message = configManager.getMessage("comando-desconhecido");
         player.sendMessage(prefix + message);
-    }
-
-    private CommandMap resolveCommandMap() {
-        try {
-            Method method = Bukkit.getServer().getClass().getMethod("getCommandMap");
-            Object result = method.invoke(Bukkit.getServer());
-            return result instanceof CommandMap map ? map : null;
-        } catch (ReflectiveOperationException | LinkageError exception) {
-            Bukkit.getLogger().warning("Não foi possível acessar o CommandMap para tratar comandos ocultos.");
-            return null;
-        }
     }
 }
