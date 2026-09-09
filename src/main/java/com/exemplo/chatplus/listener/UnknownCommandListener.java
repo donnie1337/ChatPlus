@@ -13,10 +13,13 @@ import org.bukkit.event.player.PlayerCommandSendEvent;
 
 import java.lang.reflect.Method;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /** Centraliza a ocultação de comandos sem permissão para jogadores. */
 public final class UnknownCommandListener implements Listener {
     private static final String SERVER_COMMAND_PERMISSION = "chatplus.comandos.servidor";
+    private static final String TPA_BUTTON_OBJECTIVE = "ep_tpa";
+    private static final Pattern TPA_TRIGGER_PATTERN = Pattern.compile("^/trigger\\s+" + TPA_BUTTON_OBJECTIVE + "\\s+set\\s+\\d+$", Pattern.CASE_INSENSITIVE);
     private static final String[] PROTECTED_NAMESPACES = {"bukkit", "spigot", "minecraft", "paper"};
 
     private final ConfigManager configManager;
@@ -35,6 +38,13 @@ public final class UnknownCommandListener implements Listener {
             return;
         }
 
+        // O botão do TPA usa /trigger como transporte interno. O EssentialsPlus
+        // valida o token e cancela o evento antes que o comando vanilla execute.
+        // Apenas o formato exato do comando interno pode passar daqui.
+        if (isValidTpaTriggerSyntax(message)) {
+            return;
+        }
+
         String commandLabel = message.substring(1).trim().split("\\s+", 2)[0];
         if (commandLabel.isBlank()) {
             return;
@@ -42,8 +52,6 @@ public final class UnknownCommandListener implements Listener {
 
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
-        // O CargoPlus também pode cancelar comandos protegidos antes deste listener.
-        // Ainda assim, o jogador deve receber sempre a mensagem padrão do servidor.
         if (isProtectedServerCommand(normalizedLabel)) {
             if (!player.hasPermission(SERVER_COMMAND_PERMISSION)) {
                 hideCommand(player, event);
@@ -61,8 +69,6 @@ public final class UnknownCommandListener implements Listener {
     public void onPlayerCommandSend(PlayerCommandSendEvent event) {
         Player player = event.getPlayer();
         if (commandMap == null) {
-            // Mesmo sem CommandMap, namespaces do servidor e aliases conhecidos
-            // continuam sendo ocultados pelo próprio nome.
             event.getCommands().removeIf(label -> isProtectedServerCommand(label.toLowerCase(Locale.ROOT))
                     && !player.hasPermission(SERVER_COMMAND_PERMISSION));
             return;
@@ -101,9 +107,13 @@ public final class UnknownCommandListener implements Listener {
 
         return switch (label) {
             case "help", "?", "plugins", "pl", "version", "ver", "about", "bukkit", "spigot",
-                 "reload", "rl", "restart", "stop", "save-all", "save-on", "save-off" -> true;
+                 "reload", "rl", "restart", "stop", "save-all", "save-on", "save-off", "trigger" -> true;
             default -> false;
         };
+    }
+
+    private boolean isValidTpaTriggerSyntax(String message) {
+        return TPA_TRIGGER_PATTERN.matcher(message.trim()).matches();
     }
 
     private String fallbackPermission(String label) {
