@@ -23,6 +23,10 @@ public final class LocalChatCommand implements CommandExecutor {
             sender.sendMessage(config.getMessage("apenas-jogadores"));
             return true;
         }
+        if (!player.hasPermission("chatplus.local")) {
+            sender.sendMessage(config.getMessage("sem-permissao"));
+            return true;
+        }
         if (args.length == 0) {
             sender.sendMessage(config.getMessage("uso-local"));
             return true;
