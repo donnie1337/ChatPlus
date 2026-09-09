@@ -16,7 +16,7 @@ import java.util.Locale;
 
 /** Centraliza a ocultação de comandos sem permissão para jogadores. */
 public final class UnknownCommandListener implements Listener {
-    private static final String FALLBACK_PERMISSION_PREFIX = "chatplus.command.";
+    private static final String SERVER_COMMAND_PERMISSION = "chatplus.comandos.servidor";
     private static final String[] PROTECTED_NAMESPACES = {"bukkit", "spigot", "minecraft", "paper"};
 
     private final ConfigManager configManager;
@@ -43,11 +43,10 @@ public final class UnknownCommandListener implements Listener {
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
         Command command = commandMap == null ? null : commandMap.getCommand(normalizedLabel);
 
-        // Comandos Bukkit/Spigot/Minecraft/Paper são sempre protegidos pelo
-        // sistema do ChatPlus. Assim o servidor não chega a responder com
-        // "comando desativado para jogadores" ou mensagens próprias do core.
+        // Comandos do core Bukkit/Spigot/Paper/Minecraft ficam disponíveis
+        // somente para o DEV, independentemente da permissão padrão do servidor.
         if (isProtectedServerCommand(normalizedLabel)) {
-            if (command == null || !hasProtectedPermission(player, normalizedLabel)) {
+            if (!player.hasPermission(SERVER_COMMAND_PERMISSION)) {
                 hideCommand(player, event);
             }
             return;
@@ -70,7 +69,7 @@ public final class UnknownCommandListener implements Listener {
             Command command = commandMap.getCommand(normalizedLabel);
 
             if (isProtectedServerCommand(normalizedLabel)) {
-                return command == null || !hasProtectedPermission(player, normalizedLabel);
+                return !player.hasPermission(SERVER_COMMAND_PERMISSION);
             }
 
             return command == null || !hasPermission(player, command, label);
@@ -83,13 +82,6 @@ public final class UnknownCommandListener implements Listener {
             permission = fallbackPermission(label);
         }
         return player.hasPermission(permission);
-    }
-
-    private boolean hasProtectedPermission(Player player, String label) {
-        // Para comandos do core, não usamos a permissão padrão do Bukkit/Paper,
-        // pois ela pode liberar o comando automaticamente para jogadores.
-        // O acesso passa a depender exclusivamente da permissão do ChatPlus.
-        return player.hasPermission(fallbackPermission(label));
     }
 
     private boolean isProtectedServerCommand(String label) {
@@ -110,10 +102,9 @@ public final class UnknownCommandListener implements Listener {
     }
 
     private String fallbackPermission(String label) {
-        String normalized = label.toLowerCase(Locale.ROOT)
+        return "chatplus.command." + label.toLowerCase(Locale.ROOT)
                 .replace(':', '.')
                 .replace('/', '.');
-        return FALLBACK_PERMISSION_PREFIX + normalized;
     }
 
     private void hideCommand(Player player, PlayerCommandPreprocessEvent event) {
