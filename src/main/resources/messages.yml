@@ -1,32 +1,25 @@
-# =========================================================
-#  ChatPlus - messages.yml
-# =========================================================
-# Todas as mensagens exibidas pelo plugin ficam aqui.
-# Use /chat reload para aplicar alterações sem reiniciar.
-# =========================================================
-
-sem-permissao: "&cVocê não possui permissão para utilizar este chat."
-nao-autenticado: "&cVocê precisa estar autenticado para utilizar o chat."
-comando-desconhecido: "&c• &4ERRO &8| &fComando desconhecido ou incompleto."
+sem-permissao: "&c✖ &fVocê não tem permissão para executar este comando."
+ao-autenticado: "&c✖ &fVocê precisa estar autenticado para executar este comando."
+comando-desconhecido: "&c✖ &fComando não encontrado."
 
 # Prefixo usado por outros plugins ao enviar mensagens de sistema através da API pública do ChatPlus.
 prefixo-sistema: "&8[&6Servidor&8] &r"
 
-chat-global-desativado: "&cO chat global está desativado."
-chat-local-desativado: "&cO chat local está desativado."
-chat-staff-desativado: "&cO chat da staff está desativado."
+chat-global-desativado: "&c✖ &fO chat global está desativado."
+chat-local-desativado: "&c✖ &fO chat local está desativado."
+chat-staff-desativado: "&c✖ &fO chat da staff está desativado."
 
-uso-global: "&cUso correto: /g <mensagem>"
-uso-local: "&cUso correto: /l <mensagem>"
-uso-staff: "&cUso correto: /s <mensagem>"
-uso-chat-reload: "&cUso correto: /chat reload"
+uso-global: "&e➜ &fUso: /g <mensagem>"
+uso-local: "&e➜ &fUso: /l <mensagem>"
+uso-staff: "&e➜ &fUso: /s <mensagem>"
+uso-chat-reload: "&e➜ &fUso: /chat reload"
 
-mensagem-vazia: "&cVocê precisa informar uma mensagem."
-mensagem-muito-longa: "&cA mensagem excede o limite permitido."
-chat-em-delay: "&cAguarde antes de enviar outra mensagem."
+mensagem-vazia: "&c✖ &fVocê precisa informar uma mensagem."
+mensagem-muito-longa: "&c✖ &fA mensagem excede o limite permitido."
+chat-em-delay: "&c✖ &fAguarde antes de enviar outra mensagem."
 
-apenas-jogadores: "&cApenas jogadores podem utilizar este comando."
+apenas-jogadores: "&c✖ &fEste comando só pode ser usado por jogadores."
 
-ninguem-por-perto: "&7Ninguém está por perto para ver sua mensagem."
+ninguem-por-perto: "&e⚠ &fNinguém está por perto para ver sua mensagem."
 
-reload-sucesso: "&aConfiguração recarregada com sucesso."
+reload-sucesso: "&a✔ &fConfiguração recarregada com sucesso."
