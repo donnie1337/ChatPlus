@@ -181,7 +181,9 @@ public final class ChatService {
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
 
-            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(prefix);
+            // CargoPlus can return MiniMessage-style gradients in the prefix.
+            // Convert them before feeding the result to Bungee's legacy parser.
+            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
             HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                     new ComponentBuilder("§fCargo: §e" + group).create());
             for (BaseComponent component : prefixComponents) {
