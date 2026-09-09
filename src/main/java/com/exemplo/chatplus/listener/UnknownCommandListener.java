@@ -27,7 +27,7 @@ public final class UnknownCommandListener implements Listener {
         this.commandMap = resolveCommandMap();
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
         String message = event.getMessage();
@@ -41,10 +41,9 @@ public final class UnknownCommandListener implements Listener {
         }
 
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
-        Command command = commandMap == null ? null : commandMap.getCommand(normalizedLabel);
 
-        // Comandos do core Bukkit/Spigot/Paper/Minecraft ficam disponíveis
-        // somente para o DEV, independentemente da permissão padrão do servidor.
+        // O CargoPlus também pode cancelar comandos protegidos antes deste listener.
+        // Ainda assim, o jogador deve receber sempre a mensagem padrão do servidor.
         if (isProtectedServerCommand(normalizedLabel)) {
             if (!player.hasPermission(SERVER_COMMAND_PERMISSION)) {
                 hideCommand(player, event);
@@ -52,6 +51,7 @@ public final class UnknownCommandListener implements Listener {
             return;
         }
 
+        Command command = commandMap == null ? null : commandMap.getCommand(normalizedLabel);
         if (command == null || !hasPermission(player, command, commandLabel)) {
             hideCommand(player, event);
         }
@@ -61,6 +61,10 @@ public final class UnknownCommandListener implements Listener {
     public void onPlayerCommandSend(PlayerCommandSendEvent event) {
         Player player = event.getPlayer();
         if (commandMap == null) {
+            // Mesmo sem CommandMap, namespaces do servidor e aliases conhecidos
+            // continuam sendo ocultados pelo próprio nome.
+            event.getCommands().removeIf(label -> isProtectedServerCommand(label.toLowerCase(Locale.ROOT))
+                    && !player.hasPermission(SERVER_COMMAND_PERMISSION));
             return;
         }
 
@@ -96,7 +100,8 @@ public final class UnknownCommandListener implements Listener {
         }
 
         return switch (label) {
-            case "help", "?", "plugins", "pl", "version", "ver", "about", "bukkit", "spigot" -> true;
+            case "help", "?", "plugins", "pl", "version", "ver", "about", "bukkit", "spigot",
+                 "reload", "rl", "restart", "stop", "save-all", "save-on", "save-off" -> true;
             default -> false;
         };
     }
