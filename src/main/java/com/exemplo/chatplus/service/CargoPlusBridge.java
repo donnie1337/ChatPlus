@@ -23,6 +23,7 @@ public final class CargoPlusBridge {
     private Method getNicknameColorMethod;
     private Method getChatColorMethod;
     private Method setChatColorMethod;
+    private Method hasCargoPermissionMethod;
     private Method getChatColorsMethod;
     private Method getDefaultChatColorMethod;
 
@@ -55,6 +56,7 @@ public final class CargoPlusBridge {
                 getNicknameColorMethod = providerClass.getMethod("getNicknameColor", UUID.class);
                 getChatColorMethod = providerClass.getMethod("getChatColor", UUID.class);
                 setChatColorMethod = providerClass.getMethod("setChatColor", UUID.class, String.class);
+                hasCargoPermissionMethod = providerClass.getMethod("hasCargoPermission", UUID.class, String.class);
                 getChatColorsMethod = providerClass.getMethod("getChatColors");
                 getDefaultChatColorMethod = providerClass.getMethod("getDefaultChatColor");
             }
@@ -92,6 +94,11 @@ public final class CargoPlusBridge {
         return value instanceof Boolean && (Boolean) value;
     }
 
+    public boolean hasCargoPermission(UUID uuid, String permission) {
+        Object value = invoke("hasCargoPermission", uuid, permission);
+        return value instanceof Boolean && (Boolean) value;
+    }
+
     public Map<String, String> getChatColors() {
         Object value = invoke("getChatColors");
         if (!(value instanceof Map<?, ?> source)) return Collections.emptyMap();
@@ -113,8 +120,6 @@ public final class CargoPlusBridge {
         if (api == null || apiClass == null || cargoPlugin == null || !cargoPlugin.isEnabled()) {
             if (!refresh()) return null;
         } else if (!isCurrentServiceProvider()) {
-            // CargoPlus pode reconstruir a API durante /cargo reload sem trocar a instancia do plugin.
-            // Nesse caso cargoPlugin.isEnabled() continua true, mas o provider em cache fica obsoleto.
             if (!refresh()) return null;
         }
 
@@ -124,6 +129,7 @@ public final class CargoPlusBridge {
             case "getNicknameColor" -> getNicknameColorMethod;
             case "getChatColor" -> getChatColorMethod;
             case "setChatColor" -> setChatColorMethod;
+            case "hasCargoPermission" -> hasCargoPermissionMethod;
             case "getChatColors" -> getChatColorsMethod;
             case "getDefaultChatColor" -> getDefaultChatColorMethod;
             default -> null;
@@ -159,6 +165,7 @@ public final class CargoPlusBridge {
         getNicknameColorMethod = null;
         getChatColorMethod = null;
         setChatColorMethod = null;
+        hasCargoPermissionMethod = null;
         getChatColorsMethod = null;
         getDefaultChatColorMethod = null;
     }
