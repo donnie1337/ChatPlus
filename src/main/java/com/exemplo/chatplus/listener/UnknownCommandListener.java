@@ -2,6 +2,7 @@ package com.exemplo.chatplus.listener;
 
 import com.exemplo.chatplus.config.ConfigManager;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,23 +34,31 @@ public final class UnknownCommandListener implements Listener {
             return;
         }
 
-        if (commandMap.getCommand(commandLabel.toLowerCase(Locale.ROOT)) != null) {
+        String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
+        Command command = commandMap.getCommand(normalizedLabel);
+        if (command == null && normalizedLabel.contains(":")) {
+            command = commandMap.getCommand(normalizedLabel);
+        }
+
+        if (command != null) {
             return;
         }
 
         event.setCancelled(true);
-        if (event.getPlayer() instanceof Player player) {
-            player.sendMessage(configManager.getMessage("comando-desconhecido"));
-        }
+        Player player = event.getPlayer();
+        player.sendMessage(configManager.getMessage("comando-desconhecido"));
     }
 
     private CommandMap resolveCommandMap() {
         try {
-            Method method = Bukkit.getServer().getClass().getMethod("getCommandMap");
-            Object result = method.invoke(Bukkit.getServer());
+            Object server = Bukkit.getServer();
+            Method method = server.getClass().getMethod("getCommandMap");
+            method.setAccessible(true);
+            Object result = method.invoke(server);
             return result instanceof CommandMap map ? map : null;
-        } catch (ReflectiveOperationException | LinkageError exception) {
-            Bukkit.getLogger().warning("Não foi possível acessar o CommandMap para tratar comandos desconhecidos.");
+        } catch (ReflectiveOperationException | SecurityException | LinkageError exception) {
+            Bukkit.getLogger().warning("Não foi possível acessar o CommandMap para tratar comandos desconhecidos: "
+                    + exception.getClass().getSimpleName());
             return null;
         }
     }
