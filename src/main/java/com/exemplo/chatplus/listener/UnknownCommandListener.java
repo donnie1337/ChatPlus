@@ -40,6 +40,9 @@ public final class UnknownCommandListener implements Listener {
         Player player = event.getPlayer();
         String message = event.getMessage();
         if (message == null || message.isBlank() || !message.startsWith("/")) return;
+
+        // O /trigger precisa permanecer no command tree do cliente para que os
+        // run_command dos botões do TPA sejam reconhecidos sem abrir a confirmação.
         if (isValidTpaTriggerSyntax(message)) return;
 
         String commandLabel = message.substring(1).trim().split("\\s+", 2)[0];
@@ -85,7 +88,7 @@ public final class UnknownCommandListener implements Listener {
         Player player = event.getPlayer();
         if (commandMap == null) {
             event.getCommands().removeIf(label -> isProtectedServerCommand(label.toLowerCase(Locale.ROOT))
-                    && !isTpaTriggerCommand(label)
+                    && !isTpaButtonCommand(label)
                     && !player.hasPermission(SERVER_COMMAND_PERMISSION));
             return;
         }
@@ -94,19 +97,18 @@ public final class UnknownCommandListener implements Listener {
             String normalizedLabel = label.toLowerCase(Locale.ROOT);
             Command command = commandMap.getCommand(normalizedLabel);
 
+            // /trigger precisa ser enviado ao cliente para que o run_command do
+            // TPA seja reconhecido como um comando válido e não gere a tela
+            // "Executar comando". O processamento no servidor continua protegido
+            // pelo onProtectedServerCommand e pelo TeleportService.
+            if (isTpaButtonCommand(label)) return false;
+
             if (isProtectedServerCommand(normalizedLabel)) {
-                // O /trigger precisa permanecer no command tree para que o cliente
-                // reconheça os botões interativos do TPA sem exibir "Executar comando".
-                return !isTpaTriggerCommand(normalizedLabel) && !player.hasPermission(SERVER_COMMAND_PERMISSION);
+                return !player.hasPermission(SERVER_COMMAND_PERMISSION);
             }
 
             return command == null || !hasPermission(player, command, label);
         });
-    }
-
-    private boolean isTpaTriggerCommand(String label) {
-        return TPA_BUTTON_OBJECTIVE.equalsIgnoreCase(label)
-                || "trigger".equalsIgnoreCase(label);
     }
 
     private boolean hasPermission(Player player, Command command, String label) {
@@ -131,6 +133,10 @@ public final class UnknownCommandListener implements Listener {
                  "reload", "rl", "restart", "stop", "save-all", "save-on", "save-off", "trigger" -> true;
             default -> false;
         };
+    }
+
+    private boolean isTpaButtonCommand(String label) {
+        return label.equalsIgnoreCase("trigger");
     }
 
     private boolean isValidTpaTriggerSyntax(String message) {
