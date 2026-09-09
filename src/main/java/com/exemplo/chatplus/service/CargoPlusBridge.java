@@ -112,6 +112,10 @@ public final class CargoPlusBridge {
     private synchronized Object invoke(String methodName, Object... args) {
         if (api == null || apiClass == null || cargoPlugin == null || !cargoPlugin.isEnabled()) {
             if (!refresh()) return null;
+        } else if (!isCurrentServiceProvider()) {
+            // CargoPlus pode reconstruir a API durante /cargo reload sem trocar a instancia do plugin.
+            // Nesse caso cargoPlugin.isEnabled() continua true, mas o provider em cache fica obsoleto.
+            if (!refresh()) return null;
         }
 
         Method method = switch (methodName) {
@@ -131,6 +135,18 @@ public final class CargoPlusBridge {
         } catch (ReflectiveOperationException | LinkageError ex) {
             api = null;
             return null;
+        }
+    }
+
+    private boolean isCurrentServiceProvider() {
+        if (apiClass == null || api == null) return false;
+        try {
+            var registration = Bukkit.getServicesManager().getRegistration(apiClass);
+            if (registration == null) return false;
+            Method providerMethod = registration.getClass().getMethod("getProvider");
+            return providerMethod.invoke(registration) == api;
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return false;
         }
     }
 
