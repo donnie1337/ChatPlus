@@ -23,7 +23,7 @@ public final class UnknownCommandListener implements Listener {
 
     public UnknownCommandListener(ConfigManager configManager) {
         this.configManager = configManager;
-        this.commandMap = Bukkit.getServer().getCommandMap();
+        this.commandMap = Bukkit.getCommandMap();
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
