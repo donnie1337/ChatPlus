@@ -39,7 +39,9 @@ public final class UnknownCommandListener implements Listener {
 
         event.setCancelled(true);
         if (event.getPlayer() instanceof Player player) {
-            player.sendMessage(configManager.getMessage("comando-desconhecido"));
+            String prefix = configManager.getMessage("prefixo-sistema");
+            String messageText = configManager.getMessage("comando-desconhecido");
+            player.sendMessage(prefix + messageText);
         }
     }
 
