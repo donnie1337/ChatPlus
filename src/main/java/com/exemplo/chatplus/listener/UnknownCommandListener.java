@@ -85,6 +85,7 @@ public final class UnknownCommandListener implements Listener {
         Player player = event.getPlayer();
         if (commandMap == null) {
             event.getCommands().removeIf(label -> isProtectedServerCommand(label.toLowerCase(Locale.ROOT))
+                    && !isTpaTriggerCommand(label)
                     && !player.hasPermission(SERVER_COMMAND_PERMISSION));
             return;
         }
@@ -94,11 +95,18 @@ public final class UnknownCommandListener implements Listener {
             Command command = commandMap.getCommand(normalizedLabel);
 
             if (isProtectedServerCommand(normalizedLabel)) {
-                return !player.hasPermission(SERVER_COMMAND_PERMISSION);
+                // O /trigger precisa permanecer no command tree para que o cliente
+                // reconheça os botões interativos do TPA sem exibir "Executar comando".
+                return !isTpaTriggerCommand(normalizedLabel) && !player.hasPermission(SERVER_COMMAND_PERMISSION);
             }
 
             return command == null || !hasPermission(player, command, label);
         });
+    }
+
+    private boolean isTpaTriggerCommand(String label) {
+        return TPA_BUTTON_OBJECTIVE.equalsIgnoreCase(label)
+                || "trigger".equalsIgnoreCase(label);
     }
 
     private boolean hasPermission(Player player, Command command, String label) {
