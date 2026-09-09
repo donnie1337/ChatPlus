@@ -13,13 +13,10 @@ import org.bukkit.event.player.PlayerCommandSendEvent;
 
 import java.lang.reflect.Method;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 /** Centraliza a ocultação de comandos sem permissão para jogadores. */
 public final class UnknownCommandListener implements Listener {
     private static final String SERVER_COMMAND_PERMISSION = "chatplus.comandos.servidor";
-    private static final String TPA_BUTTON_OBJECTIVE = "ep_tpa";
-    private static final Pattern TPA_TRIGGER_PATTERN = Pattern.compile("^/trigger\\s+" + TPA_BUTTON_OBJECTIVE + "\\s+set\\s+\\d+$", Pattern.CASE_INSENSITIVE);
     private static final String[] PROTECTED_NAMESPACES = {"bukkit", "spigot", "minecraft", "paper"};
 
     private final ConfigManager configManager;
@@ -41,10 +38,6 @@ public final class UnknownCommandListener implements Listener {
         String message = event.getMessage();
         if (message == null || message.isBlank() || !message.startsWith("/")) return;
 
-        // O /trigger precisa permanecer no command tree do cliente para que os
-        // run_command dos botões do TPA sejam reconhecidos sem abrir a confirmação.
-        if (isValidTpaTriggerSyntax(message)) return;
-
         String commandLabel = message.substring(1).trim().split("\\s+", 2)[0];
         if (commandLabel.isBlank()) return;
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
@@ -63,7 +56,6 @@ public final class UnknownCommandListener implements Listener {
         Player player = event.getPlayer();
         String message = event.getMessage();
         if (message == null || message.isBlank() || !message.startsWith("/")) return;
-        if (isValidTpaTriggerSyntax(message)) return;
 
         String commandLabel = message.substring(1).trim().split("\\s+", 2)[0];
         if (commandLabel.isBlank()) return;
@@ -88,7 +80,6 @@ public final class UnknownCommandListener implements Listener {
         Player player = event.getPlayer();
         if (commandMap == null) {
             event.getCommands().removeIf(label -> isProtectedServerCommand(label.toLowerCase(Locale.ROOT))
-                    && !isTpaButtonCommand(label)
                     && !player.hasPermission(SERVER_COMMAND_PERMISSION));
             return;
         }
@@ -96,12 +87,6 @@ public final class UnknownCommandListener implements Listener {
         event.getCommands().removeIf(label -> {
             String normalizedLabel = label.toLowerCase(Locale.ROOT);
             Command command = commandMap.getCommand(normalizedLabel);
-
-            // /trigger precisa ser enviado ao cliente para que o run_command do
-            // TPA seja reconhecido como um comando válido e não gere a tela
-            // "Executar comando". O processamento no servidor continua protegido
-            // pelo onProtectedServerCommand e pelo TeleportService.
-            if (isTpaButtonCommand(label)) return false;
 
             if (isProtectedServerCommand(normalizedLabel)) {
                 return !player.hasPermission(SERVER_COMMAND_PERMISSION);
@@ -133,14 +118,6 @@ public final class UnknownCommandListener implements Listener {
                  "reload", "rl", "restart", "stop", "save-all", "save-on", "save-off", "trigger" -> true;
             default -> false;
         };
-    }
-
-    private boolean isTpaButtonCommand(String label) {
-        return label.equalsIgnoreCase("trigger");
-    }
-
-    private boolean isValidTpaTriggerSyntax(String message) {
-        return TPA_TRIGGER_PATTERN.matcher(message.trim()).matches();
     }
 
     private String fallbackPermission(String label) {
