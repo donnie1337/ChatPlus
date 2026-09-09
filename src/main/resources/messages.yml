@@ -1,6 +1,6 @@
 sem-permissao: "&c✖ &fVocê não tem permissão para executar este comando."
 ao-autenticado: "&c✖ &fVocê precisa estar autenticado para executar este comando."
-comando-desconhecido: "&c✖ &fComando não encontrado."
+comando-desconhecido: "Comando não encontrado."
 
 # Prefixo global usado nas mensagens de sistema do servidor.
 prefixo-sistema: "&c&lSERVIDOR &7• &r"
