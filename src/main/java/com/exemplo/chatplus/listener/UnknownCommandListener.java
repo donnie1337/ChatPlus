@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerCommandSendEvent;
 
+import java.lang.reflect.Method;
 import java.util.Locale;
 
 /** Centraliza a ocultação de comandos sem permissão para jogadores. */
@@ -23,7 +24,7 @@ public final class UnknownCommandListener implements Listener {
 
     public UnknownCommandListener(ConfigManager configManager) {
         this.configManager = configManager;
-        this.commandMap = Bukkit.getCommandMap();
+        this.commandMap = resolveCommandMap();
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
@@ -53,6 +54,7 @@ public final class UnknownCommandListener implements Listener {
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
         if (isProtectedServerCommand(normalizedLabel) || event.isCancelled()) return;
+        if (commandMap == null) return;
 
         Command command = commandMap.getCommand(normalizedLabel);
         if (command == null || !hasPermission(player, command, commandLabel)) {
@@ -62,6 +64,8 @@ public final class UnknownCommandListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerCommandSend(PlayerCommandSendEvent event) {
+        if (commandMap == null) return;
+
         Player player = event.getPlayer();
         event.getCommands().removeIf(label -> {
             String normalizedLabel = label.toLowerCase(Locale.ROOT);
@@ -101,6 +105,20 @@ public final class UnknownCommandListener implements Listener {
         return "chatplus.command." + label.toLowerCase(Locale.ROOT)
                 .replace(':', '.')
                 .replace('/', '.');
+    }
+
+    private CommandMap resolveCommandMap() {
+        try {
+            Object server = Bukkit.getServer();
+            Method method = server.getClass().getMethod("getCommandMap");
+            method.setAccessible(true);
+            Object result = method.invoke(server);
+            return result instanceof CommandMap map ? map : null;
+        } catch (ReflectiveOperationException | SecurityException | LinkageError exception) {
+            Bukkit.getLogger().warning("Não foi possível acessar o CommandMap para tratar comandos: "
+                    + exception.getClass().getSimpleName());
+            return null;
+        }
     }
 
     private void hideCommand(Player player, PlayerCommandPreprocessEvent event) {
