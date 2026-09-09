@@ -28,6 +28,8 @@ public final class ChatService {
     private final CargoPlusBridge cargo;
     private volatile Plugin authPlugin;
     private volatile Method authCheckMethod;
+    private volatile Plugin vanishPlugin;
+    private volatile Method vanishCheckMethod;
 
     public ChatService(ConfigManager config, ChatDelayService delayService) {
         this.config = config;
@@ -52,6 +54,7 @@ public final class ChatService {
         long rangeSquared = (long) range * range;
         Location senderLocation = sender.getLocation();
         World senderWorld = senderLocation.getWorld();
+        boolean senderVanished = isVanished(sender);
         BaseComponent[] formatted = formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "");
         boolean deliveredToAnotherPlayer = false;
         for (Player online : Bukkit.getOnlinePlayers()) {
@@ -59,6 +62,7 @@ public final class ChatService {
                 online.spigot().sendMessage(formatted);
                 continue;
             }
+            if (senderVanished || isVanished(online)) continue;
             World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
             if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
@@ -150,6 +154,40 @@ public final class ChatService {
         }
     }
 
+    private boolean isVanished(Player player) {
+        if (player == null || !player.isOnline()) return false;
+        Plugin vanish = Bukkit.getPluginManager().getPlugin("EssentialsPlus");
+        if (vanish == null || !vanish.isEnabled()) {
+            vanishPlugin = null;
+            vanishCheckMethod = null;
+            return false;
+        }
+
+        Method method = vanishCheckMethod;
+        if (vanishPlugin != vanish || method == null) {
+            synchronized (this) {
+                if (vanishPlugin != vanish || vanishCheckMethod == null) {
+                    try {
+                        vanishPlugin = vanish;
+                        vanishCheckMethod = vanish.getClass().getMethod("isVanished", Player.class);
+                    } catch (ReflectiveOperationException | LinkageError ex) {
+                        vanishPlugin = vanish;
+                        vanishCheckMethod = null;
+                    }
+                }
+                method = vanishCheckMethod;
+            }
+        }
+
+        if (method == null) return false;
+        try {
+            Object result = method.invoke(vanish, player);
+            return result instanceof Boolean && (Boolean) result;
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return false;
+        }
+    }
+
     private BaseComponent[] formatMessage(String format, CommandSender sender, String message, String world) {
         String playerName;
         String chatColor = "";
@@ -181,8 +219,6 @@ public final class ChatService {
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
 
-            // CargoPlus can return MiniMessage-style gradients in the prefix.
-            // Convert them before feeding the result to Bungee's legacy parser.
             BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
             HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                     new ComponentBuilder("§fCargo: §e" + group).create());
