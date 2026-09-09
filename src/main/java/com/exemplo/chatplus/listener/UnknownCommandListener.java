@@ -1,6 +1,7 @@
 package com.exemplo.chatplus.listener;
 
 import com.exemplo.chatplus.config.ConfigManager;
+import com.exemplo.chatplus.service.CargoPlusBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
@@ -21,6 +22,7 @@ public final class UnknownCommandListener implements Listener {
 
     private final ConfigManager configManager;
     private final CommandMap commandMap;
+    private final CargoPlusBridge cargoPlus = new CargoPlusBridge();
 
     public UnknownCommandListener(ConfigManager configManager) {
         this.configManager = configManager;
@@ -82,7 +84,12 @@ public final class UnknownCommandListener implements Listener {
     private boolean hasPermission(Player player, Command command, String label) {
         String permission = command.getPermission();
         if (permission == null || permission.isBlank()) permission = fallbackPermission(label);
-        return player.hasPermission(permission);
+        if (player.hasPermission(permission)) return true;
+
+        if ("cor".equalsIgnoreCase(label)) {
+            return cargoPlus.hasCargoPermission(player.getUniqueId(), "chatplus.cor");
+        }
+        return cargoPlus.hasCargoPermission(player.getUniqueId(), permission);
     }
 
     private boolean isProtectedServerCommand(String label) {
