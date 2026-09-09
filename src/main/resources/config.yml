@@ -19,11 +19,11 @@ chat:
   local:
     ativado: true
     alcance: 50
-    formato: "&7[L] {prefix}&f{player}&7: &f{message}"
+    formato: "&e[L] {prefix}&f{player}&7: &f{message}"
 
   global:
     ativado: true
-    formato: "&6[G] {prefix}&f{player}&7: &f{message}"
+    formato: "&7[G] {prefix}&f{player}&7: &f{message}"
 
   staff:
     ativado: true
