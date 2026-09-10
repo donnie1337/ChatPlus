@@ -70,8 +70,6 @@ public final class ChatService {
             if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
                 online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld.getName(), online, senderVanished));
 
-                // Vanished players can receive local chat normally, but they do not
-                // count as visible nearby players for a normal sender.
                 if (!(!senderVanished && recipientVanished)) {
                     deliveredToAnotherPlayer = true;
                 }
@@ -123,6 +121,30 @@ public final class ChatService {
                 online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player)));
             }
         }
+        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false);
+        notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
+    }
+
+    /**
+     * Sends a trusted system event through the same staff-chat formatter used
+     * by /s. It intentionally bypasses the player chat delay and authentication
+     * check because the message originates from another trusted plugin.
+     */
+    public void sendStaffSystemMessage(Player sender, String message) {
+        if (!Bukkit.isPrimaryThread()) {
+            Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffSystemMessage(sender, message));
+            return;
+        }
+        if (sender == null || !sender.isOnline() || message == null || message.isEmpty()) return;
+
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) {
+                // Do not append the normal vanish suffix here: this event is
+                // itself the notification that the player changed vanish state.
+                online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", online, false));
+            }
+        }
+
         BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false);
         notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
