@@ -23,6 +23,8 @@ import java.util.Map;
 public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
     private static final String STAFF_PERMISSION = "chatplus.staff";
+    private static final String VANISH_PERMISSION = "essentialsplus.vanish";
+    private static final String VANISH_SUFFIX = "§7§lINVISÍVEL";
     private final ConfigManager config;
     private final ChatDelayService delayService;
     private final CargoPlusBridge cargo;
@@ -55,11 +57,10 @@ public final class ChatService {
         Location senderLocation = sender.getLocation();
         World senderWorld = senderLocation.getWorld();
         boolean senderVanished = isVanished(sender);
-        BaseComponent[] formatted = formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "");
         boolean deliveredToAnotherPlayer = false;
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.equals(sender)) {
-                online.spigot().sendMessage(formatted);
+                online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "", online, senderVanished));
                 continue;
             }
             boolean recipientVanished = isVanished(online);
@@ -67,7 +68,7 @@ public final class ChatService {
             World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
             if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
-                online.spigot().sendMessage(formatted);
+                online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld.getName(), online, senderVanished));
 
                 // Vanished players can receive local chat normally, but they do not
                 // count as visible nearby players for a normal sender.
@@ -95,11 +96,13 @@ public final class ChatService {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-        BaseComponent[] formatted = formatMessage(config.getGlobalChatFormat(), sender, message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.isOnline() && isAuthenticated(online)) online.spigot().sendMessage(formatted);
+            if (online.isOnline() && isAuthenticated(online)) {
+                online.spigot().sendMessage(formatMessage(config.getGlobalChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player)));
+            }
         }
-        notifyConsole(sender, TextComponent.toLegacyText(formatted));
+        BaseComponent[] consoleFormatted = formatMessage(config.getGlobalChatFormat(), sender, message, "", null, false);
+        notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
 
     public void sendStaffMessage(CommandSender sender, String message) {
@@ -115,11 +118,13 @@ public final class ChatService {
             sender.sendMessage(config.getMessage("chat-em-delay"));
             return;
         }
-        BaseComponent[] formatted = formatMessage(config.getStaffChatFormat(), sender, message, "");
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) online.spigot().sendMessage(formatted);
+            if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) {
+                online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player)));
+            }
         }
-        notifyConsole(sender, TextComponent.toLegacyText(formatted));
+        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false);
+        notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
 
     private void notifyConsole(CommandSender sender, String formatted) {
@@ -194,7 +199,7 @@ public final class ChatService {
         }
     }
 
-    private BaseComponent[] formatMessage(String format, CommandSender sender, String message, String world) {
+    private BaseComponent[] formatMessage(String format, CommandSender sender, String message, String world, Player viewer, boolean senderVanished) {
         String playerName;
         String chatColor = "";
         String prefix = "";
@@ -204,6 +209,9 @@ public final class ChatService {
         } else {
             Player player = (Player) sender;
             playerName = cargo.getNicknameColor(player.getUniqueId()) + sender.getName();
+            if (senderVanished && viewer != null && viewer.hasPermission(VANISH_PERMISSION)) {
+                playerName += " " + VANISH_SUFFIX;
+            }
             chatColor = cargo.getChatColor(player.getUniqueId());
             prefix = cargo.getPrefix(player.getUniqueId());
             group = cargo.getGroup(player.getUniqueId());
