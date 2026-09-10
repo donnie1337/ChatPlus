@@ -20,6 +20,7 @@ public final class CargoPlusBridge {
     private Plugin cargoPlugin;
     private Method getGroupMethod;
     private Method getPrefixMethod;
+    private Method getAnimatedPrefixMethod;
     private Method getNicknameColorMethod;
     private Method getChatColorMethod;
     private Method setChatColorMethod;
@@ -53,6 +54,11 @@ public final class CargoPlusBridge {
                 Class<?> providerClass = provider.getClass();
                 getGroupMethod = providerClass.getMethod("getGroup", UUID.class);
                 getPrefixMethod = providerClass.getMethod("getPrefix", UUID.class);
+                try {
+                    getAnimatedPrefixMethod = providerClass.getMethod("getAnimatedPrefix", UUID.class);
+                } catch (NoSuchMethodException ignored) {
+                    getAnimatedPrefixMethod = null;
+                }
                 getNicknameColorMethod = providerClass.getMethod("getNicknameColor", UUID.class);
                 getChatColorMethod = providerClass.getMethod("getChatColor", UUID.class);
                 setChatColorMethod = providerClass.getMethod("setChatColor", UUID.class, String.class);
@@ -74,6 +80,8 @@ public final class CargoPlusBridge {
     }
 
     public String getPrefix(UUID uuid) {
+        Object animated = invoke("getAnimatedPrefix", uuid);
+        if (animated instanceof String) return (String) animated;
         Object value = invoke("getPrefix", uuid);
         return value instanceof String ? (String) value : "";
     }
@@ -126,6 +134,7 @@ public final class CargoPlusBridge {
         Method method = switch (methodName) {
             case "getGroup" -> getGroupMethod;
             case "getPrefix" -> getPrefixMethod;
+            case "getAnimatedPrefix" -> getAnimatedPrefixMethod;
             case "getNicknameColor" -> getNicknameColorMethod;
             case "getChatColor" -> getChatColorMethod;
             case "setChatColor" -> setChatColorMethod;
@@ -139,6 +148,10 @@ public final class CargoPlusBridge {
         try {
             return method.invoke(api, args);
         } catch (ReflectiveOperationException | LinkageError ex) {
+            if ("getAnimatedPrefix".equals(methodName)) {
+                getAnimatedPrefixMethod = null;
+                return null;
+            }
             api = null;
             return null;
         }
@@ -162,6 +175,7 @@ public final class CargoPlusBridge {
         cargoPlugin = null;
         getGroupMethod = null;
         getPrefixMethod = null;
+        getAnimatedPrefixMethod = null;
         getNicknameColorMethod = null;
         getChatColorMethod = null;
         setChatColorMethod = null;
