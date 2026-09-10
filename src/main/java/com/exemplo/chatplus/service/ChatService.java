@@ -24,7 +24,9 @@ public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
     private static final String STAFF_PERMISSION = "chatplus.staff";
     private static final String VANISH_PERMISSION = "essentialsplus.vanish";
+    private static final String VANISH_SUFFIX_MARKER = "§0§0§0[ESSENTIALSPLUS_VANISH_HOVER]";
     private static final String VANISH_SUFFIX = "§l§x§F§F§F§F§F§F[§x§F§B§F§B§F§Bɪ§x§F§7§F§7§F§7ɴ§x§F§4§F§4§F§4ᴠ§x§F§0§F§0§F§0ɪ§x§E§C§E§C§E§Cs§x§E§8§E§8§E§8ɪ§x§E§4§E§4§E§4ᴠ§x§E§1§E§1§E§1ᴇ§x§D§D§D§D§D§Dʟ§x§D§9§D§9§D§9]";
+    private static final String VANISH_HOVER_TEXT = "§fEste jogador está invisível.";
     private final ConfigManager config;
     private final ChatDelayService delayService;
     private final CargoPlusBridge cargo;
@@ -226,13 +228,15 @@ public final class ChatService {
         String chatColor = "";
         String prefix = "";
         String group = "desconhecido";
+        boolean addVanishHover = false;
         if (sender instanceof ConsoleCommandSender) {
             playerName = "Console";
         } else {
             Player player = (Player) sender;
             playerName = cargo.getNicknameColor(player.getUniqueId()) + sender.getName();
             if (senderVanished && viewer != null && viewer.hasPermission(VANISH_PERMISSION)) {
-                playerName += " " + VANISH_SUFFIX;
+                playerName += " " + VANISH_SUFFIX_MARKER;
+                addVanishHover = true;
             }
             chatColor = cargo.getChatColor(player.getUniqueId());
             prefix = cargo.getPrefix(player.getUniqueId());
@@ -268,7 +272,30 @@ public final class ChatService {
         }
 
         placeholders.put(PREFIX_PLACEHOLDER, prefix);
-        return TextComponent.fromLegacyText(MessageUtil.apply(template, placeholders));
+        String formatted = MessageUtil.apply(template, placeholders);
+        if (addVanishHover) {
+            return parseWithVanishHover(formatted);
+        }
+        return TextComponent.fromLegacyText(formatted);
+    }
+
+    private BaseComponent[] parseWithVanishHover(String formatted) {
+        int markerIndex = formatted.indexOf(VANISH_SUFFIX_MARKER);
+        if (markerIndex < 0) return TextComponent.fromLegacyText(formatted);
+
+        List<BaseComponent> components = new ArrayList<>();
+        addLegacy(components, formatted.substring(0, markerIndex));
+
+        BaseComponent[] vanishComponents = TextComponent.fromLegacyText(VANISH_SUFFIX);
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                new ComponentBuilder(VANISH_HOVER_TEXT).create());
+        for (BaseComponent component : vanishComponents) {
+            component.setHoverEvent(hover);
+            components.add(component);
+        }
+
+        addLegacy(components, formatted.substring(markerIndex + VANISH_SUFFIX_MARKER.length()));
+        return components.toArray(BaseComponent[]::new);
     }
 
     private void addLegacy(List<BaseComponent> components, String text) {
