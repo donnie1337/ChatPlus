@@ -24,7 +24,7 @@ public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
     private static final String STAFF_PERMISSION = "chatplus.staff";
     private static final String VANISH_PERMISSION = "essentialsplus.vanish";
-    private static final String VANISH_SUFFIX = "§7§lINVISÍVEL";
+    private static final String VANISH_SUFFIX = "§l§x§F§F§F§F§F§F[§x§F§B§F§B§F§Bɪ§x§F§7§F§7§F§7ɴ§x§F§4§F§4§F§4ᴠ§x§F§0§F§0§F§0ɪ§x§E§C§E§C§E§Cs§x§E§8§E§8§E§8ɪ§x§E§4§E§4§E§4ᴠ§x§E§1§E§1§E§1ᴇ§x§D§D§D§D§D§Dʟ§x§D§9§D§9§D§9]";
     private final ConfigManager config;
     private final ChatDelayService delayService;
     private final CargoPlusBridge cargo;
