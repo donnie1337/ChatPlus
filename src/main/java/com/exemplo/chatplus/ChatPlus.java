@@ -23,6 +23,7 @@ public final class ChatPlus extends JavaPlugin {
     private ConfigManager configManager;
     private ChatColorService chatColorService;
     private ChatColorGui chatColorGui;
+    private ChatService chatService;
 
     @Override
     public void onEnable() {
@@ -30,7 +31,7 @@ public final class ChatPlus extends JavaPlugin {
         configManager.load();
 
         ChatDelayService chatDelayService = new ChatDelayService(configManager);
-        ChatService chatService = new ChatService(configManager, chatDelayService);
+        this.chatService = new ChatService(configManager, chatDelayService);
         this.chatColorService = new ChatColorService();
         this.chatColorGui = new ChatColorGui(this, chatColorService);
 
@@ -76,6 +77,15 @@ public final class ChatPlus extends JavaPlugin {
         if (player == null || !player.isOnline() || message == null) return;
         final String prefix = configManager != null ? configManager.getMessage("prefixo-sistema") : "";
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', prefix + message));
+    }
+
+    /**
+     * Sends a trusted event through the same /s formatter, preserving the
+     * CargoPlus prefix, nickname color and staff-chat presentation.
+     */
+    public void sendStaffSystemMessage(Player player, String message) {
+        if (chatService == null || player == null || !player.isOnline() || message == null || message.isEmpty()) return;
+        chatService.sendStaffSystemMessage(player, message);
     }
 
     public void openChatColorGui(Player player) {
