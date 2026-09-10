@@ -64,16 +64,13 @@ public final class ChatService {
             }
             boolean recipientVanished = isVanished(online);
 
-            // A vanished sender must remain invisible to normal players.
-            if (senderVanished && !recipientVanished) continue;
-
             World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
             if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
                 online.spigot().sendMessage(formatted);
 
-                // Vanished recipients can read local chat without being considered
-                // visible recipients for a normal sender.
+                // Vanished players can receive local chat normally, but they do not
+                // count as visible nearby players for a normal sender.
                 if (!(!senderVanished && recipientVanished)) {
                     deliveredToAnotherPlayer = true;
                 }
