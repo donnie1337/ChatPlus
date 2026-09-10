@@ -267,7 +267,11 @@ public final class ChatService {
                 components.add(component);
             }
 
-            addLegacy(components, after);
+            if (addVanishHover) {
+                addLegacyWithVanishHover(components, after);
+            } else {
+                addLegacy(components, after);
+            }
             return components.toArray(BaseComponent[]::new);
         }
 
@@ -279,13 +283,25 @@ public final class ChatService {
         return TextComponent.fromLegacyText(formatted);
     }
 
+    private void addLegacyWithVanishHover(List<BaseComponent> components, String text) {
+        int markerIndex = text.indexOf(VANISH_SUFFIX_MARKER);
+        if (markerIndex < 0) {
+            addLegacy(components, text);
+            return;
+        }
+
+        addLegacy(components, text.substring(0, markerIndex));
+        addVanishComponents(components);
+        addLegacy(components, text.substring(markerIndex + VANISH_SUFFIX_MARKER.length()));
+    }
+
     private BaseComponent[] parseWithVanishHover(String formatted) {
-        int markerIndex = formatted.indexOf(VANISH_SUFFIX_MARKER);
-        if (markerIndex < 0) return TextComponent.fromLegacyText(formatted);
-
         List<BaseComponent> components = new ArrayList<>();
-        addLegacy(components, formatted.substring(0, markerIndex));
+        addLegacyWithVanishHover(components, formatted);
+        return components.toArray(BaseComponent[]::new);
+    }
 
+    private void addVanishComponents(List<BaseComponent> components) {
         BaseComponent[] vanishComponents = TextComponent.fromLegacyText(VANISH_SUFFIX);
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 new ComponentBuilder(VANISH_HOVER_TEXT).create());
@@ -293,9 +309,6 @@ public final class ChatService {
             component.setHoverEvent(hover);
             components.add(component);
         }
-
-        addLegacy(components, formatted.substring(markerIndex + VANISH_SUFFIX_MARKER.length()));
-        return components.toArray(BaseComponent[]::new);
     }
 
     private void addLegacy(List<BaseComponent> components, String text) {
