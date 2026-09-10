@@ -13,7 +13,7 @@
 # =========================================================
 
 chat:
-  delay-segundos: 2
+  delay-segundos: 0
   limite-mensagem: 256
 
   local:
