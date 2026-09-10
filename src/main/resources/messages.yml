@@ -1,25 +1,25 @@
-sem-permissao: "&c✖ &fVocê não tem permissão para executar este comando."
-ao-autenticado: "&c✖ &fVocê precisa estar autenticado para executar este comando."
+sem-permissao: "&e&lᴄʜᴀᴛ &8• &cVocê não tem permissão para executar este comando."
+ao-autenticado: "&e&lᴄʜᴀᴛ &8• &cVocê precisa estar autenticado para executar este comando."
 comando-desconhecido: "Comando não encontrado."
 
-# Prefixo global usado nas mensagens de sistema do servidor.
-prefixo-sistema: "&c&lSERVIDOR &7• &r"
+# Prefixo global usado nas mensagens de sistema do ChatPlus.
+prefixo-sistema: "&e&lᴄʜᴀᴛ &8• &r"
 
-chat-global-desativado: "&c✖ &fO chat global está desativado."
-chat-local-desativado: "&c✖ &fO chat local está desativado."
-chat-staff-desativado: "&c✖ &fO chat da staff está desativado."
+chat-global-desativado: "&e&lᴄʜᴀᴛ &8• &cO chat global está desativado."
+chat-local-desativado: "&e&lᴄʜᴀᴛ &8• &cO chat local está desativado."
+chat-staff-desativado: "&e&lᴄʜᴀᴛ &8• &cO chat da staff está desativado."
 
-uso-global: "&e➜ &fUso: /g <mensagem>"
-uso-local: "&e➜ &fUso: /l <mensagem>"
-uso-staff: "&e➜ &fUso: /s <mensagem>"
-uso-chat-reload: "&e➜ &fUso: /chat reload"
+uso-global: "&e&lᴄʜᴀᴛ &8• &fUso: &e/g <mensagem>"
+uso-local: "&e&lᴄʜᴀᴛ &8• &fUso: &e/l <mensagem>"
+uso-staff: "&e&lᴄʜᴀᴛ &8• &fUso: &e/s <mensagem>"
+uso-chat-reload: "&e&lᴄʜᴀᴛ &8• &fUso: &e/chat reload"
 
-mensagem-vazia: "&c✖ &fVocê precisa informar uma mensagem."
-mensagem-muito-longa: "&c✖ &fA mensagem excede o limite permitido."
-chat-em-delay: "&c✖ &fAguarde antes de enviar outra mensagem."
+mensagem-vazia: "&e&lᴄʜᴀᴛ &8• &cVocê precisa informar uma mensagem."
+mensagem-muito-longa: "&e&lᴄʜᴀᴛ &8• &cA mensagem excede o limite permitido."
+chat-em-delay: "&e&lᴄʜᴀᴛ &8• &cAguarde antes de enviar outra mensagem."
 
-apenas-jogadores: "&c✖ &fEste comando só pode ser usado por jogadores."
+apenas-jogadores: "&e&lᴄʜᴀᴛ &8• &cEste comando só pode ser usado por jogadores."
 
-ninguem-por-perto: "&e⚠ &fNinguém está por perto para ver sua mensagem."
+ninguem-por-perto: "&e&lᴄʜᴀᴛ &8• &eNinguém está por perto para ver sua mensagem."
 
-reload-sucesso: "&a✔ &fConfiguração recarregada com sucesso."
+reload-sucesso: "&e&lᴄʜᴀᴛ &8• &aConfiguração recarregada com sucesso."
