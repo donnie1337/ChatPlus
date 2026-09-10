@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public final class ChatService {
@@ -260,8 +261,9 @@ public final class ChatService {
             addLegacy(components, before);
 
             BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
+            String hoverGroup = capitalizeGroupName(group);
             HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new ComponentBuilder("§fCargo: §e" + group).create());
+                    new ComponentBuilder("§fCargo: §e" + hoverGroup).create());
             for (BaseComponent component : prefixComponents) {
                 component.setHoverEvent(hover);
                 components.add(component);
@@ -281,6 +283,12 @@ public final class ChatService {
             return parseWithVanishHover(formatted);
         }
         return TextComponent.fromLegacyText(formatted);
+    }
+
+    private String capitalizeGroupName(String group) {
+        if (group == null || group.isBlank()) return "Desconhecido";
+        String normalized = group.trim().toLowerCase(Locale.ROOT);
+        return Character.toUpperCase(normalized.charAt(0)) + normalized.substring(1);
     }
 
     private void addLegacyWithVanishHover(List<BaseComponent> components, String text) {
