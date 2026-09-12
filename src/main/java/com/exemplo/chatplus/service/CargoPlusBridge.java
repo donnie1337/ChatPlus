@@ -28,6 +28,9 @@ public final class CargoPlusBridge {
     private Method getChatColorsMethod;
     private Method getDefaultChatColorMethod;
 
+    private Plugin clanPlugin;
+    private Method getPlayerTagMethod;
+
     public synchronized boolean refresh() {
         Plugin plugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
         if (plugin == null || !plugin.isEnabled()) {
@@ -42,6 +45,7 @@ public final class CargoPlusBridge {
                 clearCargoCache();
                 cargoPlugin = plugin;
                 apiClass = clazz;
+                refreshClanBridge();
                 return false;
             }
 
@@ -66,10 +70,12 @@ public final class CargoPlusBridge {
                 getChatColorsMethod = providerClass.getMethod("getChatColors");
                 getDefaultChatColorMethod = providerClass.getMethod("getDefaultChatColor");
             }
+            refreshClanBridge();
             return provider != null;
         } catch (ReflectiveOperationException | LinkageError ex) {
             clearCargoCache();
             cargoPlugin = plugin;
+            refreshClanBridge();
             return false;
         }
     }
@@ -122,6 +128,42 @@ public final class CargoPlusBridge {
     public String getDefaultChatColor() {
         Object value = invoke("getDefaultChatColor");
         return value instanceof String ? ((String) value).toLowerCase(Locale.ROOT) : "branco";
+    }
+
+    /** Retorna a tag do ClanPlus exatamente como foi configurada, incluindo cores. */
+    public String getClanTag(UUID uuid) {
+        if (uuid == null) return "";
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("ClanPlus");
+        if (plugin == null || !plugin.isEnabled()) {
+            clanPlugin = null;
+            getPlayerTagMethod = null;
+            return "";
+        }
+        if (clanPlugin != plugin || getPlayerTagMethod == null) refreshClanBridge();
+        if (getPlayerTagMethod == null) return "";
+        try {
+            Object result = getPlayerTagMethod.invoke(clanPlugin, uuid);
+            return result instanceof String ? (String) result : "";
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            getPlayerTagMethod = null;
+            return "";
+        }
+    }
+
+    private synchronized void refreshClanBridge() {
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("ClanPlus");
+        if (plugin == null || !plugin.isEnabled()) {
+            clanPlugin = null;
+            getPlayerTagMethod = null;
+            return;
+        }
+        try {
+            clanPlugin = plugin;
+            getPlayerTagMethod = plugin.getClass().getMethod("getPlayerTag", UUID.class);
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            clanPlugin = plugin;
+            getPlayerTagMethod = null;
+        }
     }
 
     private synchronized Object invoke(String methodName, Object... args) {
