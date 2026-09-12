@@ -259,7 +259,7 @@ public final class ChatService {
                 components.add(component);
             }
 
-            if (!clanTag.isEmpty()) addClanTag(components, clanTag);
+            if (!clanTag.isEmpty()) addClanTag(components, clanTag, firstColorCode(prefix));
 
             if (addVanishHover) {
                 addLegacyWithVanishHover(components, after);
@@ -275,24 +275,13 @@ public final class ChatService {
         return TextComponent.fromLegacyText(formatted);
     }
 
-    private void addClanTag(List<BaseComponent> components, String tag) {
+    private void addClanTag(List<BaseComponent> components, String tag, String cargoColor) {
         if (tag == null || tag.isEmpty()) return;
-        String firstColor = firstTagColor(tag);
-        if (firstColor.isEmpty()) firstColor = "§f";
         String lightGray = "§7";
+        if (cargoColor == null || cargoColor.isEmpty()) cargoColor = "§f";
         addLegacy(components, lightGray + "[");
         addLegacy(components, tag);
-        addLegacy(components, lightGray + "]§r ");
-    }
-
-    private String firstTagColor(String tag) {
-        for (int i = 0; i + 1 < tag.length(); i++) {
-            if (tag.charAt(i) == '§') {
-                char code = tag.charAt(i + 1);
-                if ("0123456789abcdefABCDEF".indexOf(code) >= 0) return "§" + code;
-            }
-        }
-        return "";
+        addLegacy(components, lightGray + "]" + cargoColor + " ");
     }
 
     private String firstColorCode(String text) {
