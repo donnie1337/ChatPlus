@@ -2,11 +2,15 @@
 #  ChatPlus - config.yml
 # =========================================================
 #
-# Placeholders disponiveis nos formatos:
-#   {prefix}  -> prefixo/cargo fornecido pelo CargoPlus
+# Placeholders disponíveis nos formatos:
+#   {prefix}  -> cargo/prefixo fornecido pelo CargoPlus
+#   {tag}     -> tag do ClanPlus, com as cores configuradas no clan
 #   {player}  -> nome do remetente
 #   {message} -> mensagem enviada
 #   {world}   -> mundo do remetente (local)
+#
+# A tag do clan aparece logo depois do cargo e NÃO é convertida para
+# small caps. Ela mantém exatamente as letras e cores configuradas.
 #
 # As mensagens de entrada e saída são gerenciadas pelo UtilidadesPlus,
 # incluindo a lista de mensagens variadas e as preferências do /configurar.
@@ -19,12 +23,12 @@ chat:
   local:
     ativado: true
     alcance: 50
-    formato: "&e[L] {prefix}&f{player}&7: &f{message}"
+    formato: "&e[L] {prefix}{tag}&f{player}&7: &f{message}"
 
   global:
     ativado: true
-    formato: "&7[G] {prefix}&f{player}&7: &f{message}"
+    formato: "&7[G] {prefix}{tag}&f{player}&7: &f{message}"
 
   staff:
     ativado: true
-    formato: "&c[S] {prefix}&f{player}&7: &f{message}"
+    formato: "&c[S] {prefix}{tag}&f{player}&7: &f{message}"
