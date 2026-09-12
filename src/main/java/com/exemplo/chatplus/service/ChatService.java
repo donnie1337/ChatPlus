@@ -133,7 +133,7 @@ public final class ChatService {
         if (sender == null || !sender.isOnline() || message == null || message.isEmpty()) return;
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) {
-                online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", online, false));
+                online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", null, false));
             }
         }
         BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false);
@@ -242,6 +242,9 @@ public final class ChatService {
             String after = template.substring(template.indexOf(PREFIX_PLACEHOLDER) + PREFIX_PLACEHOLDER.length());
             placeholders.put(PREFIX_PLACEHOLDER, "");
             before = MessageUtil.apply(before, placeholders);
+            // A tag is inserted as a component below, immediately after the CargoPlus prefix.
+            // Remove the placeholder from the template so it cannot appear a second time.
+            after = after.replace(TAG_PLACEHOLDER, "");
             after = MessageUtil.apply(after, placeholders);
 
             List<BaseComponent> components = new ArrayList<>();
