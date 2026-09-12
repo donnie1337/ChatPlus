@@ -219,14 +219,16 @@ public final class ChatService {
             playerName = "Console";
         } else {
             Player player = (Player) sender;
-            playerName = cargo.getNicknameColor(player.getUniqueId()) + sender.getName();
+            prefix = cargo.getPrefix(player.getUniqueId());
+            String cargoColor = firstColorCode(prefix);
+            if (cargoColor.isEmpty()) cargoColor = "§f";
+            playerName = cargoColor + sender.getName();
             clanTag = cargo.getClanTag(player.getUniqueId());
             if (senderVanished && viewer != null && viewer.hasPermission(VANISH_PERMISSION)) {
                 playerName += " " + VANISH_SUFFIX_MARKER;
                 addVanishHover = true;
             }
             chatColor = cargo.getChatColor(player.getUniqueId());
-            prefix = cargo.getPrefix(player.getUniqueId());
             group = cargo.getGroup(player.getUniqueId());
         }
 
@@ -242,8 +244,6 @@ public final class ChatService {
             String after = template.substring(template.indexOf(PREFIX_PLACEHOLDER) + PREFIX_PLACEHOLDER.length());
             placeholders.put(PREFIX_PLACEHOLDER, "");
             before = MessageUtil.apply(before, placeholders);
-            // A tag is inserted as a component below, immediately after the CargoPlus prefix.
-            // Remove the placeholder from the template so it cannot appear a second time.
             after = after.replace(TAG_PLACEHOLDER, "");
             after = MessageUtil.apply(after, placeholders);
 
@@ -281,7 +281,7 @@ public final class ChatService {
         if (firstColor.isEmpty()) firstColor = "§f";
         addLegacy(components, firstColor + "[");
         addLegacy(components, tag);
-        addLegacy(components, firstColor + "]");
+        addLegacy(components, firstColor + "]§r ");
     }
 
     private String firstTagColor(String tag) {
@@ -289,6 +289,18 @@ public final class ChatService {
             if (tag.charAt(i) == '§') {
                 char code = tag.charAt(i + 1);
                 if ("0123456789abcdefABCDEF".indexOf(code) >= 0) return "§" + code;
+            }
+        }
+        return "";
+    }
+
+    private String firstColorCode(String text) {
+        if (text == null) return "";
+        for (int i = 0; i + 1 < text.length(); i++) {
+            char marker = text.charAt(i);
+            char code = text.charAt(i + 1);
+            if ((marker == '§' || marker == '&') && "0123456789abcdefABCDEF".indexOf(code) >= 0) {
+                return "§" + Character.toLowerCase(code);
             }
         }
         return "";
