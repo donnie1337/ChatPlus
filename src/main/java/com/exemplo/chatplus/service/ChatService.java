@@ -279,9 +279,10 @@ public final class ChatService {
         if (tag == null || tag.isEmpty()) return;
         String firstColor = firstTagColor(tag);
         if (firstColor.isEmpty()) firstColor = "§f";
-        addLegacy(components, firstColor + "[");
+        String lightGray = "§7";
+        addLegacy(components, lightGray + "[");
         addLegacy(components, tag);
-        addLegacy(components, firstColor + "]§r ");
+        addLegacy(components, lightGray + "]§r ");
     }
 
     private String firstTagColor(String tag) {
