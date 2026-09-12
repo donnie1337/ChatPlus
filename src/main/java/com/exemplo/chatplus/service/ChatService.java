@@ -256,7 +256,7 @@ public final class ChatService {
                 components.add(component);
             }
 
-            if (!clanTag.isEmpty()) addLegacy(components, MessageUtil.colorize(clanTag));
+            if (!clanTag.isEmpty()) addClanTag(components, clanTag);
 
             if (addVanishHover) {
                 addLegacyWithVanishHover(components, after);
@@ -270,6 +270,25 @@ public final class ChatService {
         String formatted = MessageUtil.apply(template, placeholders);
         if (addVanishHover) return parseWithVanishHover(formatted);
         return TextComponent.fromLegacyText(formatted);
+    }
+
+    private void addClanTag(List<BaseComponent> components, String tag) {
+        if (tag == null || tag.isEmpty()) return;
+        String firstColor = firstTagColor(tag);
+        if (firstColor.isEmpty()) firstColor = "§f";
+        addLegacy(components, firstColor + "[");
+        addLegacy(components, tag);
+        addLegacy(components, firstColor + "]");
+    }
+
+    private String firstTagColor(String tag) {
+        for (int i = 0; i + 1 < tag.length(); i++) {
+            if (tag.charAt(i) == '§') {
+                char code = tag.charAt(i + 1);
+                if ("0123456789abcdefABCDEF".indexOf(code) >= 0) return "§" + code;
+            }
+        }
+        return "";
     }
 
     private String capitalizeGroupName(String group) {
