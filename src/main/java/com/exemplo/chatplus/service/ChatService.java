@@ -23,10 +23,11 @@ import java.util.Map;
 
 public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
+    private static final String TAG_PLACEHOLDER = "{tag}";
     private static final String STAFF_PERMISSION = "chatplus.staff";
     private static final String VANISH_PERMISSION = "essentialsplus.vanish";
     private static final String VANISH_SUFFIX_MARKER = "§0§0§0[ESSENTIALSPLUS_VANISH_HOVER]";
-    private static final String VANISH_SUFFIX = "§l§x§F§F§F§F§F§F[§x§F§B§F§B§F§Bɪ§x§F§7§F§7§F§7ɴ§x§F§4§F§4§F§4ᴠ§x§F§0§F§0§F§0ɪ§x§E§C§E§C§E§Cs§x§E§8§E§8§E§8ɪ§x§E§4§E§4§E§4ᴠ§x§E§1§E§1§E§1ᴇ§x§D§D§D§D§D§Dʟ§x§D§9§D§9§D§9]";
+    private static final String VANISH_SUFFIX = "§l§x§F§F§F§F§F§F[§x§F§B§F§B§F§Bɪ§x§F§7§F§7§F§7ɴ§x§F§4§F§4§F§4ᴠ§x§F§0§F§0§F§0ɪ§x§E§C§E§C§E§C§s§x§E§8§E§8§E§8ɪ§x§E§4§E§4§E§4ᴠ§x§E§1§E§1§E§1ᴇ§x§D§D§D§D§D§Dʟ§x§D§9§D§9§D§9]";
     private static final String VANISH_HOVER_TEXT = "§fEste jogador está invisível.";
     private final ConfigManager config;
     private final ChatDelayService delayService;
@@ -67,15 +68,11 @@ public final class ChatService {
                 continue;
             }
             boolean recipientVanished = isVanished(online);
-
             World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
             if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
                 online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld.getName(), online, senderVanished));
-
-                if (!(!senderVanished && recipientVanished)) {
-                    deliveredToAnotherPlayer = true;
-                }
+                if (!(!senderVanished && recipientVanished)) deliveredToAnotherPlayer = true;
             }
         }
         if (!deliveredToAnotherPlayer) {
@@ -128,26 +125,17 @@ public final class ChatService {
         notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
 
-    /**
-     * Sends a trusted system event through the same staff-chat formatter used
-     * by /s. It intentionally bypasses the player chat delay and authentication
-     * check because the message originates from another trusted plugin.
-     */
     public void sendStaffSystemMessage(Player sender, String message) {
         if (!Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffSystemMessage(sender, message));
             return;
         }
         if (sender == null || !sender.isOnline() || message == null || message.isEmpty()) return;
-
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) {
-                // Do not append the normal vanish suffix here: this event is
-                // itself the notification that the player changed vanish state.
                 online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", online, false));
             }
         }
-
         BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false);
         notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
@@ -164,7 +152,6 @@ public final class ChatService {
             authCheckMethod = null;
             return false;
         }
-
         Method method = authCheckMethod;
         if (authPlugin != auth || method == null) {
             synchronized (this) {
@@ -180,7 +167,6 @@ public final class ChatService {
                 method = authCheckMethod;
             }
         }
-
         if (method == null) return false;
         try {
             Object result = method.invoke(auth, player);
@@ -198,7 +184,6 @@ public final class ChatService {
             vanishCheckMethod = null;
             return false;
         }
-
         Method method = vanishCheckMethod;
         if (vanishPlugin != vanish || method == null) {
             synchronized (this) {
@@ -214,7 +199,6 @@ public final class ChatService {
                 method = vanishCheckMethod;
             }
         }
-
         if (method == null) return false;
         try {
             Object result = method.invoke(vanish, player);
@@ -228,6 +212,7 @@ public final class ChatService {
         String playerName;
         String chatColor = "";
         String prefix = "";
+        String clanTag = "";
         String group = "desconhecido";
         boolean addVanishHover = false;
         if (sender instanceof ConsoleCommandSender) {
@@ -235,6 +220,7 @@ public final class ChatService {
         } else {
             Player player = (Player) sender;
             playerName = cargo.getNicknameColor(player.getUniqueId()) + sender.getName();
+            clanTag = cargo.getClanTag(player.getUniqueId());
             if (senderVanished && viewer != null && viewer.hasPermission(VANISH_PERMISSION)) {
                 playerName += " " + VANISH_SUFFIX_MARKER;
                 addVanishHover = true;
@@ -246,6 +232,7 @@ public final class ChatService {
 
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("{player}", playerName);
+        placeholders.put(TAG_PLACEHOLDER, clanTag);
         placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message));
         placeholders.put("{world}", world);
 
@@ -269,6 +256,8 @@ public final class ChatService {
                 components.add(component);
             }
 
+            if (!clanTag.isEmpty()) addLegacy(components, MessageUtil.colorize(clanTag));
+
             if (addVanishHover) {
                 addLegacyWithVanishHover(components, after);
             } else {
@@ -279,9 +268,7 @@ public final class ChatService {
 
         placeholders.put(PREFIX_PLACEHOLDER, prefix);
         String formatted = MessageUtil.apply(template, placeholders);
-        if (addVanishHover) {
-            return parseWithVanishHover(formatted);
-        }
+        if (addVanishHover) return parseWithVanishHover(formatted);
         return TextComponent.fromLegacyText(formatted);
     }
 
@@ -297,7 +284,6 @@ public final class ChatService {
             addLegacy(components, text);
             return;
         }
-
         addLegacy(components, text.substring(0, markerIndex));
         addVanishComponents(components);
         addLegacy(components, text.substring(markerIndex + VANISH_SUFFIX_MARKER.length()));
