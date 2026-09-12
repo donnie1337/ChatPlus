@@ -27,7 +27,7 @@ public final class ChatService {
     private static final String STAFF_PERMISSION = "chatplus.staff";
     private static final String VANISH_PERMISSION = "essentialsplus.vanish";
     private static final String VANISH_SUFFIX_MARKER = "§0§0§0[ESSENTIALSPLUS_VANISH_HOVER]";
-    private static final String VANISH_SUFFIX = "§l§x§F§F§F§F§F§F[§x§F§B§F§B§F§Bɪ§x§F§7§F§7§F§7ɴ§x§F§4§F§4§F§4ᴠ§x§F§0§F§0§F§0ɪ§x§E§C§E§C§E§C§s§x§E§8§E§8§E§8ɪ§x§E§4§E§4§E§4ᴠ§x§E§1§E§1§E§1ᴇ§x§D§D§D§D§D§Dʟ§x§D§9§D§9§D§9]";
+    private static final String VANISH_SUFFIX = "§l§x§F§F§F§F§F§F[§x§F§B§F§B§F§Bɪ§x§F§7§F§7§F§7ɴ§x§F§4§F§4§F§4ᴠ§x§F§0§F§0§F§0ɪ§x§E§C§E§C§E§C§x§E§8§E§8§E§8ɪ§x§E§4§E§4§E§4ᴠ§x§E§1§E§1§E§1ᴇ§x§D§D§D§D§D§Dʟ§x§D§9§D§9§D§9]";
     private static final String VANISH_HOVER_TEXT = "§fEste jogador está invisível.";
     private final ConfigManager config;
     private final ChatDelayService delayService;
@@ -220,7 +220,8 @@ public final class ChatService {
         } else {
             Player player = (Player) sender;
             prefix = cargo.getPrefix(player.getUniqueId());
-            String cargoColor = firstColorCode(prefix);
+            String cargoColor = cargo.getNicknameColor(player.getUniqueId());
+            if (cargoColor.isEmpty()) cargoColor = firstColorCode(prefix);
             if (cargoColor.isEmpty()) cargoColor = "§f";
             playerName = cargoColor + sender.getName();
             clanTag = cargo.getClanTag(player.getUniqueId());
@@ -259,7 +260,7 @@ public final class ChatService {
                 components.add(component);
             }
 
-            if (!clanTag.isEmpty()) addClanTag(components, clanTag, firstColorCode(prefix));
+            if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargo.getNicknameColor(playerId(sender)));
 
             if (addVanishHover) {
                 addLegacyWithVanishHover(components, after);
@@ -273,6 +274,10 @@ public final class ChatService {
         String formatted = MessageUtil.apply(template, placeholders);
         if (addVanishHover) return parseWithVanishHover(formatted);
         return TextComponent.fromLegacyText(formatted);
+    }
+
+    private java.util.UUID playerId(CommandSender sender) {
+        return sender instanceof Player player ? player.getUniqueId() : null;
     }
 
     private void addClanTag(List<BaseComponent> components, String tag, String cargoColor) {
