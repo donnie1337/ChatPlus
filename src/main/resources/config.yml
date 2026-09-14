@@ -1,34 +1,44 @@
-# =========================================================
-#  ChatPlus - config.yml
-# =========================================================
+# ============================================================
+# ChatPlus - Configuração principal
+# ============================================================
+# Placeholders disponíveis:
+# {prefix}  -> cargo/prefixo fornecido pelo CargoPlus
+# {tag}     -> reservado para compatibilidade; renderizado pelo ChatService
+# {player}  -> nome do remetente
+# {message} -> mensagem enviada
+# {world}   -> mundo do remetente no chat local
 #
-# Placeholders disponíveis nos formatos:
-#   {prefix}  -> cargo/prefixo fornecido pelo CargoPlus
-#   {tag}     -> reservado para compatibilidade; a tag é renderizada pelo ChatService
-#   {player}  -> nome do remetente
-#   {message} -> mensagem enviada
-#   {world}   -> mundo do remetente (local)
+# A tag do clan é renderizada uma única vez pelo ChatService,
+# logo depois do cargo, preservando letras e cores do ClanPlus.
 #
-# A tag do clan é renderizada uma única vez pelo ChatService, logo depois do cargo.
-# Ela mantém exatamente as letras e cores configuradas no ClanPlus.
-#
-# As mensagens de entrada e saída são gerenciadas pelo UtilidadesPlus,
-# incluindo a lista de mensagens variadas e as preferências do /configurar.
-# =========================================================
+# As mensagens de entrada e saída são gerenciadas pelo UtilidadesPlus.
+# As chaves técnicas existentes são preservadas para compatibilidade.
+# ============================================================
 
 chat:
+  # 0 desativa o intervalo entre mensagens.
   delay-segundos: 0
+  # Quantidade máxima de caracteres por mensagem.
   limite-mensagem: 256
 
+  # ----------------------------------------------------------
+  # CHAT LOCAL
+  # ----------------------------------------------------------
   local:
     ativado: true
     alcance: 50
     formato: "&e[L] {prefix}&f{player}&7: &f{message}"
 
+  # ----------------------------------------------------------
+  # CHAT GLOBAL
+  # ----------------------------------------------------------
   global:
     ativado: true
     formato: "&7[G] {prefix}&f{player}&7: &f{message}"
 
+  # ----------------------------------------------------------
+  # CHAT DA STAFF
+  # ----------------------------------------------------------
   staff:
     ativado: true
     formato: "&c[S] {prefix}&f{player}&7: &f{message}"
