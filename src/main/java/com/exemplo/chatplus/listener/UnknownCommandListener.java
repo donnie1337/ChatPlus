@@ -29,11 +29,6 @@ public final class UnknownCommandListener implements Listener {
         this.commandMap = resolveCommandMap();
     }
 
-    /**
-     * ChatPlus is deliberately the first command handler. This prevents
-     * another plugin from cancelling the event first and leaving a blank
-     * or permission-denied response behind.
-     */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
@@ -45,9 +40,7 @@ public final class UnknownCommandListener implements Listener {
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
         if (isProtectedServerCommand(normalizedLabel)) {
-            if (!player.hasPermission(SERVER_COMMAND_PERMISSION)) {
-                hideCommand(player, event);
-            }
+            if (!player.hasPermission(SERVER_COMMAND_PERMISSION)) hideCommand(player, event);
             return;
         }
 
@@ -77,14 +70,29 @@ public final class UnknownCommandListener implements Listener {
     }
 
     private boolean hasPermission(Player player, Command command, String label) {
-        String permission = command.getPermission();
-        if (permission == null || permission.isBlank()) permission = fallbackPermission(label);
+        String permission = permissionFor(command, label);
+        if (permission == null) return true;
         if (player.hasPermission(permission)) return true;
 
         if ("cor".equalsIgnoreCase(label)) {
             return cargoPlus.hasCargoPermission(player.getUniqueId(), "chatplus.cor");
         }
         return cargoPlus.hasCargoPermission(player.getUniqueId(), permission);
+    }
+
+    /**
+     * /v e /configurar não declaram mais permission no plugin.yml para impedir
+     * que o dispatcher do servidor gere uma segunda resposta de permissão.
+     * O ChatPlus mantém aqui as permissões reais desses comandos.
+     */
+    private String permissionFor(Command command, String label) {
+        String normalized = label.toLowerCase(Locale.ROOT);
+        if ("v".equals(normalized)) return "essentialsplus.vanish";
+        if ("configurar".equals(normalized)) return "utilidadesplus.configurar";
+
+        String permission = command.getPermission();
+        if (permission == null || permission.isBlank()) return fallbackPermission(label);
+        return permission;
     }
 
     private boolean isProtectedServerCommand(String label) {
