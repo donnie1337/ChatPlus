@@ -29,23 +29,12 @@ public final class UnknownCommandListener implements Listener {
         this.commandMap = resolveCommandMap();
     }
 
+    /**
+     * ChatPlus is deliberately the first command handler. This prevents
+     * another plugin from cancelling the event first and leaving a blank
+     * or permission-denied response behind.
+     */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
-    public void onProtectedServerCommand(PlayerCommandPreprocessEvent event) {
-        if (event.isCancelled()) return;
-        Player player = event.getPlayer();
-        String message = event.getMessage();
-        if (message == null || message.isBlank() || !message.startsWith("/")) return;
-
-        String commandLabel = message.substring(1).trim().split("\\s+", 2)[0];
-        if (commandLabel.isBlank()) return;
-        String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
-        if (!isProtectedServerCommand(normalizedLabel)) return;
-        if (player.hasPermission(SERVER_COMMAND_PERMISSION)) return;
-
-        hideCommand(player, event);
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
         String message = event.getMessage();
@@ -55,7 +44,13 @@ public final class UnknownCommandListener implements Listener {
         if (commandLabel.isBlank()) return;
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
-        if (isProtectedServerCommand(normalizedLabel) || event.isCancelled()) return;
+        if (isProtectedServerCommand(normalizedLabel)) {
+            if (!player.hasPermission(SERVER_COMMAND_PERMISSION)) {
+                hideCommand(player, event);
+            }
+            return;
+        }
+
         if (commandMap == null) return;
 
         Command command = commandMap.getCommand(normalizedLabel);
