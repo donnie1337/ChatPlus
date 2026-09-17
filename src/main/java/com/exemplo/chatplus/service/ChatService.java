@@ -45,10 +45,10 @@ public final class ChatService {
         if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
         int range = config.getLocalChatRange(); long rangeSquared = (long) range * range; Location senderLocation = sender.getLocation(); World senderWorld = senderLocation.getWorld(); boolean senderVanished = isVanished(sender); boolean deliveredToAnotherPlayer = false;
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.equals(sender)) { online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "", online, senderVanished)); continue; }
+            if (online.equals(sender)) { online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "", online, senderVanished, "Local")); continue; }
             boolean recipientVanished = isVanished(online); World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
-            if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) { online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld.getName(), online, senderVanished)); if (!(!senderVanished && recipientVanished)) deliveredToAnotherPlayer = true; }
+            if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) { online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld.getName(), online, senderVanished, "Local")); if (!(!senderVanished && recipientVanished)) deliveredToAnotherPlayer = true; }
         }
         if (!deliveredToAnotherPlayer) { String alone = config.getMessage("ninguem-por-perto"); if (!alone.isEmpty()) sender.sendMessage(alone); }
     }
@@ -57,21 +57,21 @@ public final class ChatService {
         if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendGlobalMessage(sender, message)); return; }
         if (sender instanceof Player player && !isAuthenticated(player)) { sender.sendMessage(config.getMessage("nao-autenticado")); return; }
         if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
-        for (Player online : Bukkit.getOnlinePlayers()) if (online.isOnline() && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getGlobalChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player)));
-        BaseComponent[] consoleFormatted = formatMessage(config.getGlobalChatFormat(), sender, message, "", null, false); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
+        for (Player online : Bukkit.getOnlinePlayers()) if (online.isOnline() && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getGlobalChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player), "Global"));
+        BaseComponent[] consoleFormatted = formatMessage(config.getGlobalChatFormat(), sender, message, "", null, false, "Global"); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
     public void sendStaffMessage(CommandSender sender, String message) {
         if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffMessage(sender, message)); return; }
         if (sender instanceof Player player && !isAuthenticated(player)) { sender.sendMessage(config.getMessage("nao-autenticado")); return; }
         if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
-        for (Player online : Bukkit.getOnlinePlayers()) if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player)));
-        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
+        for (Player online : Bukkit.getOnlinePlayers()) if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player), "Staff"));
+        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false, "Staff"); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
     public void sendStaffSystemMessage(Player sender, String message) {
         if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffSystemMessage(sender, message)); return; }
         if (sender == null || !sender.isOnline() || message == null || message.isEmpty()) return;
-        for (Player online : Bukkit.getOnlinePlayers()) if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", null, false));
-        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
+        for (Player online : Bukkit.getOnlinePlayers()) if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", null, false, "Staff"));
+        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false, "Staff"); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
     private void notifyConsole(CommandSender sender, String formatted) { if (!(sender instanceof ConsoleCommandSender)) Bukkit.getConsoleSender().sendMessage(formatted); }
 
@@ -90,7 +90,7 @@ public final class ChatService {
         if (method == null) return false; try { Object result = method.invoke(vanish, player); return result instanceof Boolean && (Boolean) result; } catch (ReflectiveOperationException | LinkageError ex) { return false; }
     }
 
-    private BaseComponent[] formatMessage(String format, CommandSender sender, String message, String world, Player viewer, boolean senderVanished) {
+    private BaseComponent[] formatMessage(String format, CommandSender sender, String message, String world, Player viewer, boolean senderVanished, String chatType) {
         String playerName; String chatColor = ""; String prefix = ""; String clanTag = ""; String group = "desconhecido"; boolean addVanishHover = false; String cargoColor = "§f";
         if (sender instanceof ConsoleCommandSender) playerName = "Console";
         else {
@@ -108,9 +108,31 @@ public final class ChatService {
             for (BaseComponent component : prefixComponents) { component.setHoverEvent(hover); components.add(component); }
             if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
             if (addVanishHover) addLegacyWithVanishHover(components, after); else addLegacy(components, after);
+            decorateChatTypeHover(components.toArray(BaseComponent[]::new), chatType);
             return components.toArray(BaseComponent[]::new);
         }
-        placeholders.put(PREFIX_PLACEHOLDER, prefix); String formatted = MessageUtil.apply(template, placeholders); if (addVanishHover) return parseWithVanishHover(formatted); return TextComponent.fromLegacyText(formatted);
+        placeholders.put(PREFIX_PLACEHOLDER, prefix); String formatted = MessageUtil.apply(template, placeholders); BaseComponent[] result = addVanishHover ? parseWithVanishHover(formatted) : TextComponent.fromLegacyText(formatted); decorateChatTypeHover(result, chatType); return result;
+    }
+
+    private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
+        if (components == null || chatType == null || chatType.isBlank()) return;
+        String marker = switch (chatType) {
+            case "Local" -> "[L]";
+            case "Global" -> "[G]";
+            case "Staff" -> "[S]";
+            default -> null;
+        };
+        if (marker == null) return;
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fChat: §e" + chatType).create());
+        applyChatTypeHover(components, marker, hover);
+    }
+
+    private void applyChatTypeHover(BaseComponent[] components, String marker, HoverEvent hover) {
+        if (components == null) return;
+        for (BaseComponent component : components) {
+            if (component instanceof TextComponent text && marker.equals(text.getText())) component.setHoverEvent(hover);
+            if (component.getExtra() != null) applyChatTypeHover(component.getExtra().toArray(BaseComponent[]::new), marker, hover);
+        }
     }
 
     private void addClanTag(List<BaseComponent> components, String tag, String cargoColor) {
