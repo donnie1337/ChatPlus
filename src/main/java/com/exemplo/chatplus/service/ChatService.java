@@ -253,6 +253,7 @@ public final class ChatService {
         String safeCargoColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
         StringBuilder lore = new StringBuilder();
         lore.append("§f§l◆ INFORMAÇÕES ◆\n");
+        lore.append("\n");
         lore.append("§7ᴊᴏɢᴀᴅᴏʀ §8• ").append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
         lore.append("§7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
         if (hasClan) lore.append("§7ᴄʟᴀɴ §8• §f[").append(clanValue).append("§f]\n");
