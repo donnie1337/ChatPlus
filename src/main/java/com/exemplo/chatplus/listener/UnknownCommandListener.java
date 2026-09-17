@@ -134,6 +134,6 @@ public final class UnknownCommandListener implements Listener {
 
     private void hideCommand(Player player, PlayerCommandPreprocessEvent event) {
         event.setCancelled(true);
-        player.sendMessage(MessageUtil.colorize("&f&lᴇʀʀᴏ &8• &cComando não encontrado."));
+        player.sendMessage(MessageUtil.colorize("&4ᴇʀʀᴏ&8• &cComando não encontrado."));
     }
 }
