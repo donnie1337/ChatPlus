@@ -254,12 +254,13 @@ public final class ChatService {
         String cleanNickname = nickname.replaceFirst("§[0-9a-fk-or]", "");
         ComponentBuilder builder = new ComponentBuilder("§7◆ Informações de ")
                 .append(TextComponent.fromLegacyText(safeCargoColor + cleanNickname))
-                .append("\n\n");
-        builder.append(TextComponent.fromLegacyText("§7ᴄᴀʀɢᴏ §8• " + safeCargoColor + capitalizeGroupName(cargoValue) + "\n"));
-        if (hasClan) builder.append(TextComponent.fromLegacyText("§7ᴄʟᴀɴ §8• §f[" + clanValue + "§f]\n"));
-        else builder.append(TextComponent.fromLegacyText("§7ᴄʟᴀɴ §8• §7Nenhum\n"));
-        builder.append(TextComponent.fromLegacyText("§7ᴍᴏᴇᴅᴀs §8• §f" + moneyValue + "\n"));
-        builder.append(TextComponent.fromLegacyText("§7ᴋᴅʀ §8• §f" + String.format(Locale.US, "%.2f", kdr) + "\n"));
+                .append("\n\n")
+                .append(TextComponent.fromLegacyText("§7ᴊᴏɢᴀᴅᴏʀ §8• " + safeCargoColor + cleanNickname + "\n\n"))
+                .append(TextComponent.fromLegacyText("§7ᴄᴀʀɢᴏ §8• " + safeCargoColor + capitalizeGroupName(cargoValue) + "\n\n"));
+        if (hasClan) builder.append(TextComponent.fromLegacyText("§7ᴄʟᴀɴ §8• §f[" + clanValue + "§f]\n\n"));
+        else builder.append(TextComponent.fromLegacyText("§7ᴄʟᴀɴ §8• §7Nenhum\n\n"));
+        builder.append(TextComponent.fromLegacyText("§7ᴍᴏᴇᴅᴀs §8• §f" + moneyValue + "\n\n"));
+        builder.append(TextComponent.fromLegacyText("§7ᴋᴅʀ §8• §f" + String.format(Locale.US, "%.2f", kdr) + "\n\n"));
         builder.append(TextComponent.fromLegacyText("§7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f" + formatOnlineTime(player) + "\n\n"));
         builder.append(TextComponent.fromLegacyText("§bClique aqui para interagir com este jogador."));
         return builder.create();
@@ -278,56 +279,57 @@ public final class ChatService {
                 DecimalFormat format = new DecimalFormat("#,##0.00", symbols);
                 return format.format(number.doubleValue());
             }
-        } catch (ReflectiveOperationException | LinkageError | RuntimeException ignored) {}
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException ignored) { }
         return "0,00";
     }
 
     private String formatOnlineTime(Player player) {
         long minutes = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L / 60L;
         long days = minutes / (24L * 60L);
-        long hours = (minutes % (24L * 60L)) / 60L;
-        long mins = minutes % 60L;
-        if (days > 0) return days + "d " + hours + "h " + mins + "m";
-        if (hours > 0) return hours + "h " + mins + "m";
-        return mins + "m";
+        minutes %= 24L * 60L;
+        long hours = minutes / 60L;
+        minutes %= 60L;
+        if (days > 0) return days + "d " + hours + "h " + minutes + "m";
+        if (hours > 0) return hours + "h " + minutes + "m";
+        return minutes + "m";
     }
 
     private String capitalizeGroupName(String group) {
-        if (group == null || group.isBlank()) return "Membro";
-        return group.substring(0, 1).toUpperCase(Locale.ROOT) + group.substring(1).toLowerCase(Locale.ROOT);
+        if (group == null || group.isBlank()) return "Desconhecido";
+        return Character.toUpperCase(group.charAt(0)) + group.substring(1).toLowerCase(Locale.ROOT);
     }
 
-    private String firstColorCode(String value) {
-        if (value == null) return "";
-        for (int i = 0; i < value.length() - 1; i++) if (value.charAt(i) == '§') return value.substring(i, i + 2);
+    private String firstColorCode(String text) {
+        if (text == null) return "";
+        for (int i = 0; i < text.length() - 1; i++) if (text.charAt(i) == '§') return text.substring(i, i + 2);
         return "";
     }
 
     private void addClanTag(List<BaseComponent> components, String clanTag, String cargoColor) {
-        addLegacy(components, cargoColor + "[" + clanTag + "] ");
+        String color = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
+        components.addAll(List.of(TextComponent.fromLegacyText(" §8[" + color + MessageUtil.colorize(clanTag) + "§8]")));
     }
 
     private void addLegacy(List<BaseComponent> components, String text) {
-        if (text == null || text.isEmpty()) return;
-        for (BaseComponent component : TextComponent.fromLegacyText(text)) components.add(component);
+        if (text != null && !text.isEmpty()) components.addAll(List.of(TextComponent.fromLegacyText(text)));
     }
 
     private void addLegacyWithVanishHover(List<BaseComponent> components, String text) {
-        BaseComponent[] parsed = TextComponent.fromLegacyText(text);
+        BaseComponent[] parsed = TextComponent.fromLegacyText(text == null ? "" : text);
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(VANISH_HOVER_TEXT).create());
         for (BaseComponent component : parsed) { component.setHoverEvent(hover); components.add(component); }
     }
 
     private BaseComponent[] parseWithVanishHover(String text) {
-        BaseComponent[] parsed = TextComponent.fromLegacyText(text);
+        BaseComponent[] parsed = TextComponent.fromLegacyText(text == null ? "" : text);
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(VANISH_HOVER_TEXT).create());
-        for (BaseComponent component : parsed) if (TextComponent.toLegacyText(component).contains(VANISH_SUFFIX_MARKER)) { component.setHoverEvent(hover); }
+        for (BaseComponent component : parsed) if (TextComponent.toLegacyText(component).contains(VANISH_SUFFIX)) component.setHoverEvent(hover);
         return parsed;
     }
 
     private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
-        if (components == null || chatType == null || chatType.isEmpty()) return;
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Canal: §f" + chatType).create());
-        for (BaseComponent component : components) if (component.getHoverEvent() == null) component.setHoverEvent(hover);
+        if (components == null || components.length == 0 || chatType == null || chatType.isBlank()) return;
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fCanal: §b" + chatType).create());
+        for (BaseComponent component : components) component.setHoverEvent(hover);
     }
 }
