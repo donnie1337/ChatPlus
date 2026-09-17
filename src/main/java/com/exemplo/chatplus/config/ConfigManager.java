@@ -156,6 +156,7 @@ public final class ConfigManager {
     private static Map<String, String> buildDefaultMessages() {
         Map<String, String> defaults = new LinkedHashMap<>();
         defaults.put("sem-permissao", "&cVocê não possui permissão para utilizar este chat.");
+        defaults.put("comando-desconhecido", "&c&lᴇʀʀᴏ &8• &cComando não encontrado");
         defaults.put("chat-global-desativado", "&cO chat global está desativado.");
         defaults.put("chat-local-desativado", "&cO chat local está desativado.");
         defaults.put("chat-staff-desativado", "&cO chat da staff está desativado.");
