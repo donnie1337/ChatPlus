@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Statistic;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -15,6 +16,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +27,7 @@ import java.util.Map;
 public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
     private static final String TAG_PLACEHOLDER = "{tag}";
+    private static final String PLAYER_PLACEHOLDER = "{player}";
     private static final String STAFF_PERMISSION = "chatplus.staff";
     private static final String VANISH_PERMISSION = "essentialsplus.vanish";
     private static final String VANISH_SUFFIX_MARKER = "§0§0§0[ESSENTIALSPLUS_VANISH_HOVER]";
@@ -99,57 +103,97 @@ public final class ChatService {
             if (senderVanished && viewer != null && viewer.hasPermission(VANISH_PERMISSION)) { playerName += " " + VANISH_SUFFIX_MARKER; addVanishHover = true; }
             chatColor = cargo.getChatColor(player.getUniqueId()); group = cargo.getGroup(player.getUniqueId());
         }
-        Map<String, String> placeholders = new HashMap<>(); placeholders.put("{player}", playerName); placeholders.put(TAG_PLACEHOLDER, clanTag); placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message)); placeholders.put("{world}", world);
+        Map<String, String> placeholders = new HashMap<>(); placeholders.put(PLAYER_PLACEHOLDER, playerName); placeholders.put(TAG_PLACEHOLDER, clanTag); placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message)); placeholders.put("{world}", world);
         String template = MessageUtil.colorize(format == null ? "" : format);
         if (sender instanceof Player && template.contains(PREFIX_PLACEHOLDER)) {
-            String before = template.substring(0, template.indexOf(PREFIX_PLACEHOLDER)); String after = template.substring(template.indexOf(PREFIX_PLACEHOLDER) + PREFIX_PLACEHOLDER.length()); placeholders.put(PREFIX_PLACEHOLDER, ""); before = MessageUtil.apply(before, placeholders); after = after.replace(TAG_PLACEHOLDER, ""); after = MessageUtil.apply(after, placeholders);
+            String before = template.substring(0, template.indexOf(PREFIX_PLACEHOLDER)); String afterTemplate = template.substring(template.indexOf(PREFIX_PLACEHOLDER) + PREFIX_PLACEHOLDER.length()); placeholders.put(PREFIX_PLACEHOLDER, ""); before = MessageUtil.apply(before, placeholders); afterTemplate = afterTemplate.replace(TAG_PLACEHOLDER, "");
             List<BaseComponent> components = new ArrayList<>(); addLegacy(components, before);
-            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix)); String hoverGroup = capitalizeGroupName(group); HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fCargo: §e" + hoverGroup).create());
-            for (BaseComponent component : prefixComponents) { component.setHoverEvent(hover); components.add(component); }
+            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix)); String hoverGroup = capitalizeGroupName(group); HoverEvent prefixHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fCargo: §e" + hoverGroup).create());
+            for (BaseComponent component : prefixComponents) { component.setHoverEvent(prefixHover); components.add(component); }
             if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
-            if (addVanishHover) addLegacyWithVanishHover(components, after); else addLegacy(components, after);
-            decorateChatTypeHover(components.toArray(BaseComponent[]::new), chatType);
-            return components.toArray(BaseComponent[]::new);
+            addPlayerAndAfter(components, afterTemplate, (Player) sender, playerName, cargoColor, addVanishHover, placeholders);
+            BaseComponent[] result = components.toArray(BaseComponent[]::new); decorateChatTypeHover(result, chatType); return result;
         }
         placeholders.put(PREFIX_PLACEHOLDER, prefix); String formatted = MessageUtil.apply(template, placeholders); BaseComponent[] result = addVanishHover ? parseWithVanishHover(formatted) : TextComponent.fromLegacyText(formatted); decorateChatTypeHover(result, chatType); return result;
     }
 
-    private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
-        if (components == null || chatType == null || chatType.isBlank()) return;
-        String marker = switch (chatType) {
-            case "Local" -> "[L]";
-            case "Global" -> "[G]";
-            case "Staff" -> "[S]";
-            default -> null;
-        };
-        if (marker == null) return;
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fChat: §e" + chatType).create());
-        applyChatTypeHover(components, marker, hover);
+    private void addPlayerAndAfter(List<BaseComponent> components, String template, Player player, String playerName, String cargoColor, boolean addVanishHover, Map<String, String> placeholders) {
+        int playerIndex = template.indexOf(PLAYER_PLACEHOLDER);
+        if (playerIndex < 0) {
+            placeholders.put(PLAYER_PLACEHOLDER, playerName);
+            if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(template, placeholders)); else addLegacy(components, MessageUtil.apply(template, placeholders));
+            return;
+        }
+        String beforePlayer = template.substring(0, playerIndex);
+        String afterPlayer = template.substring(playerIndex + PLAYER_PLACEHOLDER.length());
+        placeholders.put(PLAYER_PLACEHOLDER, "");
+        addLegacy(components, MessageUtil.apply(beforePlayer, placeholders));
+
+        String nickname = cargoColor + player.getName();
+        HoverEvent nicknameHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(buildPlayerProfileHover(player, nickname)).create());
+        BaseComponent[] nicknameComponents = TextComponent.fromLegacyText(nickname);
+        for (BaseComponent component : nicknameComponents) { component.setHoverEvent(nicknameHover); components.add(component); }
+
+        if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(afterPlayer, placeholders)); else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
     }
 
-    private void applyChatTypeHover(BaseComponent[] components, String marker, HoverEvent hover) {
-        if (components == null) return;
-        for (BaseComponent component : components) {
-            if (component instanceof TextComponent text && marker.equals(text.getText())) component.setHoverEvent(hover);
-            if (component.getExtra() != null) applyChatTypeHover(component.getExtra().toArray(BaseComponent[]::new), marker, hover);
+    private String buildPlayerProfileHover(Player player, String nickname) {
+        String cargoValue = cargo.getGroup(player.getUniqueId());
+        if (cargoValue == null || cargoValue.isBlank()) cargoValue = "Desconhecido";
+        String clanValue = cargo.getClanTag(player.getUniqueId());
+        if (clanValue == null || clanValue.isBlank()) clanValue = "§8Nenhum";
+        String moneyValue = getMoney(player);
+        int kills = player.getStatistic(Statistic.PLAYER_KILLS);
+        int deaths = player.getStatistic(Statistic.DEATHS);
+        double kdr = deaths <= 0 ? kills : (double) kills / deaths;
+        return nickname + "\n\n§7Cargo: §f" + capitalizeGroupName(cargoValue) + "\n§7Clan: " + clanValue + "\n§7Money: §f" + moneyValue + "\n§7KDR: §f" + String.format(Locale.US, "%.2f", kdr) + "\n§7Tempo online: §f" + formatOnlineTime(player);
+    }
+
+    private String getMoney(Player player) {
+        try {
+            Class<?> economyClass = Class.forName("net.milkbowl.vault.economy.Economy");
+            Object registration = Bukkit.getServicesManager().getRegistration(economyClass);
+            if (registration == null) return "N/A";
+            Method providerMethod = registration.getClass().getMethod("getProvider");
+            Object economy = providerMethod.invoke(registration);
+            if (economy == null) return "N/A";
+            Method balanceMethod = economy.getClass().getMethod("getBalance", org.bukkit.OfflinePlayer.class);
+            Object balance = balanceMethod.invoke(economy, player);
+            if (!(balance instanceof Number number)) return "N/A";
+            DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(new Locale("pt", "BR"));
+            DecimalFormat format = new DecimalFormat("#,##0.00", symbols);
+            return "$" + format.format(number.doubleValue());
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException ex) {
+            return "N/A";
         }
     }
 
-    private void addClanTag(List<BaseComponent> components, String tag, String cargoColor) {
-        if (tag == null || tag.isEmpty()) return;
-        String lightGray = "§7";
-        String tagColor = firstColorCode(tag);
-        if (tagColor.isEmpty()) tagColor = lightGray;
-        if (cargoColor == null || cargoColor.isEmpty()) cargoColor = "§f";
-        addLegacy(components, lightGray + "[");
-        addLegacy(components, colorizeTag(tag, tagColor));
-        addLegacy(components, lightGray + "]" + cargoColor + " ");
+    private String formatOnlineTime(Player player) {
+        long minutes = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L / 60L;
+        long days = minutes / 1440L;
+        long hours = (minutes % 1440L) / 60L;
+        long remainingMinutes = minutes % 60L;
+        if (days > 0) return days + "d " + hours + "h " + remainingMinutes + "m";
+        if (hours > 0) return hours + "h " + remainingMinutes + "m";
+        return remainingMinutes + "m";
     }
 
-    private String colorizeTag(String tag, String fallbackColor) {
-        String cleaned = tag.replaceAll("(?i)&[0-9A-F]", "").replaceAll("(?i)§[0-9A-F]", "");
-        return fallbackColor + cleaned;
+    private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
+        if (components == null || chatType == null || chatType.isBlank()) return;
+        String marker = switch (chatType) { case "Local" -> "[L]"; case "Global" -> "[G]"; case "Staff" -> "[S]"; default -> null; };
+        if (marker == null) return;
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fChat: §e" + chatType).create()); applyChatTypeHover(components, marker, hover);
     }
+    private void applyChatTypeHover(BaseComponent[] components, String marker, HoverEvent hover) {
+        if (components == null) return;
+        for (BaseComponent component : components) { if (component instanceof TextComponent text && marker.equals(text.getText())) component.setHoverEvent(hover); if (component.getExtra() != null) applyChatTypeHover(component.getExtra().toArray(BaseComponent[]::new), marker, hover); }
+    }
+    private void addClanTag(List<BaseComponent> components, String tag, String cargoColor) {
+        if (tag == null || tag.isEmpty()) return;
+        String lightGray = "§7"; String tagColor = firstColorCode(tag); if (tagColor.isEmpty()) tagColor = lightGray; if (cargoColor == null || cargoColor.isEmpty()) cargoColor = "§f";
+        addLegacy(components, lightGray + "["); addLegacy(components, colorizeTag(tag, tagColor)); addLegacy(components, lightGray + "]" + cargoColor + " ");
+    }
+    private String colorizeTag(String tag, String fallbackColor) { String cleaned = tag.replaceAll("(?i)&[0-9A-F]", "").replaceAll("(?i)§[0-9A-F]", ""); return fallbackColor + cleaned; }
     private String firstColorCode(String text) { if (text == null) return ""; for (int i = 0; i + 1 < text.length(); i++) { char marker = text.charAt(i); char code = text.charAt(i + 1); if ((marker == '§' || marker == '&') && "0123456789abcdefABCDEF".indexOf(code) >= 0) return "§" + Character.toLowerCase(code); } return ""; }
     private String capitalizeGroupName(String group) { if (group == null || group.isBlank()) return "Desconhecido"; String normalized = group.trim().toLowerCase(Locale.ROOT); return Character.toUpperCase(normalized.charAt(0)) + normalized.substring(1); }
     private void addLegacyWithVanishHover(List<BaseComponent> components, String text) { int markerIndex = text.indexOf(VANISH_SUFFIX_MARKER); if (markerIndex < 0) { addLegacy(components, text); return; } addLegacy(components, text.substring(0, markerIndex)); addVanishComponents(components); addLegacy(components, text.substring(markerIndex + VANISH_SUFFIX_MARKER.length())); }
