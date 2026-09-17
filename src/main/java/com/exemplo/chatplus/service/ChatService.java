@@ -147,6 +147,7 @@ public final class ChatService {
         if (cargoValue == null || cargoValue.isBlank()) cargoValue = "Desconhecido";
         String clanValue = cargo.getClanTag(player.getUniqueId());
         if (clanValue == null || clanValue.isBlank()) clanValue = "§8Nenhum";
+        else clanValue = MessageUtil.colorize(clanValue);
         String moneyValue = getMoney(player);
         int kills = player.getStatistic(Statistic.PLAYER_KILLS);
         int deaths = player.getStatistic(Statistic.DEATHS);
@@ -155,8 +156,8 @@ public final class ChatService {
         StringBuilder lore = new StringBuilder();
         lore.append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
         lore.append("§7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
-        lore.append("§7ᴄʟᴀɴ §8• ").append(clanValue).append("\n");
-        lore.append("§7ᴍᴏɴᴇʏ §8• §f").append(moneyValue).append("\n");
+        lore.append("§7ᴄʟᴀɴ §8• §f[").append(clanValue).append("§f]\n");
+        lore.append("§7ᴍᴏᴇᴅᴀs §8• §f").append(moneyValue).append("\n");
         lore.append("§7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
         lore.append("§7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player));
         return lore.toString();
