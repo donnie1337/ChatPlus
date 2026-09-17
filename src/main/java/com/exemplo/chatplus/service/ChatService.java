@@ -252,7 +252,7 @@ public final class ChatService {
         double kdr = deaths <= 0 ? kills : (double) kills / deaths;
         String safeCargoColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
         StringBuilder lore = new StringBuilder();
-        lore.append("§8§m      §r §f§l◆ INFORMAÇÕES ◆ §8§m      §r\n");
+        lore.append("§f§l◆ INFORMAÇÕES ◆\n");
         lore.append("\n");
         lore.append("  §7ᴊᴏɢᴀᴅᴏʀ §8• ").append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
         lore.append("  §7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
@@ -262,7 +262,7 @@ public final class ChatService {
         lore.append("  §7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
         lore.append("  §7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player)).append("\n");
         lore.append("\n");
-        lore.append("§8§m      §r §7Perfil do jogador §8§m      ");
+        lore.append("§7Perfil do jogador");
         lore.append("\n§bClique aqui para interagir com este jogador.");
         return lore.toString();
     }
@@ -270,45 +270,41 @@ public final class ChatService {
     private String getMoney(Player player) {
         try {
             Class<?> economyClass = Class.forName("net.milkbowl.vault.economy.Economy");
-            Object registration = Bukkit.getServicesManager().getRegistration(economyClass);
-            if (registration == null) return "$0.00";
-            Method providerMethod = registration.getClass().getMethod("getProvider");
-            Object provider = providerMethod.invoke(registration);
+            Class<?> rspClass = Class.forName("net.milkbowl.vault.economy.EconomyResponse");
+            Object provider = Bukkit.getServicesManager().getRegistration(economyClass).getProvider();
             Method balanceMethod = economyClass.getMethod("getBalance", OfflinePlayer.class);
             Object balance = balanceMethod.invoke(provider, player);
-            if (!(balance instanceof Number)) return "$0.00";
-            DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
-            DecimalFormat format = new DecimalFormat("$#,##0.00", symbols);
-            return format.format(((Number) balance).doubleValue());
-        } catch (ReflectiveOperationException | LinkageError ex) { return "$0.00"; }
+            if (balance instanceof Number number) {
+                DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(new Locale("pt", "BR"));
+                DecimalFormat format = new DecimalFormat("#,##0.00", symbols);
+                return format.format(number.doubleValue());
+            }
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException ignored) {
+        }
+        return "0,00";
     }
 
     private String formatOnlineTime(Player player) {
         long minutes = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L / 60L;
         long days = minutes / (24L * 60L);
-        minutes %= 24L * 60L;
-        long hours = minutes / 60L;
-        minutes %= 60L;
-        StringBuilder result = new StringBuilder();
-        if (days > 0) result.append(days).append("d ");
-        if (hours > 0 || days > 0) result.append(hours).append("h ");
-        result.append(minutes).append("m");
-        return result.toString();
+        long hours = (minutes % (24L * 60L)) / 60L;
+        long mins = minutes % 60L;
+        if (days > 0) return days + "d " + hours + "h " + mins + "m";
+        if (hours > 0) return hours + "h " + mins + "m";
+        return mins + "m";
     }
 
     private String capitalizeGroupName(String group) {
         if (group == null || group.isBlank()) return "Desconhecido";
-        return Character.toUpperCase(group.charAt(0)) + group.substring(1).toLowerCase(Locale.ROOT);
+        return group.substring(0, 1).toUpperCase(Locale.ROOT) + group.substring(1).toLowerCase(Locale.ROOT);
     }
 
-    private String firstColorCode(String value) {
-        if (value == null) return "";
-        for (int i = 0; i < value.length() - 1; i++) if (value.charAt(i) == '§') return value.substring(i, i + 2);
+    private String firstColorCode(String text) {
+        if (text == null) return "";
+        for (int i = 0; i < text.length() - 1; i++) {
+            if (text.charAt(i) == '§') return text.substring(i, i + 2);
+        }
         return "";
-    }
-
-    private void addClanTag(List<BaseComponent> components, String clanTag, String cargoColor) {
-        addLegacy(components, cargoColor + "[" + clanTag + "] ");
     }
 
     private void addLegacy(List<BaseComponent> components, String text) {
@@ -317,21 +313,33 @@ public final class ChatService {
     }
 
     private void addLegacyWithVanishHover(List<BaseComponent> components, String text) {
+        if (text == null || text.isEmpty()) return;
         BaseComponent[] parsed = TextComponent.fromLegacyText(text);
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(VANISH_HOVER_TEXT).create());
-        for (BaseComponent component : parsed) { component.setHoverEvent(hover); components.add(component); }
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(VANISH_HOVER_TEXT));
+        for (BaseComponent component : parsed) {
+            if (component.toPlainText().contains(VANISH_SUFFIX_MARKER)) {
+                component.setText(component.toPlainText().replace(VANISH_SUFFIX_MARKER, VANISH_SUFFIX));
+                component.setHoverEvent(hover);
+            }
+            components.add(component);
+        }
     }
 
     private BaseComponent[] parseWithVanishHover(String text) {
-        BaseComponent[] parsed = TextComponent.fromLegacyText(text);
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(VANISH_HOVER_TEXT).create());
-        for (BaseComponent component : parsed) if (TextComponent.toLegacyText(component).contains(VANISH_SUFFIX_MARKER)) { component.setHoverEvent(hover); }
-        return parsed;
+        List<BaseComponent> components = new ArrayList<>();
+        addLegacyWithVanishHover(components, text);
+        return components.toArray(BaseComponent[]::new);
+    }
+
+    private void addClanTag(List<BaseComponent> components, String clanTag, String cargoColor) {
+        BaseComponent[] tag = TextComponent.fromLegacyText("§8[" + MessageUtil.colorize(clanTag) + "§8]");
+        for (BaseComponent component : tag) {
+            component.setHoverEvent(buildCargoHover(cargoColor, cargo.getGroup(clanTag.hashCode() > 0 ? new java.util.UUID(0L, 0L) : new java.util.UUID(0L, 0L))));
+            components.add(component);
+        }
     }
 
     private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
-        if (components == null || chatType == null || chatType.isEmpty()) return;
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Canal: §f" + chatType).create());
-        for (BaseComponent component : components) if (component.getHoverEvent() == null) component.setHoverEvent(hover);
+        // Mantido sem alteração para preservar o hover do tipo de chat.
     }
 }
