@@ -154,13 +154,11 @@ public final class ChatService {
         String safeCargoColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
         StringBuilder lore = new StringBuilder();
         lore.append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
-        lore.append("§8━━━━━━━━━━━━━━━━━━\n");
         lore.append("§7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
         lore.append("§7ᴄʟᴀɴ §8• ").append(clanValue).append("\n");
         lore.append("§7ᴍᴏɴᴇʏ §8• §f").append(moneyValue).append("\n");
         lore.append("§7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
-        lore.append("§7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player)).append("\n");
-        lore.append("§8━━━━━━━━━━━━━━━━━━");
+        lore.append("§7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player));
         return lore.toString();
     }
 
