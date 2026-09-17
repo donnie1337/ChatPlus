@@ -159,8 +159,6 @@ public final class ChatService {
             playerName = "Console";
         } else {
             Player player = (Player) sender;
-            // ChatPlus deliberately uses only CargoPlus' static prefix API here.
-            // The animated prefix is reserved for TAB/nametag rendering.
             prefix = cargo.getPrefix(player.getUniqueId());
             cargoColor = cargo.getNicknameColor(player.getUniqueId());
             if (cargoColor.isEmpty()) cargoColor = firstColorCode(prefix);
@@ -190,9 +188,6 @@ public final class ChatService {
             afterTemplate = afterTemplate.replace(TAG_PLACEHOLDER, "");
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
-
-            // The chat prefix is built directly from CargoPlus.getPrefix(), never
-            // from getAnimatedPrefix(). This prevents the DEV white blink effect.
             BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
             HoverEvent prefixHover = buildCargoHover(cargoColor, group);
             for (BaseComponent component : prefixComponents) {
@@ -216,10 +211,7 @@ public final class ChatService {
     private HoverEvent buildCargoHover(String cargoColor, String group) {
         String safeColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
         String cargoName = capitalizeGroupName(group);
-        return new HoverEvent(
-            HoverEvent.Action.SHOW_TEXT,
-            new ComponentBuilder("§fCargo: ").append(TextComponent.fromLegacyText(safeColor + cargoName)).create()
-        );
+        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fCargo: ").append(TextComponent.fromLegacyText(safeColor + cargoName)).create());
     }
 
     private void addPlayerAndAfter(List<BaseComponent> components, String template, Player player, String playerName, String cargoColor, boolean addVanishHover, Map<String, String> placeholders) {
@@ -234,7 +226,6 @@ public final class ChatService {
         String afterPlayer = template.substring(playerIndex + PLAYER_PLACEHOLDER.length());
         placeholders.put(PLAYER_PLACEHOLDER, "");
         addLegacy(components, MessageUtil.apply(beforePlayer, placeholders));
-
         String nickname = cargoColor + player.getName();
         HoverEvent nicknameHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(buildPlayerProfileHover(player, nickname, cargoColor)).create());
         BaseComponent[] nicknameComponents = TextComponent.fromLegacyText(nickname);
@@ -259,12 +250,16 @@ public final class ChatService {
         double kdr = deaths <= 0 ? kills : (double) kills / deaths;
         String safeCargoColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
         StringBuilder lore = new StringBuilder();
-        lore.append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
-        lore.append("§7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
-        lore.append("§7ᴄʟᴀɴ §8• §f[").append(clanValue).append("§f]\n");
-        lore.append("§7ᴍᴏᴇᴅᴀs §8• §f").append(moneyValue).append("\n");
-        lore.append("§7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
-        lore.append("§7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player));
+        lore.append("§8§m      §r §f§l◆ INFORMAÇÕES ◆ §8§m      §r\n");
+        lore.append("\n");
+        lore.append("  §7ᴊᴏɢᴀᴅᴏʀ §8• ").append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
+        lore.append("  §7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
+        lore.append("  §7ᴄʟᴀɴ §8• §f[").append(clanValue).append("§f]\n");
+        lore.append("  §7ᴍᴏᴇᴅᴀs §8• §f").append(moneyValue).append("\n");
+        lore.append("  §7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
+        lore.append("  §7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player)).append("\n");
+        lore.append("\n");
+        lore.append("§8§m      §r §7Perfil do jogador §8§m      ");
         return lore.toString();
     }
 
@@ -299,23 +294,10 @@ public final class ChatService {
 
     private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
         if (components == null || chatType == null || chatType.isBlank()) return;
-        String marker = switch (chatType) {
-            case "Local" -> "[L]";
-            case "Global" -> "[G]";
-            case "Staff" -> "[S]";
-            default -> null;
-        };
+        String marker = switch (chatType) { case "Local" -> "[L]"; case "Global" -> "[G]"; case "Staff" -> "[S]"; default -> null; };
         if (marker == null) return;
-        String valueColor = switch (chatType) {
-            case "Local" -> "§e";
-            case "Global" -> "§7";
-            case "Staff" -> "§c";
-            default -> "§f";
-        };
-        HoverEvent hover = new HoverEvent(
-            HoverEvent.Action.SHOW_TEXT,
-            new ComponentBuilder("§fChat: ").append(TextComponent.fromLegacyText(valueColor + chatType)).create()
-        );
+        String valueColor = switch (chatType) { case "Local" -> "§e"; case "Global" -> "§7"; case "Staff" -> "§c"; default -> "§f"; };
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fChat: ").append(TextComponent.fromLegacyText(valueColor + chatType)).create());
         applyChatTypeHover(components, marker, hover);
     }
 
