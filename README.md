@@ -1,69 +1,105 @@
 # ChatPlus
 
-Sistema de chat do servidor, com canais **local, global e staff** e integração com o CargoPlus.
+O ChatPlus é o plugin que cuida do chat do meu servidor.
 
-## ✨ Funcionalidades
+Ele organiza os canais de chat, as cores das mensagens, a integração com cargos e algumas interações do jogador com o chat.
 
-### 💬 Canais de chat
-- **Chat local** para comunicação próxima entre jogadores.
-- **Chat global** para comunicação com o servidor inteiro.
-- **Chat staff** para comunicação exclusiva da equipe.
-- Formatação e mensagens configuráveis.
+## Canais
 
-### 🎨 Cores das mensagens
-- `/cor` abre uma interface gráfica para escolher a cor das mensagens.
-- Paleta de cores configurável.
-- A cor escolhida fica associada ao jogador.
+### Chat Local
+
+- `/l <mensagem>` envia mensagem para jogadores próximos.
+- Mostra a identificação do chat local.
+- A identificação possui descrição ao passar o mouse.
+
+### Chat Global
+
+- `/g <mensagem>` envia mensagem para o servidor inteiro.
+- Mostra a identificação do chat global.
+- A identificação possui descrição ao passar o mouse.
+
+### Chat Staff
+
+- `/s <mensagem>` envia mensagem para a equipe.
+- Mostra a identificação do chat staff.
+- A identificação possui descrição ao passar o mouse.
+
+## Cores
+
+- `/cor` abre o menu para escolher a cor das mensagens.
+- A paleta de cores é configurável.
+- A cor escolhida fica salva para o jogador.
 - A cor preta não faz parte da paleta disponível.
-- O sistema utiliza os dados de cores fornecidos pelo CargoPlus.
+- As informações de cargo e cor são integradas ao CargoPlus.
 
-### 🔗 Integração com CargoPlus
-O ChatPlus utiliza o CargoPlus para obter informações de cargo, permissões e cores, permitindo que a aparência das mensagens seja integrada ao sistema de hierarquia do servidor.
+## Informações do jogador
 
-### 🔐 Permissões
-Permissões principais:
-- `chatplus.local`
-- `chatplus.global`
-- `chatplus.staff`
-- `chatplus.cor`
-- `chatplus.admin`
+Ao passar o mouse no nome de um jogador no chat, aparece uma ficha com informações do jogador, incluindo:
 
-## 🎮 Comandos
+- Cargo.
+- Clan.
+- Dinheiro.
+- KDR.
+- Tempo online.
 
-| Comando | Função |
+O nome do jogador também pode ser clicado para preencher o nome dele no campo de mensagem.
+
+## Integração com CargoPlus
+
+O ChatPlus usa o CargoPlus para pegar o cargo, prefixo, permissões e cores dos jogadores.
+
+O prefixo animado do DEV não é usado no chat. A animação continua disponível onde ela deve aparecer, como TAB e acima da cabeça.
+
+## Comandos
+
+| Comando | O que faz |
 |---|---|
-| `/l <mensagem>` | Envia mensagem pelo chat local. |
-| `/g <mensagem>` | Envia mensagem pelo chat global. |
-| `/s <mensagem>` | Envia mensagem pelo chat da staff. |
-| `/cor` | Abre o menu para escolher a cor da mensagem. |
+| `/l <mensagem>` | Envia mensagem no chat local. |
+| `/g <mensagem>` | Envia mensagem no chat global. |
+| `/s <mensagem>` | Envia mensagem no chat da staff. |
+| `/cor` | Abre o menu de cores. |
 | `/chat reload` | Recarrega o ChatPlus. |
 
-## 🔑 Permissões
+## Permissões
 
-| Permissão | Função | Padrão |
+| Permissão | O que faz | Padrão |
 |---|---|---|
 | `chatplus.local` | Usar chat local | `true` |
 | `chatplus.global` | Usar chat global | `true` |
 | `chatplus.staff` | Usar chat da staff | `false` |
-| `chatplus.cor` | Escolher cor das mensagens | `false` |
+| `chatplus.cor` | Escolher a cor da mensagem | `false` |
 | `chatplus.admin` | Administrar o ChatPlus | `false` |
 
-## 🔗 Dependências
+## Comando não encontrado
 
-- LoginPlus
-- CargoPlus
-- UtilidadesPlus
+O ChatPlus é responsável pela mensagem de comando não encontrado do servidor.
 
-## 🏗️ Plataforma
+A mensagem usada é:
+
+`ᴄʜᴀᴛ • Comando não encontrado.`
+
+A ideia é evitar que vários plugins mostrem a mesma mensagem ao mesmo tempo.
+
+## Integrações
+
+- **LoginPlus:** usado para respeitar o estado de autenticação.
+- **CargoPlus:** cargos, prefixos, permissões e cores.
+- **UtilidadesPlus:** integração com recursos gerais do servidor.
+
+## Plataforma
 
 - Java 26
 - Spigot API 26.2
 - Maven
 
-## 🧪 Build
+## Build
 
 ```bash
 mvn -B clean package
 ```
 
-O projeto possui workflow de build no GitHub Actions.
+O projeto possui build automático pelo GitHub Actions.
+
+## Status
+
+O ChatPlus está em desenvolvimento e é o responsável pelo sistema de chat do meu servidor. A ideia é deixar o chat com um padrão único e integrado com os outros plugins, sem cada plugin ficar mandando mensagem de um jeito diferente.
