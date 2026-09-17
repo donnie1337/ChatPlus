@@ -42,20 +42,39 @@ public final class ChatService {
     private volatile Plugin vanishPlugin;
     private volatile Method vanishCheckMethod;
 
-    public ChatService(ConfigManager config, ChatDelayService delayService) { this.config = config; this.delayService = delayService; this.cargo = new CargoPlusBridge(); }
+    public ChatService(ConfigManager config, ChatDelayService delayService) {
+        this.config = config;
+        this.delayService = delayService;
+        this.cargo = new CargoPlusBridge();
+    }
 
     public void sendLocalMessage(Player sender, String message) {
         if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendLocalMessage(sender, message)); return; }
         if (!isAuthenticated(sender)) { sender.sendMessage(config.getMessage("nao-autenticado")); return; }
         if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
-        int range = config.getLocalChatRange(); long rangeSquared = (long) range * range; Location senderLocation = sender.getLocation(); World senderWorld = senderLocation.getWorld(); boolean senderVanished = isVanished(sender); boolean deliveredToAnotherPlayer = false;
+        int range = config.getLocalChatRange();
+        long rangeSquared = (long) range * range;
+        Location senderLocation = sender.getLocation();
+        World senderWorld = senderLocation.getWorld();
+        boolean senderVanished = isVanished(sender);
+        boolean deliveredToAnotherPlayer = false;
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.equals(sender)) { online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "", online, senderVanished, "Local")); continue; }
-            boolean recipientVanished = isVanished(online); World onlineWorld = online.getWorld();
+            if (online.equals(sender)) {
+                online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld != null ? senderWorld.getName() : "", online, senderVanished, "Local"));
+                continue;
+            }
+            boolean recipientVanished = isVanished(online);
+            World onlineWorld = online.getWorld();
             if (onlineWorld == null || senderWorld == null || !onlineWorld.equals(senderWorld)) continue;
-            if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) { online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld.getName(), online, senderVanished, "Local")); if (!(!senderVanished && recipientVanished)) deliveredToAnotherPlayer = true; }
+            if (senderLocation.distanceSquared(online.getLocation()) <= rangeSquared) {
+                online.spigot().sendMessage(formatMessage(config.getLocalChatFormat(), sender, message, senderWorld.getName(), online, senderVanished, "Local"));
+                if (!(!senderVanished && recipientVanished)) deliveredToAnotherPlayer = true;
+            }
         }
-        if (!deliveredToAnotherPlayer) { String alone = config.getMessage("ninguem-por-perto"); if (!alone.isEmpty()) sender.sendMessage(alone); }
+        if (!deliveredToAnotherPlayer) {
+            String alone = config.getMessage("ninguem-por-perto");
+            if (!alone.isEmpty()) sender.sendMessage(alone);
+        }
     }
 
     public void sendGlobalMessage(CommandSender sender, String message) {
@@ -63,66 +82,152 @@ public final class ChatService {
         if (sender instanceof Player player && !isAuthenticated(player)) { sender.sendMessage(config.getMessage("nao-autenticado")); return; }
         if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
         for (Player online : Bukkit.getOnlinePlayers()) if (online.isOnline() && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getGlobalChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player), "Global"));
-        BaseComponent[] consoleFormatted = formatMessage(config.getGlobalChatFormat(), sender, message, "", null, false, "Global"); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
+        BaseComponent[] consoleFormatted = formatMessage(config.getGlobalChatFormat(), sender, message, "", null, false, "Global");
+        notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
+
     public void sendStaffMessage(CommandSender sender, String message) {
         if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffMessage(sender, message)); return; }
         if (sender instanceof Player player && !isAuthenticated(player)) { sender.sendMessage(config.getMessage("nao-autenticado")); return; }
         if (!delayService.tryAcquire(sender)) { sender.sendMessage(config.getMessage("chat-em-delay")); return; }
         for (Player online : Bukkit.getOnlinePlayers()) if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", online, sender instanceof Player player && isVanished(player), "Staff"));
-        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false, "Staff"); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
+        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false, "Staff");
+        notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
+
     public void sendStaffSystemMessage(Player sender, String message) {
         if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffSystemMessage(sender, message)); return; }
         if (sender == null || !sender.isOnline() || message == null || message.isEmpty()) return;
         for (Player online : Bukkit.getOnlinePlayers()) if (online.hasPermission(STAFF_PERMISSION) && isAuthenticated(online)) online.spigot().sendMessage(formatMessage(config.getStaffChatFormat(), sender, message, "", null, false, "Staff"));
-        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false, "Staff"); notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
+        BaseComponent[] consoleFormatted = formatMessage(config.getStaffChatFormat(), sender, message, "", null, false, "Staff");
+        notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
-    private void notifyConsole(CommandSender sender, String formatted) { if (!(sender instanceof ConsoleCommandSender)) Bukkit.getConsoleSender().sendMessage(formatted); }
+
+    private void notifyConsole(CommandSender sender, String formatted) {
+        if (!(sender instanceof ConsoleCommandSender)) Bukkit.getConsoleSender().sendMessage(formatted);
+    }
 
     private boolean isAuthenticated(Player player) {
-        if (player == null || !player.isOnline()) return false; Plugin auth = Bukkit.getPluginManager().getPlugin("LoginPlus");
+        if (player == null || !player.isOnline()) return false;
+        Plugin auth = Bukkit.getPluginManager().getPlugin("LoginPlus");
         if (auth == null || !auth.isEnabled()) { authPlugin = null; authCheckMethod = null; return false; }
         Method method = authCheckMethod;
-        if (authPlugin != auth || method == null) synchronized (this) { if (authPlugin != auth || authCheckMethod == null) try { authPlugin = auth; authCheckMethod = auth.getClass().getMethod("isAuthenticated", Player.class); } catch (ReflectiveOperationException | LinkageError ex) { authPlugin = auth; authCheckMethod = null; } method = authCheckMethod; }
-        if (method == null) return false; try { Object result = method.invoke(auth, player); return result instanceof Boolean && (Boolean) result; } catch (ReflectiveOperationException | LinkageError ex) { return false; }
+        if (authPlugin != auth || method == null) synchronized (this) {
+            if (authPlugin != auth || authCheckMethod == null) try {
+                authPlugin = auth;
+                authCheckMethod = auth.getClass().getMethod("isAuthenticated", Player.class);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                authPlugin = auth;
+                authCheckMethod = null;
+            }
+            method = authCheckMethod;
+        }
+        if (method == null) return false;
+        try { Object result = method.invoke(auth, player); return result instanceof Boolean && (Boolean) result; }
+        catch (ReflectiveOperationException | LinkageError ex) { return false; }
     }
+
     private boolean isVanished(Player player) {
-        if (player == null || !player.isOnline()) return false; Plugin vanish = Bukkit.getPluginManager().getPlugin("EssentialsPlus");
+        if (player == null || !player.isOnline()) return false;
+        Plugin vanish = Bukkit.getPluginManager().getPlugin("EssentialsPlus");
         if (vanish == null || !vanish.isEnabled()) { vanishPlugin = null; vanishCheckMethod = null; return false; }
         Method method = vanishCheckMethod;
-        if (vanishPlugin != vanish || method == null) synchronized (this) { if (vanishPlugin != vanish || vanishCheckMethod == null) try { vanishPlugin = vanish; vanishCheckMethod = vanish.getClass().getMethod("isVanished", Player.class); } catch (ReflectiveOperationException | LinkageError ex) { vanishPlugin = vanish; vanishCheckMethod = null; } method = vanishCheckMethod; }
-        if (method == null) return false; try { Object result = method.invoke(vanish, player); return result instanceof Boolean && (Boolean) result; } catch (ReflectiveOperationException | LinkageError ex) { return false; }
+        if (vanishPlugin != vanish || method == null) synchronized (this) {
+            if (vanishPlugin != vanish || vanishCheckMethod == null) try {
+                vanishPlugin = vanish;
+                vanishCheckMethod = vanish.getClass().getMethod("isVanished", Player.class);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                vanishPlugin = vanish;
+                vanishCheckMethod = null;
+            }
+            method = vanishCheckMethod;
+        }
+        if (method == null) return false;
+        try { Object result = method.invoke(vanish, player); return result instanceof Boolean && (Boolean) result; }
+        catch (ReflectiveOperationException | LinkageError ex) { return false; }
     }
 
     private BaseComponent[] formatMessage(String format, CommandSender sender, String message, String world, Player viewer, boolean senderVanished, String chatType) {
-        String playerName; String chatColor = ""; String prefix = ""; String clanTag = ""; String group = "desconhecido"; boolean addVanishHover = false; String cargoColor = "§f";
-        if (sender instanceof ConsoleCommandSender) playerName = "Console";
-        else {
-            Player player = (Player) sender; prefix = cargo.getPrefix(player.getUniqueId()); cargoColor = cargo.getNicknameColor(player.getUniqueId()); if (cargoColor.isEmpty()) cargoColor = firstColorCode(prefix); if (cargoColor.isEmpty()) cargoColor = "§f";
-            playerName = cargoColor + sender.getName(); clanTag = cargo.getClanTag(player.getUniqueId());
-            if (senderVanished && viewer != null && viewer.hasPermission(VANISH_PERMISSION)) { playerName += " " + VANISH_SUFFIX_MARKER; addVanishHover = true; }
-            chatColor = cargo.getChatColor(player.getUniqueId()); group = cargo.getGroup(player.getUniqueId());
+        String playerName;
+        String chatColor = "";
+        String prefix = "";
+        String clanTag = "";
+        String group = "desconhecido";
+        boolean addVanishHover = false;
+        String cargoColor = "§f";
+        if (sender instanceof ConsoleCommandSender) {
+            playerName = "Console";
+        } else {
+            Player player = (Player) sender;
+            // ChatPlus deliberately uses only CargoPlus' static prefix API here.
+            // The animated prefix is reserved for TAB/nametag rendering.
+            prefix = cargo.getPrefix(player.getUniqueId());
+            cargoColor = cargo.getNicknameColor(player.getUniqueId());
+            if (cargoColor.isEmpty()) cargoColor = firstColorCode(prefix);
+            if (cargoColor.isEmpty()) cargoColor = "§f";
+            playerName = cargoColor + sender.getName();
+            clanTag = cargo.getClanTag(player.getUniqueId());
+            if (senderVanished && viewer != null && viewer.hasPermission(VANISH_PERMISSION)) {
+                playerName += " " + VANISH_SUFFIX_MARKER;
+                addVanishHover = true;
+            }
+            chatColor = cargo.getChatColor(player.getUniqueId());
+            group = cargo.getGroup(player.getUniqueId());
         }
-        Map<String, String> placeholders = new HashMap<>(); placeholders.put(PLAYER_PLACEHOLDER, playerName); placeholders.put(TAG_PLACEHOLDER, clanTag); placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message)); placeholders.put("{world}", world);
+
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(PLAYER_PLACEHOLDER, playerName);
+        placeholders.put(TAG_PLACEHOLDER, clanTag);
+        placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message));
+        placeholders.put("{world}", world);
         String template = MessageUtil.colorize(format == null ? "" : format);
+
         if (sender instanceof Player && template.contains(PREFIX_PLACEHOLDER)) {
-            String before = template.substring(0, template.indexOf(PREFIX_PLACEHOLDER)); String afterTemplate = template.substring(template.indexOf(PREFIX_PLACEHOLDER) + PREFIX_PLACEHOLDER.length()); placeholders.put(PREFIX_PLACEHOLDER, ""); before = MessageUtil.apply(before, placeholders); afterTemplate = afterTemplate.replace(TAG_PLACEHOLDER, "");
-            List<BaseComponent> components = new ArrayList<>(); addLegacy(components, before);
-            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix)); String hoverGroup = capitalizeGroupName(group); HoverEvent prefixHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fCargo: §e" + hoverGroup).create());
-            for (BaseComponent component : prefixComponents) { component.setHoverEvent(prefixHover); components.add(component); }
+            String before = template.substring(0, template.indexOf(PREFIX_PLACEHOLDER));
+            String afterTemplate = template.substring(template.indexOf(PREFIX_PLACEHOLDER) + PREFIX_PLACEHOLDER.length());
+            placeholders.put(PREFIX_PLACEHOLDER, "");
+            before = MessageUtil.apply(before, placeholders);
+            afterTemplate = afterTemplate.replace(TAG_PLACEHOLDER, "");
+            List<BaseComponent> components = new ArrayList<>();
+            addLegacy(components, before);
+
+            // The chat prefix is built directly from CargoPlus.getPrefix(), never
+            // from getAnimatedPrefix(). This prevents the DEV white blink effect.
+            BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
+            HoverEvent prefixHover = buildCargoHover(cargoColor, group);
+            for (BaseComponent component : prefixComponents) {
+                component.setHoverEvent(prefixHover);
+                components.add(component);
+            }
             if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
             addPlayerAndAfter(components, afterTemplate, (Player) sender, playerName, cargoColor, addVanishHover, placeholders);
-            BaseComponent[] result = components.toArray(BaseComponent[]::new); decorateChatTypeHover(result, chatType); return result;
+            BaseComponent[] result = components.toArray(BaseComponent[]::new);
+            decorateChatTypeHover(result, chatType);
+            return result;
         }
-        placeholders.put(PREFIX_PLACEHOLDER, prefix); String formatted = MessageUtil.apply(template, placeholders); BaseComponent[] result = addVanishHover ? parseWithVanishHover(formatted) : TextComponent.fromLegacyText(formatted); decorateChatTypeHover(result, chatType); return result;
+
+        placeholders.put(PREFIX_PLACEHOLDER, prefix);
+        String formatted = MessageUtil.apply(template, placeholders);
+        BaseComponent[] result = addVanishHover ? parseWithVanishHover(formatted) : TextComponent.fromLegacyText(formatted);
+        decorateChatTypeHover(result, chatType);
+        return result;
+    }
+
+    private HoverEvent buildCargoHover(String cargoColor, String group) {
+        String safeColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
+        String cargoName = capitalizeGroupName(group);
+        return new HoverEvent(
+            HoverEvent.Action.SHOW_TEXT,
+            new ComponentBuilder("§fCargo: ").append(TextComponent.fromLegacyText(safeColor + cargoName)).create()
+        );
     }
 
     private void addPlayerAndAfter(List<BaseComponent> components, String template, Player player, String playerName, String cargoColor, boolean addVanishHover, Map<String, String> placeholders) {
         int playerIndex = template.indexOf(PLAYER_PLACEHOLDER);
         if (playerIndex < 0) {
             placeholders.put(PLAYER_PLACEHOLDER, playerName);
-            if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(template, placeholders)); else addLegacy(components, MessageUtil.apply(template, placeholders));
+            if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(template, placeholders));
+            else addLegacy(components, MessageUtil.apply(template, placeholders));
             return;
         }
         String beforePlayer = template.substring(0, playerIndex);
@@ -138,8 +243,8 @@ public final class ChatService {
             component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, player.getName()));
             components.add(component);
         }
-
-        if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(afterPlayer, placeholders)); else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
+        if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(afterPlayer, placeholders));
+        else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
     }
 
     private String buildPlayerProfileHover(Player player, String nickname, String cargoColor) {
@@ -194,24 +299,92 @@ public final class ChatService {
 
     private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
         if (components == null || chatType == null || chatType.isBlank()) return;
-        String marker = switch (chatType) { case "Local" -> "[L]"; case "Global" -> "[G]"; case "Staff" -> "[S]"; default -> null; };
+        String marker = switch (chatType) {
+            case "Local" -> "[L]";
+            case "Global" -> "[G]";
+            case "Staff" -> "[S]";
+            default -> null;
+        };
         if (marker == null) return;
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fChat: §e" + chatType).create()); applyChatTypeHover(components, marker, hover);
+        String valueColor = switch (chatType) {
+            case "Local" -> "§e";
+            case "Global" -> "§7";
+            case "Staff" -> "§c";
+            default -> "§f";
+        };
+        HoverEvent hover = new HoverEvent(
+            HoverEvent.Action.SHOW_TEXT,
+            new ComponentBuilder("§fChat: ").append(TextComponent.fromLegacyText(valueColor + chatType)).create()
+        );
+        applyChatTypeHover(components, marker, hover);
     }
+
     private void applyChatTypeHover(BaseComponent[] components, String marker, HoverEvent hover) {
         if (components == null) return;
-        for (BaseComponent component : components) { if (component instanceof TextComponent text && marker.equals(text.getText())) component.setHoverEvent(hover); if (component.getExtra() != null) applyChatTypeHover(component.getExtra().toArray(BaseComponent[]::new), marker, hover); }
+        for (BaseComponent component : components) {
+            if (component instanceof TextComponent text && marker.equals(text.getText())) component.setHoverEvent(hover);
+            if (component.getExtra() != null) applyChatTypeHover(component.getExtra().toArray(BaseComponent[]::new), marker, hover);
+        }
     }
+
     private void addClanTag(List<BaseComponent> components, String tag, String cargoColor) {
         if (tag == null || tag.isEmpty()) return;
-        String lightGray = "§7"; String tagColor = firstColorCode(tag); if (tagColor.isEmpty()) tagColor = lightGray; if (cargoColor == null || cargoColor.isEmpty()) cargoColor = "§f";
-        addLegacy(components, lightGray + "["); addLegacy(components, colorizeTag(tag, tagColor)); addLegacy(components, lightGray + "]" + cargoColor + " ");
+        String lightGray = "§7";
+        String tagColor = firstColorCode(tag);
+        if (tagColor.isEmpty()) tagColor = lightGray;
+        if (cargoColor == null || cargoColor.isEmpty()) cargoColor = "§f";
+        addLegacy(components, lightGray + "[");
+        addLegacy(components, colorizeTag(tag, tagColor));
+        addLegacy(components, lightGray + "]" + cargoColor + " ");
     }
-    private String colorizeTag(String tag, String fallbackColor) { String cleaned = tag.replaceAll("(?i)&[0-9A-F]", "").replaceAll("(?i)§[0-9A-F]", ""); return fallbackColor + cleaned; }
-    private String firstColorCode(String text) { if (text == null) return ""; for (int i = 0; i + 1 < text.length(); i++) { char marker = text.charAt(i); char code = text.charAt(i + 1); if ((marker == '§' || marker == '&') && "0123456789abcdefABCDEF".indexOf(code) >= 0) return "§" + Character.toLowerCase(code); } return ""; }
-    private String capitalizeGroupName(String group) { if (group == null || group.isBlank()) return "Desconhecido"; String normalized = group.trim().toLowerCase(Locale.ROOT); return Character.toUpperCase(normalized.charAt(0)) + normalized.substring(1); }
-    private void addLegacyWithVanishHover(List<BaseComponent> components, String text) { int markerIndex = text.indexOf(VANISH_SUFFIX_MARKER); if (markerIndex < 0) { addLegacy(components, text); return; } addLegacy(components, text.substring(0, markerIndex)); addVanishComponents(components); addLegacy(components, text.substring(markerIndex + VANISH_SUFFIX_MARKER.length())); }
-    private BaseComponent[] parseWithVanishHover(String formatted) { List<BaseComponent> components = new ArrayList<>(); addLegacyWithVanishHover(components, formatted); return components.toArray(BaseComponent[]::new); }
-    private void addVanishComponents(List<BaseComponent> components) { BaseComponent[] vanishComponents = TextComponent.fromLegacyText(VANISH_SUFFIX); HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(VANISH_HOVER_TEXT).create()); for (BaseComponent component : vanishComponents) { component.setHoverEvent(hover); components.add(component); } }
-    private void addLegacy(List<BaseComponent> components, String text) { if (text == null || text.isEmpty()) return; BaseComponent[] parsed = TextComponent.fromLegacyText(text); for (BaseComponent component : parsed) components.add(component); }
+
+    private String colorizeTag(String tag, String fallbackColor) {
+        String cleaned = tag.replaceAll("(?i)&[0-9A-F]", "").replaceAll("(?i)§[0-9A-F]", "");
+        return fallbackColor + cleaned;
+    }
+
+    private String firstColorCode(String text) {
+        if (text == null) return "";
+        for (int i = 0; i + 1 < text.length(); i++) {
+            char marker = text.charAt(i);
+            char code = text.charAt(i + 1);
+            if ((marker == '§' || marker == '&') && "0123456789abcdefABCDEF".indexOf(code) >= 0) return "§" + Character.toLowerCase(code);
+        }
+        return "";
+    }
+
+    private String capitalizeGroupName(String group) {
+        if (group == null || group.isBlank()) return "Desconhecido";
+        String normalized = group.trim().toLowerCase(Locale.ROOT);
+        return Character.toUpperCase(normalized.charAt(0)) + normalized.substring(1);
+    }
+
+    private void addLegacyWithVanishHover(List<BaseComponent> components, String text) {
+        int markerIndex = text.indexOf(VANISH_SUFFIX_MARKER);
+        if (markerIndex < 0) { addLegacy(components, text); return; }
+        addLegacy(components, text.substring(0, markerIndex));
+        addVanishComponents(components);
+        addLegacy(components, text.substring(markerIndex + VANISH_SUFFIX_MARKER.length()));
+    }
+
+    private BaseComponent[] parseWithVanishHover(String formatted) {
+        List<BaseComponent> components = new ArrayList<>();
+        addLegacyWithVanishHover(components, formatted);
+        return components.toArray(BaseComponent[]::new);
+    }
+
+    private void addVanishComponents(List<BaseComponent> components) {
+        BaseComponent[] vanishComponents = TextComponent.fromLegacyText(VANISH_SUFFIX);
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(VANISH_HOVER_TEXT).create());
+        for (BaseComponent component : vanishComponents) {
+            component.setHoverEvent(hover);
+            components.add(component);
+        }
+    }
+
+    private void addLegacy(List<BaseComponent> components, String text) {
+        if (text == null || text.isEmpty()) return;
+        BaseComponent[] parsed = TextComponent.fromLegacyText(text);
+        for (BaseComponent component : parsed) components.add(component);
+    }
 }
