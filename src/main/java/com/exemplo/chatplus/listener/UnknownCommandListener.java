@@ -2,6 +2,7 @@ package com.exemplo.chatplus.listener;
 
 import com.exemplo.chatplus.config.ConfigManager;
 import com.exemplo.chatplus.service.CargoPlusBridge;
+import com.exemplo.chatplus.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
@@ -133,8 +134,6 @@ public final class UnknownCommandListener implements Listener {
 
     private void hideCommand(Player player, PlayerCommandPreprocessEvent event) {
         event.setCancelled(true);
-        String prefix = configManager.getMessage("prefixo-sistema");
-        String message = configManager.getMessage("comando-desconhecido");
-        player.sendMessage(prefix + message);
+        player.sendMessage(MessageUtil.colorize("&f&lᴇʀʀᴏ &8• &cComando não encontrado."));
     }
 }
