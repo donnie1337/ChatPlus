@@ -1,6 +1,6 @@
 sem-permissao: "&e&lᴄʜᴀᴛ &8• &cVocê não tem permissão para executar este comando."
 ao-autenticado: "&e&lᴄʜᴀᴛ &8• &cVocê precisa estar autenticado para executar este comando."
-comando-desconhecido: "&cComando não encontrado."
+comando-desconhecido: "&c&lᴇʀʀᴏ &8• &cComando não encontrado"
 
 # Prefixo global usado nas mensagens de sistema do ChatPlus.
 prefixo-sistema: "&e&lᴄʜᴀᴛ &8• &r"
