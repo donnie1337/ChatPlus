@@ -261,6 +261,7 @@ public final class ChatService {
         lore.append("§7ᴍᴏᴇᴅᴀs §8• §f").append(moneyValue).append("\n");
         lore.append("§7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
         lore.append("§7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player)).append("\n");
+        lore.append("\n");
         lore.append("§bClique aqui para interagir com este jogador.");
         return lore.toString();
     }
