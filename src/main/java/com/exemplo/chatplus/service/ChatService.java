@@ -3,6 +3,7 @@ package com.exemplo.chatplus.service;
 import com.exemplo.chatplus.config.ConfigManager;
 import com.exemplo.chatplus.util.MessageUtil;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -132,7 +133,11 @@ public final class ChatService {
         String nickname = cargoColor + player.getName();
         HoverEvent nicknameHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(buildPlayerProfileHover(player, nickname)).create());
         BaseComponent[] nicknameComponents = TextComponent.fromLegacyText(nickname);
-        for (BaseComponent component : nicknameComponents) { component.setHoverEvent(nicknameHover); components.add(component); }
+        for (BaseComponent component : nicknameComponents) {
+            component.setHoverEvent(nicknameHover);
+            component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, player.getName()));
+            components.add(component);
+        }
 
         if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(afterPlayer, placeholders)); else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
     }
