@@ -228,7 +228,7 @@ public final class ChatService {
         placeholders.put(PLAYER_PLACEHOLDER, "");
         addLegacy(components, MessageUtil.apply(beforePlayer, placeholders));
         String nickname = cargoColor + player.getName();
-        HoverEvent nicknameHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(buildPlayerProfileHover(player, nickname, cargoColor)).create());
+        HoverEvent nicknameHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, buildPlayerProfileHover(player, nickname, cargoColor));
         BaseComponent[] nicknameComponents = TextComponent.fromLegacyText(nickname);
         for (BaseComponent component : nicknameComponents) {
             component.setHoverEvent(nicknameHover);
@@ -239,7 +239,7 @@ public final class ChatService {
         else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
     }
 
-    private String buildPlayerProfileHover(Player player, String nickname, String cargoColor) {
+    private BaseComponent[] buildPlayerProfileHover(Player player, String nickname, String cargoColor) {
         String cargoValue = cargo.getGroup(player.getUniqueId());
         if (cargoValue == null || cargoValue.isBlank()) cargoValue = "Desconhecido";
         String clanValue = cargo.getClanTag(player.getUniqueId());
@@ -251,19 +251,18 @@ public final class ChatService {
         int deaths = player.getStatistic(Statistic.DEATHS);
         double kdr = deaths <= 0 ? kills : (double) kills / deaths;
         String safeCargoColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
-        StringBuilder lore = new StringBuilder();
-        lore.append("§f§l◆ INFORMAÇÕES ◆\n");
-        lore.append("\n");
-        lore.append("§7ᴊᴏɢᴀᴅᴏʀ §8• ").append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
-        lore.append("§7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
-        if (hasClan) lore.append("§7ᴄʟᴀɴ §8• §f[").append(clanValue).append("§f]\n");
-        else lore.append("§7ᴄʟᴀɴ §8• §7Nenhum\n");
-        lore.append("§7ᴍᴏᴇᴅᴀs §8• §f").append(moneyValue).append("\n");
-        lore.append("§7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
-        lore.append("§7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player)).append("\n");
-        lore.append("\n");
-        lore.append("§bClique aqui para interagir com este jogador.");
-        return lore.toString();
+        String cleanNickname = nickname.replaceFirst("§[0-9a-fk-or]", "");
+        ComponentBuilder builder = new ComponentBuilder("§7◆ Informações de ")
+                .append(TextComponent.fromLegacyText(safeCargoColor + cleanNickname))
+                .append("\n\n");
+        builder.append(TextComponent.fromLegacyText("§7ᴄᴀʀɢᴏ §8• " + safeCargoColor + capitalizeGroupName(cargoValue) + "\n"));
+        if (hasClan) builder.append(TextComponent.fromLegacyText("§7ᴄʟᴀɴ §8• §f[" + clanValue + "§f]\n"));
+        else builder.append(TextComponent.fromLegacyText("§7ᴄʟᴀɴ §8• §7Nenhum\n"));
+        builder.append(TextComponent.fromLegacyText("§7ᴍᴏᴇᴅᴀs §8• §f" + moneyValue + "\n"));
+        builder.append(TextComponent.fromLegacyText("§7ᴋᴅʀ §8• §f" + String.format(Locale.US, "%.2f", kdr) + "\n"));
+        builder.append(TextComponent.fromLegacyText("§7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f" + formatOnlineTime(player) + "\n\n"));
+        builder.append(TextComponent.fromLegacyText("§bClique aqui para interagir com este jogador."));
+        return builder.create();
     }
 
     private String getMoney(Player player) {
