@@ -252,26 +252,27 @@ public final class ChatService {
         double kdr = deaths <= 0 ? kills : (double) kills / deaths;
         String safeCargoColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
         StringBuilder lore = new StringBuilder();
-        lore.append("§f§l◆ INFORMAÇÕES ◆\n");
-        lore.append("\n");
-        lore.append("  §7ᴊᴏɢᴀᴅᴏʀ §8• ").append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
-        lore.append("  §7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
-        if (hasClan) lore.append("  §7ᴄʟᴀɴ §8• §f[").append(clanValue).append("§f]\n");
-        else lore.append("  §7ᴄʟᴀɴ §8• §7Nenhum\n");
-        lore.append("  §7ᴍᴏᴇᴅᴀs §8• §f").append(moneyValue).append("\n");
-        lore.append("  §7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
-        lore.append("  §7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player)).append("\n");
-        lore.append("\n");
-        lore.append("§7Perfil do jogador");
-        lore.append("\n§bClique aqui para interagir com este jogador.");
+        lore.append("ㅤ§f§l◆ INFORMAÇÕES ◆ㅤ\n");
+        lore.append("ㅤ\n");
+        lore.append("ㅤ  §7ᴊᴏɢᴀᴅᴏʀ §8• ").append(safeCargoColor).append(nickname.replaceFirst("§[0-9a-fk-or]", "")).append("\n");
+        lore.append("ㅤ  §7ᴄᴀʀɢᴏ §8• ").append(safeCargoColor).append(capitalizeGroupName(cargoValue)).append("\n");
+        if (hasClan) lore.append("ㅤ  §7ᴄʟᴀɴ §8• §f[").append(clanValue).append("§f]\n");
+        else lore.append("ㅤ  §7ᴄʟᴀɴ §8• §7Nenhum\n");
+        lore.append("ㅤ  §7ᴍᴏᴇᴅᴀs §8• §f").append(moneyValue).append("\n");
+        lore.append("ㅤ  §7ᴋᴅʀ §8• §f").append(String.format(Locale.US, "%.2f", kdr)).append("\n");
+        lore.append("ㅤ  §7ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f").append(formatOnlineTime(player)).append("\n");
+        lore.append("ㅤ\n");
+        lore.append("ㅤ§7Perfil do jogador");
+        lore.append("\nㅤ§bClique aqui para interagir com este jogador.");
         return lore.toString();
     }
 
     private String getMoney(Player player) {
         try {
             Class<?> economyClass = Class.forName("net.milkbowl.vault.economy.Economy");
-            Class<?> rspClass = Class.forName("net.milkbowl.vault.economy.EconomyResponse");
-            Object provider = Bukkit.getServicesManager().getRegistration(economyClass).getProvider();
+            Object registration = Bukkit.getServicesManager().getRegistration(economyClass);
+            if (registration == null) return "0,00";
+            Object provider = economyClass.cast(((org.bukkit.plugin.RegisteredServiceProvider<?>) registration).getProvider());
             Method balanceMethod = economyClass.getMethod("getBalance", OfflinePlayer.class);
             Object balance = balanceMethod.invoke(provider, player);
             if (balance instanceof Number number) {
