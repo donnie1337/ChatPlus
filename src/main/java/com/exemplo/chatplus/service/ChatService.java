@@ -307,8 +307,10 @@ public final class ChatService {
     }
 
     private void addClanTag(List<BaseComponent> components, String clanTag, String cargoColor) {
-        String safeColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
-        addLegacy(components, safeColor + "[" + MessageUtil.colorize(clanTag) + "] ");
+        // Os colchetes permanecem sempre em cinza claro (§7).
+        // Somente o nome/tag do clã usa a cor configurada no ClanPlus.
+        String coloredTag = MessageUtil.colorize(clanTag);
+        addLegacy(components, "§7[" + coloredTag + "§7] ");
     }
 
     private void addLegacy(List<BaseComponent> components, String text) {
