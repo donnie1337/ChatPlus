@@ -38,6 +38,7 @@ chat:
       moedas: "&7 ᴍᴏᴇᴅᴀs &8• &f{moedas}"
       kdr: "&7 ᴋᴅʀ &8• &f{kdr}"
       tempo-online: "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"
+      conta-criada: "&7 ᴄᴏɴᴛᴀ ᴄʀɪᴀᴅᴀ &8• &f{conta-criada}"
       interacao: "&bClique aqui para interagir com este jogador."
 
   # HOVERS ADICIONAIS
