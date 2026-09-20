@@ -40,6 +40,7 @@ public final class ChatService {
     private final CargoPlusBridge cargo;
     private volatile Plugin authPlugin;
     private volatile Method authCheckMethod;
+    private volatile Method registrationDateMethod;
     private volatile Plugin vanishPlugin;
     private volatile Method vanishCheckMethod;
 
@@ -282,6 +283,7 @@ public final class ChatService {
         hover.put("{moedas}", moneyValue);
         hover.put("{kdr}", String.format(Locale.US, "%.2f", kdr));
         hover.put("{tempo}", formatOnlineTime(player));
+        hover.put("{conta-criada}", getRegistrationDate(player));
 
         ComponentBuilder builder = new ComponentBuilder();
         appendConfiguredHoverLine(builder, config.getPlayerHoverTitle(), hover);
@@ -305,6 +307,29 @@ public final class ChatService {
         }
         BaseComponent[] components = TextComponent.fromLegacyText(MessageUtil.colorize(line));
         for (BaseComponent component : components) builder.append(component);
+    }
+
+    private String getRegistrationDate(Player player) {
+        if (player == null) return "Desconhecida";
+        Plugin loginPlus = Bukkit.getPluginManager().getPlugin("LoginPlus");
+        if (loginPlus == null || !loginPlus.isEnabled()) return "Desconhecida";
+        try {
+            Method method = registrationDateMethod;
+            if (method == null) {
+                Method dataManagerGetter = loginPlus.getClass().getMethod("getPlayerDataManager");
+                Object dataManager = dataManagerGetter.invoke(loginPlus);
+                if (dataManager == null) return "Desconhecida";
+                method = dataManager.getClass().getMethod("getRegistrationDate", String.class);
+                registrationDateMethod = method;
+                return String.valueOf(method.invoke(dataManager, player.getName()));
+            }
+            Method dataManagerGetter = loginPlus.getClass().getMethod("getPlayerDataManager");
+            Object dataManager = dataManagerGetter.invoke(loginPlus);
+            if (dataManager == null) return "Desconhecida";
+            return String.valueOf(method.invoke(dataManager, player.getName()));
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException ignored) {
+            return "Desconhecida";
+        }
     }
 
     private String getMoney(Player player) {
