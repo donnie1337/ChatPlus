@@ -267,16 +267,37 @@ public final class ChatService {
         double kdr = deaths <= 0 ? kills : (double) kills / deaths;
         String safeCargoColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
         String cleanNickname = nickname.replaceFirst("§[0-9a-fk-or]", "");
-        ComponentBuilder builder = new ComponentBuilder("§7◆ Informações de ")
-                .append(TextComponent.fromLegacyText(safeCargoColor + cleanNickname))
-                .append("\n\n");
-        if (hasClan) builder.append(TextComponent.fromLegacyText("§7 ᴄʟᴀɴ §8• §f[" + clanValue + "§f]\n"));
-        else builder.append(TextComponent.fromLegacyText("§7 ᴄʟᴀɴ §8• §7Nenhum\n"));
-        builder.append(TextComponent.fromLegacyText("§7 ᴍᴏᴇᴅᴀs §8• §f" + moneyValue + "\n"));
-        builder.append(TextComponent.fromLegacyText("§7 ᴋᴅʀ §8• §f" + String.format(Locale.US, "%.2f", kdr) + "\n"));
-        builder.append(TextComponent.fromLegacyText("§7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ §8• §f" + formatOnlineTime(player) + "\n\n"));
-        builder.append(TextComponent.fromLegacyText("§bClique aqui para interagir com este jogador."));
+
+        Map<String, String> hover = new HashMap<>();
+        hover.put("{player}", cleanNickname);
+        hover.put("{cargo}", cargoValue);
+        hover.put("{clan}", clanValue);
+        hover.put("{moedas}", moneyValue);
+        hover.put("{kdr}", String.format(Locale.US, "%.2f", kdr));
+        hover.put("{tempo}", formatOnlineTime(player));
+
+        ComponentBuilder builder = new ComponentBuilder();
+        appendConfiguredHoverLine(builder, config.getPlayerHoverTitle(), hover);
+        builder.append("\n\n");
+        appendConfiguredHoverLine(builder, config.getPlayerHoverClan(), hover);
+        builder.append("\n");
+        appendConfiguredHoverLine(builder, config.getPlayerHoverMoney(), hover);
+        builder.append("\n");
+        appendConfiguredHoverLine(builder, config.getPlayerHoverKdr(), hover);
+        builder.append("\n");
+        appendConfiguredHoverLine(builder, config.getPlayerHoverOnlineTime(), hover);
+        builder.append("\n\n");
+        appendConfiguredHoverLine(builder, config.getPlayerHoverInteraction(), hover);
         return builder.create();
+    }
+
+    private void appendConfiguredHoverLine(ComponentBuilder builder, String template, Map<String, String> placeholders) {
+        String line = template == null ? "" : template;
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            line = line.replace(entry.getKey(), entry.getValue() == null ? "" : entry.getValue());
+        }
+        BaseComponent[] components = TextComponent.fromLegacyText(MessageUtil.colorize(line));
+        for (BaseComponent component : components) builder.append(component);
     }
 
     private String getMoney(Player player) {
