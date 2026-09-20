@@ -190,7 +190,7 @@ public final class ChatService {
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
             BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
-            HoverEvent prefixHover = buildCargoHover(prefix, cargoColor, group);
+            HoverEvent prefixHover = buildCargoHover(prefix);
             for (BaseComponent component : prefixComponents) {
                 component.setHoverEvent(prefixHover);
                 components.add(component);
@@ -209,13 +209,15 @@ public final class ChatService {
         return result;
     }
 
-    private HoverEvent buildCargoHover(String prefix, String cargoColor, String group) {
-        // O nome do cargo no hover usa a mesma cor do prefixo exibido no chat.
-        String safeColor = firstColorCode(prefix);
-        if (safeColor.isEmpty()) safeColor = cargoColor;
-        if (safeColor == null || safeColor.isEmpty()) safeColor = "§f";
-        String cargoName = capitalizeGroupName(group);
-        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fCargo: ").append(TextComponent.fromLegacyText(safeColor + cargoName)).create());
+    private HoverEvent buildCargoHover(String prefix) {
+        // O hover usa exatamente a mesma tag fixa que aparece no chat,
+        // incluindo todas as cores do gradient.
+        BaseComponent[] tag = TextComponent.fromLegacyText(MessageUtil.colorize(prefix == null ? "" : prefix));
+        ComponentBuilder builder = new ComponentBuilder("§fCargo: ");
+        for (BaseComponent component : tag) {
+            builder.append(component);
+        }
+        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, builder.create());
     }
 
     private void addPlayerAndAfter(List<BaseComponent> components, String template, Player player, String playerName, String cargoColor, boolean addVanishHover, Map<String, String> placeholders) {
