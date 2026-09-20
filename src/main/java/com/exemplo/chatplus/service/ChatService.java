@@ -213,14 +213,12 @@ public final class ChatService {
     }
 
     private HoverEvent buildCargoHover(String prefix) {
-        // O hover usa exatamente a mesma tag fixa que aparece no chat,
-        // incluindo todas as cores do gradient.
-        BaseComponent[] tag = TextComponent.fromLegacyText(MessageUtil.colorize(prefix == null ? "" : prefix));
-        ComponentBuilder builder = new ComponentBuilder(MessageUtil.colorize(config.getCargoHover().replace("{cargo}", cargoDisplayName(prefix))));
-        for (BaseComponent component : tag) {
-            builder.append(component);
-        }
-        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, builder.create());
+        // O hover do cargo mostra somente a tag fixa do cargo,
+        // preservando exatamente as cores do gradient exibidas no chat.
+        BaseComponent[] tag = TextComponent.fromLegacyText(
+                MessageUtil.colorize(prefix == null ? "" : prefix)
+        );
+        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, tag);
     }
 
     private void addPlayerAndAfter(List<BaseComponent> components, String template, Player player, String playerName, String cargoColor, boolean addVanishHover, Map<String, String> placeholders) {
@@ -273,8 +271,10 @@ public final class ChatService {
         int kills = player.getStatistic(Statistic.PLAYER_KILLS);
         int deaths = player.getStatistic(Statistic.DEATHS);
         double kdr = deaths <= 0 ? kills : (double) kills / deaths;
-        String safeCargoColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
-        String cleanNickname = nickname.replaceFirst("§[0-9a-fk-or]", "");
+        // O hover deve usar o nickname real e completo do jogador.
+        // Não derivar o nome do componente colorido para evitar truncamentos
+        // quando houver mais de um código de cor/formatação.
+        String cleanNickname = player.getName();
 
         Map<String, String> hover = new HashMap<>();
         hover.put("{player}", cleanNickname);
