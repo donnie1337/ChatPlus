@@ -161,8 +161,10 @@ public final class ChatService {
         } else {
             Player player = (Player) sender;
             prefix = cargo.getPrefix(player.getUniqueId());
-            cargoColor = cargo.getNicknameColor(player.getUniqueId());
-            if (cargoColor.isEmpty()) cargoColor = firstColorCode(prefix);
+            // O nickname deve continuar exatamente na cor em que o gradient do
+            // cargo termina. A cor fixa do CargoPlus não deve sobrescrever isso.
+            cargoColor = lastColorCode(prefix);
+            if (cargoColor.isEmpty()) cargoColor = cargo.getNicknameColor(player.getUniqueId());
             if (cargoColor.isEmpty()) cargoColor = "§f";
             playerName = cargoColor + sender.getName();
             clanTag = cargo.getClanTag(player.getUniqueId());
@@ -317,6 +319,46 @@ public final class ChatService {
             if (text.charAt(i) == '§') return text.substring(i, i + 2);
         }
         return "";
+    }
+
+    /**
+     * Retorna a última cor real presente no prefixo do cargo.
+     * Suporta tanto cores legacy quanto RGB no formato §x§R§R§G§G§B§B.
+     */
+    private String lastColorCode(String text) {
+        if (text == null || text.isEmpty()) return "";
+        String last = "";
+        for (int i = 0; i < text.length() - 1; i++) {
+            if (text.charAt(i) != '§') continue;
+
+            char code = text.charAt(i + 1);
+            if (code == 'x' && i + 13 < text.length()) {
+                boolean validHex = true;
+                for (int j = 0; j < 6; j++) {
+                    if (text.charAt(i + 2 + (j * 2)) != '§'
+                            || Character.digit(text.charAt(i + 3 + (j * 2)), 16) < 0) {
+                        validHex = false;
+                        break;
+                    }
+                }
+                if (validHex) {
+                    last = text.substring(i, i + 14);
+                    i += 13;
+                    continue;
+                }
+            }
+
+            if (isLegacyColorCode(code)) {
+                last = text.substring(i, i + 2);
+            }
+        }
+        return last;
+    }
+
+    private boolean isLegacyColorCode(char code) {
+        return (code >= '0' && code <= '9')
+                || (code >= 'a' && code <= 'f')
+                || (code >= 'A' && code <= 'F');
     }
 
     private void addClanTag(List<BaseComponent> components, String clanTag, String cargoColor) {
