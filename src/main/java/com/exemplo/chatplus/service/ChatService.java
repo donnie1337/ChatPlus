@@ -190,7 +190,7 @@ public final class ChatService {
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
             BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
-            HoverEvent prefixHover = buildCargoHover(cargoColor, group);
+            HoverEvent prefixHover = buildCargoHover(prefix, cargoColor, group);
             for (BaseComponent component : prefixComponents) {
                 component.setHoverEvent(prefixHover);
                 components.add(component);
@@ -209,8 +209,11 @@ public final class ChatService {
         return result;
     }
 
-    private HoverEvent buildCargoHover(String cargoColor, String group) {
-        String safeColor = cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor;
+    private HoverEvent buildCargoHover(String prefix, String cargoColor, String group) {
+        // O nome do cargo no hover usa a mesma cor do prefixo exibido no chat.
+        String safeColor = firstColorCode(prefix);
+        if (safeColor.isEmpty()) safeColor = cargoColor;
+        if (safeColor == null || safeColor.isEmpty()) safeColor = "§f";
         String cargoName = capitalizeGroupName(group);
         return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§fCargo: ").append(TextComponent.fromLegacyText(safeColor + cargoName)).create());
     }
