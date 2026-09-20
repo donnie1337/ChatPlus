@@ -235,6 +235,14 @@ public final class ChatService {
             component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, player.getName()));
             components.add(component);
         }
+
+        // A tag de invisibilidade fica imediatamente depois do nickname.
+        // Ela só é adicionada quando o visualizador possui a permissão de
+        // enxergar jogadores invisíveis (essentialsplus.vanish).
+        if (addVanishHover) {
+            addLegacyWithVanishHover(components, " " + VANISH_SUFFIX);
+        }
+
         if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(afterPlayer, placeholders));
         else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
     }
