@@ -40,6 +40,12 @@ chat:
       tempo-online: "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"
       interacao: "&bClique aqui para interagir com este jogador."
 
+  # HOVERS ADICIONAIS
+  # ----------------------------------------------------------
+  cargo: "&fCargo: {cargo}"
+  invisibilidade: "&fEste jogador está invisível."
+  canal: "&7Canal: &f{canal}"
+
   # ----------------------------------------------------------
   # CHAT LOCAL
   # ----------------------------------------------------------
