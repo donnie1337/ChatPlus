@@ -24,6 +24,12 @@ public final class ConfigManager {
     private static final String PATH_LOCAL_FORMAT = "chat.local.formato";
     private static final String PATH_MESSAGE_LIMIT = "chat.limite-mensagem";
     private static final String PATH_CHAT_DELAY = "chat.delay-segundos";
+    private static final String PATH_PLAYER_HOVER_TITLE = "chat.hover.jogador.titulo";
+    private static final String PATH_PLAYER_HOVER_CLAN = "chat.hover.jogador.clan";
+    private static final String PATH_PLAYER_HOVER_MONEY = "chat.hover.jogador.moedas";
+    private static final String PATH_PLAYER_HOVER_KDR = "chat.hover.jogador.kdr";
+    private static final String PATH_PLAYER_HOVER_ONLINE = "chat.hover.jogador.tempo-online";
+    private static final String PATH_PLAYER_HOVER_INTERACTION = "chat.hover.jogador.interacao";
 
     private static final String PATH_GLOBAL_ENABLED = "chat.global.ativado";
     private static final String PATH_GLOBAL_FORMAT = "chat.global.formato";
@@ -110,6 +116,13 @@ public final class ConfigManager {
         }
         return Math.min(delay, MAX_CHAT_DELAY_SECONDS);
     }
+
+    public String getPlayerHoverTitle() { return getConfiguredString(PATH_PLAYER_HOVER_TITLE, "&7◆ Informações de {player}"); }
+    public String getPlayerHoverClan() { return getConfiguredString(PATH_PLAYER_HOVER_CLAN, "&7 ᴄʟᴀɴ &8• &f{clan}"); }
+    public String getPlayerHoverMoney() { return getConfiguredString(PATH_PLAYER_HOVER_MONEY, "&7 ᴍᴏᴇᴅᴀs &8• &f{moedas}"); }
+    public String getPlayerHoverKdr() { return getConfiguredString(PATH_PLAYER_HOVER_KDR, "&7 ᴋᴅʀ &8• &f{kdr}"); }
+    public String getPlayerHoverOnlineTime() { return getConfiguredString(PATH_PLAYER_HOVER_ONLINE, "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"); }
+    public String getPlayerHoverInteraction() { return getConfiguredString(PATH_PLAYER_HOVER_INTERACTION, "&bClique aqui para interagir com este jogador."); }
 
     public String getLocalChatFormat() {
         return getConfiguredString(PATH_LOCAL_FORMAT, DEFAULT_LOCAL_FORMAT);
