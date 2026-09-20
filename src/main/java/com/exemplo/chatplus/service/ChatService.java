@@ -215,7 +215,7 @@ public final class ChatService {
         // O hover usa exatamente a mesma tag fixa que aparece no chat,
         // incluindo todas as cores do gradient.
         BaseComponent[] tag = TextComponent.fromLegacyText(MessageUtil.colorize(prefix == null ? "" : prefix));
-        ComponentBuilder builder = new ComponentBuilder("§fCargo: ");
+        ComponentBuilder builder = new ComponentBuilder(MessageUtil.colorize(config.getCargoHover().replace("{cargo}", cargoDisplayName(prefix))));
         for (BaseComponent component : tag) {
             builder.append(component);
         }
@@ -252,6 +252,13 @@ public final class ChatService {
 
         if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(afterPlayer, placeholders));
         else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
+    }
+
+    private String cargoDisplayName(String prefix) {
+        if (prefix == null || prefix.isBlank()) return "Desconhecido";
+        String plain = org.bukkit.ChatColor.stripColor(MessageUtil.colorize(prefix)).trim();
+        if (plain.startsWith("[") && plain.endsWith("]")) plain = plain.substring(1, plain.length() - 1).trim();
+        return plain.isBlank() ? "Desconhecido" : plain;
     }
 
     private BaseComponent[] buildPlayerProfileHover(Player player, String nickname, String cargoColor) {
@@ -396,7 +403,7 @@ public final class ChatService {
 
     private void addLegacyWithVanishHover(List<BaseComponent> components, String text) {
         BaseComponent[] parsed = TextComponent.fromLegacyText(text);
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(VANISH_HOVER_TEXT).create());
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageUtil.colorize(config.getVanishHover())).create());
         for (BaseComponent component : parsed) {
             component.setHoverEvent(hover);
             components.add(component);
@@ -412,7 +419,7 @@ public final class ChatService {
 
     private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
         if (components == null || chatType == null || chatType.isEmpty()) return;
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Canal: §f" + chatType).create());
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageUtil.colorize(config.getChannelHover().replace("{canal}", chatType))).create());
         for (BaseComponent component : components) if (component.getHoverEvent() == null) component.setHoverEvent(hover);
     }
 }
