@@ -275,9 +275,10 @@ public final class ChatService {
         // Não derivar o nome do componente colorido para evitar truncamentos
         // quando houver mais de um código de cor/formatação.
         String cleanNickname = player.getName();
+        String nicknameDisplay = (cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor) + cleanNickname;
 
         Map<String, String> hover = new HashMap<>();
-        hover.put("{player}", cleanNickname);
+        hover.put("{player}", nicknameDisplay);
         hover.put("{cargo}", cargoValue);
         hover.put("{clan}", clanValue);
         hover.put("{moedas}", moneyValue);
