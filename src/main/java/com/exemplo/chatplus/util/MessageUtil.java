@@ -91,8 +91,10 @@ public final class MessageUtil {
         if (text == null || text.isEmpty()) {
             return "";
         }
-        String sanitized = text.replaceAll("(?i)(?:[&§]x(?:[&§][0-9a-f]){6}|[&§][0-9a-fk-or])", "");
-        return sanitized.replace("\u00a7", "");
+        // O jogador pode usar cores diretamente na mensagem, por exemplo &eOi.
+        // Mantemos os códigos legacy/RGB e os convertemos para § para que o
+        // TextComponent do Bungee realmente os interprete.
+        return colorize(text);
     }
 
     /**
