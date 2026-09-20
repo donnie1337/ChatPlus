@@ -29,6 +29,7 @@ public final class ConfigManager {
     private static final String PATH_PLAYER_HOVER_MONEY = "chat.hover.jogador.moedas";
     private static final String PATH_PLAYER_HOVER_KDR = "chat.hover.jogador.kdr";
     private static final String PATH_PLAYER_HOVER_ONLINE = "chat.hover.jogador.tempo-online";
+    private static final String PATH_PLAYER_HOVER_REGISTERED = "chat.hover.jogador.conta-criada";
     private static final String PATH_PLAYER_HOVER_INTERACTION = "chat.hover.jogador.interacao";
     private static final String PATH_HOVER_CARGO = "chat.hover.cargo";
     private static final String PATH_HOVER_VANISH = "chat.hover.invisibilidade";
@@ -125,6 +126,7 @@ public final class ConfigManager {
     public String getPlayerHoverMoney() { return getConfiguredString(PATH_PLAYER_HOVER_MONEY, "&7 ᴍᴏᴇᴅᴀs &8• &f{moedas}"); }
     public String getPlayerHoverKdr() { return getConfiguredString(PATH_PLAYER_HOVER_KDR, "&7 ᴋᴅʀ &8• &f{kdr}"); }
     public String getPlayerHoverOnlineTime() { return getConfiguredString(PATH_PLAYER_HOVER_ONLINE, "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"); }
+    public String getPlayerHoverRegistered() { return getConfiguredString(PATH_PLAYER_HOVER_REGISTERED, "&7 ᴄᴏɴᴛᴀ ᴄʀɪᴀᴅᴀ &8• &f{conta-criada}"); }
     public String getPlayerHoverInteraction() { return getConfiguredString(PATH_PLAYER_HOVER_INTERACTION, "&bClique aqui para interagir com este jogador."); }
     public String getCargoHover() { return getConfiguredString(PATH_HOVER_CARGO, "&fCargo: {cargo}"); }
     public String getVanishHover() { return getConfiguredString(PATH_HOVER_VANISH, "&fEste jogador está invisível."); }
