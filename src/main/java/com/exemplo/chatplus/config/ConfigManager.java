@@ -30,6 +30,9 @@ public final class ConfigManager {
     private static final String PATH_PLAYER_HOVER_KDR = "chat.hover.jogador.kdr";
     private static final String PATH_PLAYER_HOVER_ONLINE = "chat.hover.jogador.tempo-online";
     private static final String PATH_PLAYER_HOVER_INTERACTION = "chat.hover.jogador.interacao";
+    private static final String PATH_HOVER_CARGO = "chat.hover.cargo";
+    private static final String PATH_HOVER_VANISH = "chat.hover.invisibilidade";
+    private static final String PATH_HOVER_CHANNEL = "chat.hover.canal";
 
     private static final String PATH_GLOBAL_ENABLED = "chat.global.ativado";
     private static final String PATH_GLOBAL_FORMAT = "chat.global.formato";
@@ -123,6 +126,9 @@ public final class ConfigManager {
     public String getPlayerHoverKdr() { return getConfiguredString(PATH_PLAYER_HOVER_KDR, "&7 ᴋᴅʀ &8• &f{kdr}"); }
     public String getPlayerHoverOnlineTime() { return getConfiguredString(PATH_PLAYER_HOVER_ONLINE, "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"); }
     public String getPlayerHoverInteraction() { return getConfiguredString(PATH_PLAYER_HOVER_INTERACTION, "&bClique aqui para interagir com este jogador."); }
+    public String getCargoHover() { return getConfiguredString(PATH_HOVER_CARGO, "&fCargo: {cargo}"); }
+    public String getVanishHover() { return getConfiguredString(PATH_HOVER_VANISH, "&fEste jogador está invisível."); }
+    public String getChannelHover() { return getConfiguredString(PATH_HOVER_CHANNEL, "&7Canal: &f{canal}"); }
 
     public String getLocalChatFormat() {
         return getConfiguredString(PATH_LOCAL_FORMAT, DEFAULT_LOCAL_FORMAT);
