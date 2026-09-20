@@ -22,6 +22,25 @@ chat:
   limite-mensagem: 256
 
   # ----------------------------------------------------------
+  # HOVER DO NICKNAME
+  # ----------------------------------------------------------
+  # Placeholders:
+  # {player}  -> nickname do jogador
+  # {cargo}   -> cargo/grupo do jogador
+  # {clan}    -> clã do jogador
+  # {moedas}  -> saldo da economia
+  # {kdr}     -> K/D ratio
+  # {tempo}   -> tempo total online
+  hover:
+    jogador:
+      titulo: "&7◆ Informações de {player}"
+      clan: "&7 ᴄʟᴀɴ &8• &f{clan}"
+      moedas: "&7 ᴍᴏᴇᴅᴀs &8• &f{moedas}"
+      kdr: "&7 ᴋᴅʀ &8• &f{kdr}"
+      tempo-online: "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"
+      interacao: "&bClique aqui para interagir com este jogador."
+
+  # ----------------------------------------------------------
   # CHAT LOCAL
   # ----------------------------------------------------------
   local:
