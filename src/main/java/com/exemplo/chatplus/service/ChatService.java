@@ -318,17 +318,13 @@ public final class ChatService {
         try {
             Method method = registrationDateMethod;
             if (method == null) {
-                Method dataManagerGetter = loginPlus.getClass().getMethod("getPlayerDataManager");
-                Object dataManager = dataManagerGetter.invoke(loginPlus);
-                if (dataManager == null) return "Desconhecida";
-                method = dataManager.getClass().getMethod("getRegistrationDate", String.class);
+                method = loginPlus.getClass().getMethod("getRegistrationDate", String.class);
                 registrationDateMethod = method;
-                return String.valueOf(method.invoke(dataManager, player.getName()));
             }
-            Method dataManagerGetter = loginPlus.getClass().getMethod("getPlayerDataManager");
-            Object dataManager = dataManagerGetter.invoke(loginPlus);
-            if (dataManager == null) return "Desconhecida";
-            return String.valueOf(method.invoke(dataManager, player.getName()));
+            Object result = method.invoke(loginPlus, player.getName());
+            if (result == null) return "Desconhecida";
+            String date = String.valueOf(result).trim();
+            return date.isEmpty() ? "Desconhecida" : date;
         } catch (ReflectiveOperationException | LinkageError | RuntimeException ignored) {
             return "Desconhecida";
         }
