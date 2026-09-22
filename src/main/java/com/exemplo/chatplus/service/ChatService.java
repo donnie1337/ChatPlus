@@ -43,6 +43,8 @@ public final class ChatService {
     private volatile Plugin authPlugin;
     private volatile Method authCheckMethod;
     private volatile Method registrationDateMethod;
+    private volatile Plugin habilidadesPlugin;
+    private volatile Method top1SkillNameMethod;
     private volatile Plugin vanishPlugin;
     private volatile Method vanishCheckMethod;
 
@@ -266,6 +268,36 @@ public final class ChatService {
         return colors + "[" + text + "]";
     }
 
+    private void addHabilidadeTagWithHover(List<BaseComponent> components, String displayTag, Player player) {
+        String skillName = resolveTop1SkillName(player);
+        String hoverText = skillName.isBlank()
+                ? "§fEste jogador é Top 1."
+                : "§fEsse jogador é Top 1 em §e" + skillName + "§f.";
+        BaseComponent[] parsed = TextComponent.fromLegacyText(MessageUtil.colorize(displayTag));
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                TextComponent.fromLegacyText(hoverText));
+        for (BaseComponent component : parsed) {
+            component.setHoverEvent(hover);
+            components.add(component);
+        }
+    }
+
+    private String resolveTop1SkillName(Player player) {
+        if (player == null) return "";
+        Plugin habilidades = Bukkit.getPluginManager().getPlugin("HabilidadesPlus");
+        if (habilidades == null || !habilidades.isEnabled()) return "";
+        try {
+            if (habilidadesPlugin != habilidades || top1SkillNameMethod == null) {
+                habilidadesPlugin = habilidades;
+                top1SkillNameMethod = habilidades.getClass().getMethod("getTop1SkillDisplayName", java.util.UUID.class);
+            }
+            Object value = top1SkillNameMethod.invoke(habilidades, player.getUniqueId());
+            return value == null ? "" : String.valueOf(value).trim();
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return "";
+        }
+    }
+
     private HoverEvent buildCargoHover(String prefix) {
         // O hover do cargo mostra somente a tag fixa do cargo,
         // preservando exatamente as cores do gradient exibidas no chat.
@@ -293,9 +325,9 @@ public final class ChatService {
         // A tag Top 1 pertence à identidade do jogador e deve ficar
         // imediatamente antes do nickname, nunca depois dele.
         if (habilidadeTag != null && !habilidadeTag.isBlank()) {
-            // A tag Top 1 é exibida sempre entre colchetes no chat.
+            // A tag Top 1 é exibida sempre entre colchetes e com hover explicativo.
             String displayTag = bracketHabilidadeTag(habilidadeTag);
-            addLegacy(components, MessageUtil.colorize(displayTag));
+            addHabilidadeTagWithHover(components, displayTag, player);
             addLegacy(components, " ");
         }
 
