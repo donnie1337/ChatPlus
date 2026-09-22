@@ -9,6 +9,7 @@ softdepend:
   - CargoPlus
   - ClanPlus
   - UtilidadesPlus
+  - PlaceholderAPI
 
 commands:
   l:
