@@ -6,6 +6,7 @@
 # {tag}     -> reservado para compatibilidade; renderizado pelo ChatService
 # {player}  -> nome do remetente
 # {message} -> mensagem enviada
+# {habilidade_tag} -> tag dinâmica do Top 1 da habilidade
 # {world}   -> mundo do remetente no chat local
 #
 # A tag do clan é renderizada uma única vez pelo ChatService,
@@ -53,18 +54,18 @@ chat:
   local:
     ativado: true
     alcance: 50
-    formato: "&e[L]&r {prefix}&f{player}&7: &f{message}"
+    formato: "&e[L]&r {prefix}&f{player}{habilidade_tag}&7: &f{message}"
 
   # ----------------------------------------------------------
   # CHAT GLOBAL
   # ----------------------------------------------------------
   global:
     ativado: true
-    formato: "&7[G]&r {prefix}&f{player}&7: &f{message}"
+    formato: "&7[G]&r {prefix}&f{player}{habilidade_tag}&7: &f{message}"
 
   # ----------------------------------------------------------
   # CHAT DA STAFF
   # ----------------------------------------------------------
   staff:
     ativado: true
-    formato: "&c[S]&r {prefix}&f{player}&7: &f{message}"
+    formato: "&c[S]&r {prefix}&f{player}{habilidade_tag}&7: &f{message}"
