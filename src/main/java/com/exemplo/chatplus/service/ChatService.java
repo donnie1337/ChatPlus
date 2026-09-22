@@ -203,13 +203,13 @@ public final class ChatService {
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
             // Ordem fixa da identidade no chat:
-            // [CANAL] [CLAN] [MCMMO/HABILIDADE] [CARGO] Nickname
-            if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
+            // [CANAL] [MCMMO/HABILIDADE] [CLAN] [CARGO] Nickname
             String habilidadeTag = placeholders.getOrDefault(HABILIDADE_TAG_PLACEHOLDER, "");
             if (!habilidadeTag.isBlank()) {
                 addHabilidadeTagWithHover(components, bracketHabilidadeTag(habilidadeTag), (Player) sender);
                 addLegacy(components, " ");
             }
+            if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
             BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
             HoverEvent prefixHover = buildCargoHover(prefix);
             for (BaseComponent component : prefixComponents) {
