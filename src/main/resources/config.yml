@@ -48,6 +48,13 @@ chat:
   invisibilidade: "&fEste jogador está invisível."
   canal: "&7Canal: &f{canal}"
 
+  # HOVER DA TAG TOP 1
+  # {habilidade} -> nome da habilidade em que o jogador é Top 1
+  habilidade-top1:
+    ativado: true
+    formato: "&fEsse jogador é Top 1 em &e{habilidade}&f."
+    sem-habilidade: "&fEsse jogador é Top 1."
+
   # ----------------------------------------------------------
   # CHAT LOCAL
   # ----------------------------------------------------------
