@@ -269,13 +269,20 @@ public final class ChatService {
     }
 
     private void addHabilidadeTagWithHover(List<BaseComponent> components, String displayTag, Player player) {
-        String skillName = resolveTop1SkillName(player);
-        String hoverText = skillName.isBlank()
-                ? "§fEste jogador é Top 1."
-                : "§fEsse jogador é Top 1 em §e" + skillName + "§f.";
         BaseComponent[] parsed = TextComponent.fromLegacyText(MessageUtil.colorize(displayTag));
+        if (!config.isHabilidadeHoverEnabled()) {
+            for (BaseComponent component : parsed) {
+                components.add(component);
+            }
+            return;
+        }
+
+        String skillName = resolveTop1SkillName(player);
+        String hoverTemplate = skillName.isBlank()
+                ? config.getHabilidadeHoverFallback()
+                : config.getHabilidadeHoverFormat().replace("{habilidade}", skillName);
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                TextComponent.fromLegacyText(hoverText));
+                TextComponent.fromLegacyText(MessageUtil.colorize(hoverTemplate)));
         for (BaseComponent component : parsed) {
             component.setHoverEvent(hover);
             components.add(component);
