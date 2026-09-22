@@ -52,8 +52,8 @@ chat:
   # {habilidade} -> nome da habilidade em que o jogador é Top 1
   habilidade-top1:
     ativado: true
-    formato: "&fEsse jogador é Top 1 em &e{habilidade}&f."
-    sem-habilidade: "&fEsse jogador é Top 1."
+    formato: "&fTop 1 em &e{habilidade}&f."
+    sem-habilidade: "&fTop 1."
 
   # ----------------------------------------------------------
   # CHAT LOCAL
