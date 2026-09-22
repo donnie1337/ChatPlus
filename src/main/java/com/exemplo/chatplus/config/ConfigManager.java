@@ -135,7 +135,16 @@ public final class ConfigManager {
     public String getVanishHover() { return getConfiguredString(PATH_HOVER_VANISH, "&fEste jogador está invisível."); }
     public String getChannelHover() { return getConfiguredString(PATH_HOVER_CHANNEL, "&7Canal: &f{canal}"); }
     public boolean isHabilidadeHoverEnabled() { return plugin.getConfig().getBoolean(PATH_HABILIDADE_HOVER_ENABLED, true); }
-    public String getHabilidadeHoverFormat() { return getConfiguredString(PATH_HABILIDADE_HOVER_FORMAT, "&fEsse jogador é Top 1 em &e{habilidade}&f."); }
+    public String getHabilidadeHoverFormat() {
+        String value = getConfiguredString(PATH_HABILIDADE_HOVER_FORMAT, "&fTop 1 em &e{habilidade}&f.");
+        // Migra automaticamente a mensagem antiga para o novo formato,
+        // inclusive quando o config.yml já existia antes desta atualização.
+        if ("&fEsse jogador é Top 1 em &e{habilidade}&f.".equals(value)
+                || "&fEsse jogador e Top 1 em &e{habilidade}&f.".equals(value)) {
+            return "&fTop 1 em &e{habilidade}&f.";
+        }
+        return value;
+    }
     public String getHabilidadeHoverFallback() { return getConfiguredString(PATH_HABILIDADE_HOVER_FALLBACK, "&fEsse jogador é Top 1."); }
 
     public String getLocalChatFormat() {
