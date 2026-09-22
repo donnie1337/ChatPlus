@@ -233,6 +233,39 @@ public final class ChatService {
         }
     }
 
+    private String bracketHabilidadeTag(String tag) {
+        if (tag == null || tag.isBlank()) return "";
+        String value = tag.trim();
+        if (value.startsWith("[") && value.endsWith("]")) return value;
+
+        int index = 0;
+        while (index + 1 < value.length()) {
+            char marker = value.charAt(index);
+            if (marker != '&' && marker != '§') break;
+            char code = value.charAt(index + 1);
+            if (code == 'x' && index + 13 < value.length()) {
+                boolean validHex = true;
+                for (int i = 0; i < 6; i++) {
+                    if (value.charAt(index + 2 + i * 2) != '§'
+                            && value.charAt(index + 2 + i * 2) != '&') {
+                        validHex = false;
+                        break;
+                    }
+                }
+                if (validHex) {
+                    index += 14;
+                    continue;
+                }
+            }
+            index += 2;
+        }
+
+        String colors = value.substring(0, index);
+        String text = value.substring(index).trim();
+        if (text.startsWith("[") && text.endsWith("]")) return value;
+        return colors + "[" + text + "]";
+    }
+
     private HoverEvent buildCargoHover(String prefix) {
         // O hover do cargo mostra somente a tag fixa do cargo,
         // preservando exatamente as cores do gradient exibidas no chat.
@@ -261,9 +294,7 @@ public final class ChatService {
         // imediatamente antes do nickname, nunca depois dele.
         if (habilidadeTag != null && !habilidadeTag.isBlank()) {
             // A tag Top 1 é exibida sempre entre colchetes no chat.
-            String displayTag = habilidadeTag.trim();
-            if (!displayTag.startsWith("[")) displayTag = "[" + displayTag;
-            if (!displayTag.endsWith("]")) displayTag = displayTag + "]";
+            String displayTag = bracketHabilidadeTag(habilidadeTag);
             addLegacy(components, MessageUtil.colorize(displayTag));
             addLegacy(components, " ");
         }
