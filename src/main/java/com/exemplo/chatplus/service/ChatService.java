@@ -260,8 +260,12 @@ public final class ChatService {
         // A tag Top 1 pertence à identidade do jogador e deve ficar
         // imediatamente antes do nickname, nunca depois dele.
         if (habilidadeTag != null && !habilidadeTag.isBlank()) {
-            addLegacy(components, MessageUtil.colorize(habilidadeTag));
-            if (!habilidadeTag.endsWith(" ")) addLegacy(components, " ");
+            // A tag Top 1 é exibida sempre entre colchetes no chat.
+            String displayTag = habilidadeTag.trim();
+            if (!displayTag.startsWith("[")) displayTag = "[" + displayTag;
+            if (!displayTag.endsWith("]")) displayTag = displayTag + "]";
+            addLegacy(components, MessageUtil.colorize(displayTag));
+            addLegacy(components, " ");
         }
 
         String nickname = cargoColor + player.getName();
