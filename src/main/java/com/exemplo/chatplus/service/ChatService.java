@@ -186,6 +186,11 @@ public final class ChatService {
         placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message));
         placeholders.put("{world}", world);
         String template = MessageUtil.colorize(format == null ? "" : format);
+        // A tag Top 1 deve aparecer mesmo em configs antigas que ainda não
+        // possuem {habilidade_tag}; a posição padrão é imediatamente após o nick.
+        if (sender instanceof Player && !template.contains(HABILIDADE_TAG_PLACEHOLDER)) {
+            template = template.replace(PLAYER_PLACEHOLDER, PLAYER_PLACEHOLDER + HABILIDADE_TAG_PLACEHOLDER);
+        }
 
         if (sender instanceof Player && template.contains(PREFIX_PLACEHOLDER)) {
             String before = template.substring(0, template.indexOf(PREFIX_PLACEHOLDER));
