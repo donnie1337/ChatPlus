@@ -2,6 +2,7 @@ package com.exemplo.chatplus.service;
 
 import com.exemplo.chatplus.config.ConfigManager;
 import com.exemplo.chatplus.util.MessageUtil;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -30,6 +31,7 @@ public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
     private static final String TAG_PLACEHOLDER = "{tag}";
     private static final String PLAYER_PLACEHOLDER = "{player}";
+    private static final String HABILIDADE_TAG_PLACEHOLDER = "{habilidade_tag}";
     private static final String STAFF_PERMISSION = "chatplus.staff";
     private static final String VANISH_PERMISSION = "essentialsplus.vanish";
     private static final String VANISH_SUFFIX_MARKER = "§0§0§0[ESSENTIALSPLUS_VANISH_HOVER]";
@@ -180,6 +182,7 @@ public final class ChatService {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put(PLAYER_PLACEHOLDER, playerName);
         placeholders.put(TAG_PLACEHOLDER, clanTag);
+        placeholders.put(HABILIDADE_TAG_PLACEHOLDER, resolveHabilidadeTag(sender));
         placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message));
         placeholders.put("{world}", world);
         String template = MessageUtil.colorize(format == null ? "" : format);
@@ -210,6 +213,19 @@ public final class ChatService {
         BaseComponent[] result = addVanishHover ? parseWithVanishHover(formatted) : TextComponent.fromLegacyText(formatted);
         decorateChatTypeHover(result, chatType);
         return result;
+    }
+
+
+    private String resolveHabilidadeTag(CommandSender sender) {
+        if (!(sender instanceof Player player) || !Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            return "";
+        }
+        try {
+            String tag = PlaceholderAPI.setPlaceholders(player, "%habilidade_tag%");
+            return tag == null || tag.equals("%habilidade_tag%") ? "" : tag;
+        } catch (Throwable ignored) {
+            return "";
+        }
     }
 
     private HoverEvent buildCargoHover(String prefix) {
