@@ -202,13 +202,20 @@ public final class ChatService {
             afterTemplate = afterTemplate.replace(TAG_PLACEHOLDER, "");
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
+            // Ordem fixa da identidade no chat:
+            // [CANAL] [CLAN] [MCMMO/HABILIDADE] [CARGO] Nickname
+            if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
+            String habilidadeTag = placeholders.getOrDefault(HABILIDADE_TAG_PLACEHOLDER, "");
+            if (!habilidadeTag.isBlank()) {
+                addHabilidadeTagWithHover(components, bracketHabilidadeTag(habilidadeTag), (Player) sender);
+                addLegacy(components, " ");
+            }
             BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
             HoverEvent prefixHover = buildCargoHover(prefix);
             for (BaseComponent component : prefixComponents) {
                 component.setHoverEvent(prefixHover);
                 components.add(component);
             }
-            if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
             addPlayerAndAfter(components, afterTemplate, (Player) sender, playerName, cargoColor, addVanishHover, placeholders);
             BaseComponent[] result = components.toArray(BaseComponent[]::new);
             decorateChatTypeHover(result, chatType);
@@ -324,19 +331,9 @@ public final class ChatService {
         }
         String beforePlayer = template.substring(0, playerIndex);
         String afterPlayer = template.substring(playerIndex + PLAYER_PLACEHOLDER.length());
-        String habilidadeTag = placeholders.getOrDefault(HABILIDADE_TAG_PLACEHOLDER, "");
         afterPlayer = afterPlayer.replace(HABILIDADE_TAG_PLACEHOLDER, "");
         placeholders.put(PLAYER_PLACEHOLDER, "");
         addLegacy(components, MessageUtil.apply(beforePlayer, placeholders));
-
-        // A tag Top 1 pertence à identidade do jogador e deve ficar
-        // imediatamente antes do nickname, nunca depois dele.
-        if (habilidadeTag != null && !habilidadeTag.isBlank()) {
-            // A tag Top 1 é exibida sempre entre colchetes e com hover explicativo.
-            String displayTag = bracketHabilidadeTag(habilidadeTag);
-            addHabilidadeTagWithHover(components, displayTag, player);
-            addLegacy(components, " ");
-        }
 
         String nickname = cargoColor + player.getName();
         HoverEvent nicknameHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, buildPlayerProfileHover(player, nickname, cargoColor));
