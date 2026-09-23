@@ -101,6 +101,23 @@ public final class ChatService {
         notifyConsole(sender, TextComponent.toLegacyText(consoleFormatted));
     }
 
+    public void sendSystemGlobalMessage(String message) {
+        if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendSystemGlobalMessage(message)); return; }
+        if (message == null || message.isEmpty() || !config.isGlobalChatEnabled()) return;
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("{prefix}", "");
+        placeholders.put("{player}", "");
+        placeholders.put("{tag}", "");
+        placeholders.put("{habilidade_tag}", "");
+        placeholders.put("{message}", message);
+        String formatted = MessageUtil.apply(config.getGlobalSystemChatFormat(), placeholders);
+        BaseComponent[] components = TextComponent.fromLegacyText(formatted);
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            if (online.isOnline() && isAuthenticated(online)) online.spigot().sendMessage(components);
+        }
+        Bukkit.getConsoleSender().sendMessage(TextComponent.toLegacyText(components));
+    }
+
     public void sendStaffSystemMessage(Player sender, String message) {
         if (!Bukkit.isPrimaryThread()) { Bukkit.getScheduler().runTask(config.getPlugin(), () -> sendStaffSystemMessage(sender, message)); return; }
         if (sender == null || !sender.isOnline() || message == null || message.isEmpty()) return;
