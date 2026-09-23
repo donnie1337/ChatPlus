@@ -69,6 +69,7 @@ chat:
   global:
     ativado: true
     formato: "&7[G]&r {prefix}&f{player}{habilidade_tag}&7: &f{message}"
+    formato-sistema: "&7[G]&r &f{message}"
 
   # ----------------------------------------------------------
   # CHAT DA STAFF
