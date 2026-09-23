@@ -40,6 +40,7 @@ public final class ConfigManager {
 
     private static final String PATH_GLOBAL_ENABLED = "chat.global.ativado";
     private static final String PATH_GLOBAL_FORMAT = "chat.global.formato";
+    private static final String PATH_GLOBAL_SYSTEM_FORMAT = "chat.global.formato-sistema";
 
     private static final String PATH_STAFF_ENABLED = "chat.staff.ativado";
     private static final String PATH_STAFF_FORMAT = "chat.staff.formato";
@@ -53,6 +54,7 @@ public final class ConfigManager {
     private static final int MAX_CHAT_DELAY_SECONDS = 60;
     private static final String DEFAULT_LOCAL_FORMAT = "&7[L] &f{player}&7: &f{message}";
     private static final String DEFAULT_GLOBAL_FORMAT = "&6[G] &f{player}&7: &f{message}";
+    private static final String DEFAULT_GLOBAL_SYSTEM_FORMAT = "&6[G] &f{message}";
     private static final String DEFAULT_STAFF_FORMAT = "&c[S] &f{player}&7: &f{message}";
 
     private static final Map<String, String> DEFAULT_MESSAGES = buildDefaultMessages();
@@ -157,6 +159,10 @@ public final class ConfigManager {
 
     public String getGlobalChatFormat() {
         return getConfiguredString(PATH_GLOBAL_FORMAT, DEFAULT_GLOBAL_FORMAT);
+    }
+
+    public String getGlobalSystemChatFormat() {
+        return getConfiguredString(PATH_GLOBAL_SYSTEM_FORMAT, DEFAULT_GLOBAL_SYSTEM_FORMAT);
     }
 
     public boolean isStaffChatEnabled() {
