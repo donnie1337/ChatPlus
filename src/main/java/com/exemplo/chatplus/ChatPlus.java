@@ -83,6 +83,11 @@ public final class ChatPlus extends JavaPlugin {
      * Sends a trusted event through the same /s formatter, preserving the
      * CargoPlus prefix, nickname color and staff-chat presentation.
      */
+    /** Public integration API for trusted global system messages from other plugins. */
+    public void sendSystemGlobalMessage(String message) {
+        if (chatService != null) chatService.sendSystemGlobalMessage(message);
+    }
+
     public void sendStaffSystemMessage(Player player, String message) {
         if (chatService == null || player == null || !player.isOnline() || message == null || message.isEmpty()) return;
         chatService.sendStaffSystemMessage(player, message);
