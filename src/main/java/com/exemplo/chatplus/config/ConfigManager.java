@@ -134,8 +134,8 @@ public final class ConfigManager {
     public String getPlayerHoverPower() { return getConfiguredString(PATH_PLAYER_HOVER_POWER, "&7PODER &8• &f{poder}"); }
     public String getPlayerHoverClan() { return getConfiguredString(PATH_PLAYER_HOVER_CLAN, "&7ᴄʟᴀɴ &8• &f{clan}"); }
     public String getPlayerHoverKdr() { return getConfiguredString(PATH_PLAYER_HOVER_KDR, "&7 ᴋᴅʀ &8• &f{kdr}"); }
-    public String getPlayerHoverOnlineTime() { return getConfiguredString(PATH_PLAYER_HOVER_ONLINE, "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"); }
-    public String getPlayerHoverRegistered() { return getConfiguredString(PATH_PLAYER_HOVER_REGISTERED, "&7 ᴄᴏɴᴛᴀ ᴄʀɪᴀᴅᴀ &8• &f{conta-criada}"); }
+    public String getPlayerHoverOnlineTime() { return getConfiguredString(PATH_PLAYER_HOVER_ONLINE, "&7Tempo online: &f{tempo}"); }
+    public String getPlayerHoverRegistered() { return getConfiguredString(PATH_PLAYER_HOVER_REGISTERED, "&7Conta criada em: &f{conta-criada}"); }
     public String getPlayerHoverInteraction() { return getConfiguredString(PATH_PLAYER_HOVER_INTERACTION, "&bClique aqui para interagir com este jogador."); }
     public String getCargoHover() { return getConfiguredString(PATH_HOVER_CARGO, "&fCargo: {cargo}"); }
     public String getVanishHover() { return getConfiguredString(PATH_HOVER_VANISH, "&fEste jogador está invisível."); }

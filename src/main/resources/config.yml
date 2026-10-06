@@ -42,8 +42,8 @@ chat:
       poder: "&7PODER &8• &f{poder}"
       kdr: "&7ᴋᴅʀ &8• &f{kdr}"
       clan: "&7ᴄʟᴀɴ &8• &f{clan}"
-      tempo-online: "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"
-      conta-criada: "&7 ᴄᴏɴᴛᴀ ᴄʀɪᴀᴅᴀ &8• &f{conta-criada}"
+      tempo-online: "&7Tempo online: &f{tempo}"
+      conta-criada: "&7Conta criada em: &f{conta-criada}"
       interacao: "&bClique aqui para interagir com este jogador."
 
   # HOVERS ADICIONAIS
