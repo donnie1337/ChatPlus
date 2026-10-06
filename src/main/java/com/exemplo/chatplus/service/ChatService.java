@@ -561,7 +561,7 @@ public final class ChatService {
         appendConfiguredHoverLine(builder, config.getPlayerHoverKdr(), hover);
         builder.append("\n");
         appendConfiguredHoverLine(builder, config.getPlayerHoverClan(), hover);
-        builder.append("\n");
+        builder.append("\n\n");
         appendConfiguredHoverLine(builder, config.getPlayerHoverOnlineTime(), hover);
         builder.append("\n");
         appendConfiguredHoverLine(builder, config.getPlayerHoverRegistered(), hover);
