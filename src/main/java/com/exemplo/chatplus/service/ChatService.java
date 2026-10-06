@@ -237,7 +237,7 @@ public final class ChatService {
             }
             if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
             BaseComponent[] prefixComponents = TextComponent.fromLegacyText(MessageUtil.colorize(prefix));
-            HoverEvent prefixHover = buildCargoHover(prefix);
+            HoverEvent prefixHover = buildCargoHover((Player) sender, prefix);
             for (BaseComponent component : prefixComponents) {
                 component.setHoverEvent(prefixHover);
                 components.add(component);
@@ -464,12 +464,15 @@ public final class ChatService {
         }
     }
 
-    private HoverEvent buildCargoHover(String prefix) {
-        // O hover mostra o nome limpo do cargo no formato "Cargo: <nome>".
-        // "Cargo:" fica em cinza claro (§7) e o nome do cargo em branco (§f),
-        // sem reutilizar os colchetes/formatacao visual da tag do chat.
-        String displayName = cargoDisplayName(prefix);
-        BaseComponent[] text = TextComponent.fromLegacyText("§7Cargo: §f" + displayName);
+    private HoverEvent buildCargoHover(Player player, String prefix) {
+        String group = player == null ? "" : cargo.getGroup(player.getUniqueId());
+        String displayName = cargoDisplayName(player, prefix, group);
+
+        String nicknameColor = player == null ? "" : cargo.getNicknameColor(player.getUniqueId());
+        if (nicknameColor == null || nicknameColor.isBlank()) nicknameColor = "§f";
+        else nicknameColor = MessageUtil.colorize(nicknameColor);
+
+        BaseComponent[] text = TextComponent.fromLegacyText("§7Cargo: " + nicknameColor + displayName);
         return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text);
     }
 
@@ -507,17 +510,28 @@ public final class ChatService {
         else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
     }
 
-    private String cargoDisplayName(String prefix) {
-        if (prefix == null || prefix.isBlank()) return "Desconhecido";
-        String plain = org.bukkit.ChatColor.stripColor(MessageUtil.colorize(prefix)).trim();
-        if (plain.startsWith("[") && plain.endsWith("]")) plain = plain.substring(1, plain.length() - 1).trim();
-
-        if (plain.equalsIgnoreCase("dev")
-                || plain.equalsIgnoreCase("developer")
-                || plain.equalsIgnoreCase("desenvolvedor")) {
+    private String cargoDisplayName(Player player, String prefix, String group) {
+        String normalizedGroup = group == null ? "" : group.trim();
+        if (normalizedGroup.equalsIgnoreCase("dev")
+                || normalizedGroup.equalsIgnoreCase("developer")
+                || normalizedGroup.equalsIgnoreCase("desenvolvedor")) {
             return "Dono/Desenvolvedor";
         }
 
+        if (player != null) {
+            String configured = cargo.getDisplayName(player.getUniqueId());
+            if (configured != null && !configured.isBlank()) {
+                return org.bukkit.ChatColor.stripColor(MessageUtil.colorize(configured)).trim();
+            }
+        }
+
+        if (!normalizedGroup.isBlank() && !normalizedGroup.equalsIgnoreCase("desconhecido")) {
+            return capitalizeGroupName(normalizedGroup);
+        }
+
+        if (prefix == null || prefix.isBlank()) return "Desconhecido";
+        String plain = org.bukkit.ChatColor.stripColor(MessageUtil.colorize(prefix)).trim();
+        if (plain.startsWith("[") && plain.endsWith("]")) plain = plain.substring(1, plain.length() - 1).trim();
         return plain.isBlank() ? "Desconhecido" : plain;
     }
 
