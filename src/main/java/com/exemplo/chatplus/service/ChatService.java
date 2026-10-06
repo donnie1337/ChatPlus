@@ -47,6 +47,8 @@ public final class ChatService {
     private volatile Method top1SkillNameMethod;
     private volatile Plugin vanishPlugin;
     private volatile Method vanishCheckMethod;
+    private volatile Plugin marriagePlugin;
+    private volatile Method marriageTagMethod;
 
     public ChatService(ConfigManager config, ChatDelayService delayService) {
         this.config = config;
@@ -220,7 +222,12 @@ public final class ChatService {
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
             // Ordem fixa da identidade no chat:
-            // [CANAL] [MCMMO/HABILIDADE] [CLAN] [CARGO] Nickname
+            // [CANAL] ❤ [MCMMO/HABILIDADE] [CLAN] [CARGO] Nickname
+            String marriageTag = resolveMarriageTag((Player) sender);
+            if (!marriageTag.isBlank()) {
+                addLegacy(components, MessageUtil.colorize(marriageTag));
+                addLegacy(components, " ");
+            }
             String habilidadeTag = placeholders.getOrDefault(HABILIDADE_TAG_PLACEHOLDER, "");
             if (!habilidadeTag.isBlank()) {
                 addHabilidadeTagWithHover(components, bracketHabilidadeTag(habilidadeTag), (Player) sender);
@@ -246,6 +253,40 @@ public final class ChatService {
         return result;
     }
 
+
+    private String resolveMarriageTag(Player player) {
+        if (player == null) return "";
+        Plugin essentials = Bukkit.getPluginManager().getPlugin("EssentialsPlus");
+        if (essentials == null || !essentials.isEnabled()) {
+            marriagePlugin = null;
+            marriageTagMethod = null;
+            return "";
+        }
+
+        Method method = marriageTagMethod;
+        if (marriagePlugin != essentials || method == null) {
+            synchronized (this) {
+                if (marriagePlugin != essentials || marriageTagMethod == null) {
+                    try {
+                        marriagePlugin = essentials;
+                        marriageTagMethod = essentials.getClass().getMethod("getMarriageTag", java.util.UUID.class);
+                    } catch (ReflectiveOperationException | LinkageError ex) {
+                        marriagePlugin = essentials;
+                        marriageTagMethod = null;
+                    }
+                }
+                method = marriageTagMethod;
+            }
+        }
+
+        if (method == null) return "";
+        try {
+            Object value = method.invoke(essentials, player.getUniqueId());
+            return value == null ? "" : String.valueOf(value).trim();
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return "";
+        }
+    }
 
     private String resolveHabilidadeTag(CommandSender sender) {
         if (!(sender instanceof Player player) || !Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
