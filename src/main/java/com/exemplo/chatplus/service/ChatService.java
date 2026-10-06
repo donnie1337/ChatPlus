@@ -416,6 +416,13 @@ public final class ChatService {
         if (prefix == null || prefix.isBlank()) return "Desconhecido";
         String plain = org.bukkit.ChatColor.stripColor(MessageUtil.colorize(prefix)).trim();
         if (plain.startsWith("[") && plain.endsWith("]")) plain = plain.substring(1, plain.length() - 1).trim();
+
+        if (plain.equalsIgnoreCase("dev")
+                || plain.equalsIgnoreCase("developer")
+                || plain.equalsIgnoreCase("desenvolvedor")) {
+            return "Dono/Desenvolvedor";
+        }
+
         return plain.isBlank() ? "Desconhecido" : plain;
     }
 
