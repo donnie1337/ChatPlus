@@ -422,10 +422,10 @@ public final class ChatService {
     }
 
     private HoverEvent buildCargoHover(String prefix) {
-        // O hover exibe apenas o nome limpo do cargo, sem "Cargo:" e
-        // sem os colchetes/formatacao visual usados pela tag no chat.
+        // O hover mostra o nome limpo do cargo no formato "Cargo: <nome>",
+        // sem reutilizar os colchetes/formatacao visual da tag do chat.
         String displayName = cargoDisplayName(prefix);
-        BaseComponent[] text = TextComponent.fromLegacyText("§f" + displayName);
+        BaseComponent[] text = TextComponent.fromLegacyText("§7Cargo: §f" + displayName);
         return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text);
     }
 
