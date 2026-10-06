@@ -422,7 +422,8 @@ public final class ChatService {
     }
 
     private HoverEvent buildCargoHover(String prefix) {
-        // O hover mostra o nome limpo do cargo no formato "Cargo: <nome>",
+        // O hover mostra o nome limpo do cargo no formato "Cargo: <nome>".
+        // "Cargo:" fica em cinza claro (§7) e o nome do cargo em branco (§f),
         // sem reutilizar os colchetes/formatacao visual da tag do chat.
         String displayName = cargoDisplayName(prefix);
         BaseComponent[] text = TextComponent.fromLegacyText("§7Cargo: §f" + displayName);
