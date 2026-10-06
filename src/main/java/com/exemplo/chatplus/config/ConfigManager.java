@@ -129,11 +129,29 @@ public final class ConfigManager {
     }
 
     public String getPlayerHoverTitle() { return getConfiguredString(PATH_PLAYER_HOVER_TITLE, "&7Informações de {player}"); }
-    public String getPlayerHoverCoins() { return getConfiguredString(PATH_PLAYER_HOVER_COINS, "&7ᴄᴏɪɴs &8• &f{coins}"); }
-    public String getPlayerHoverMoedas() { return getConfiguredString(PATH_PLAYER_HOVER_MOEDAS, "&7ᴍᴏᴇᴅᴀs &8• &f{moedas}"); }
-    public String getPlayerHoverPower() { return getConfiguredString(PATH_PLAYER_HOVER_POWER, "&7ᴘᴏᴅᴇʀ &8• &f{poder}"); }
-    public String getPlayerHoverClan() { return getConfiguredString(PATH_PLAYER_HOVER_CLAN, "&7ᴄʟᴀɴ &8• &f{clan}"); }
-    public String getPlayerHoverKdr() { return getConfiguredString(PATH_PLAYER_HOVER_KDR, "&7 ᴋᴅʀ &8• &f{kdr}"); }
+    public String getPlayerHoverCoins() {
+        String value = getConfiguredString(PATH_PLAYER_HOVER_COINS, "&a$ &7ᴄᴏɪɴs &8• &a{coins}");
+        return "&7ᴄᴏɪɴs &8• &f{coins}".equals(value) ? "&a$ &7ᴄᴏɪɴs &8• &a{coins}" : value;
+    }
+    public String getPlayerHoverMoedas() {
+        String value = getConfiguredString(PATH_PLAYER_HOVER_MOEDAS, "&6✪ &7ᴍᴏᴇᴅᴀs &8• &6{moedas}");
+        return "&7ᴍᴏᴇᴅᴀs &8• &f{moedas}".equals(value) ? "&6✪ &7ᴍᴏᴇᴅᴀs &8• &6{moedas}" : value;
+    }
+    public String getPlayerHoverPower() {
+        String value = getConfiguredString(PATH_PLAYER_HOVER_POWER, "&b⚡ &7ᴘᴏᴅᴇʀ &8• &b{poder}");
+        return "&7ᴘᴏᴅᴇʀ &8• &f{poder}".equals(value) ? "&b⚡ &7ᴘᴏᴅᴇʀ &8• &b{poder}" : value;
+    }
+    public String getPlayerHoverClan() {
+        String value = getConfiguredString(PATH_PLAYER_HOVER_CLAN, "&d⚑ &7ᴄʟᴀɴ &8• &f{clan}");
+        return "&7ᴄʟᴀɴ &8• &f{clan}".equals(value) ? "&d⚑ &7ᴄʟᴀɴ &8• &f{clan}" : value;
+    }
+    public String getPlayerHoverKdr() {
+        String value = getConfiguredString(PATH_PLAYER_HOVER_KDR, "&c⚔ &7ᴋᴅʀ &8• &c{kdr}");
+        if ("&7 ᴋᴅʀ &8• &f{kdr}".equals(value) || "&7ᴋᴅʀ &8• &f{kdr}".equals(value)) {
+            return "&c⚔ &7ᴋᴅʀ &8• &c{kdr}";
+        }
+        return value;
+    }
     public String getPlayerHoverOnlineTime() { return getConfiguredString(PATH_PLAYER_HOVER_ONLINE, "&7Tempo online: &f{tempo}"); }
     public String getPlayerHoverRegistered() { return getConfiguredString(PATH_PLAYER_HOVER_REGISTERED, "&7Conta criada em: &f{conta-criada}"); }
     public String getPlayerHoverInteraction() { return getConfiguredString(PATH_PLAYER_HOVER_INTERACTION, "&bClique aqui para interagir com este jogador."); }
