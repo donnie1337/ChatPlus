@@ -37,9 +37,9 @@ chat:
   hover:
     jogador:
       titulo: "&7Informações de {player}"
-      coins: "&7COINS &8• &f{coins}"
+      coins: "&7ᴄᴏɪɴs &8• &f{coins}"
       moedas: "&7ᴍᴏᴇᴅᴀs &8• &f{moedas}"
-      poder: "&7PODER &8• &f{poder}"
+      poder: "&7ᴘᴏᴅᴇʀ &8• &f{poder}"
       kdr: "&7ᴋᴅʀ &8• &f{kdr}"
       clan: "&7ᴄʟᴀɴ &8• &f{clan}"
       tempo-online: "&7Tempo online: &f{tempo}"

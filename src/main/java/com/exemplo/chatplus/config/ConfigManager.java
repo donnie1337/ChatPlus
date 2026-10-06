@@ -129,9 +129,9 @@ public final class ConfigManager {
     }
 
     public String getPlayerHoverTitle() { return getConfiguredString(PATH_PLAYER_HOVER_TITLE, "&7Informações de {player}"); }
-    public String getPlayerHoverCoins() { return getConfiguredString(PATH_PLAYER_HOVER_COINS, "&7COINS &8• &f{coins}"); }
+    public String getPlayerHoverCoins() { return getConfiguredString(PATH_PLAYER_HOVER_COINS, "&7ᴄᴏɪɴs &8• &f{coins}"); }
     public String getPlayerHoverMoedas() { return getConfiguredString(PATH_PLAYER_HOVER_MOEDAS, "&7ᴍᴏᴇᴅᴀs &8• &f{moedas}"); }
-    public String getPlayerHoverPower() { return getConfiguredString(PATH_PLAYER_HOVER_POWER, "&7PODER &8• &f{poder}"); }
+    public String getPlayerHoverPower() { return getConfiguredString(PATH_PLAYER_HOVER_POWER, "&7ᴘᴏᴅᴇʀ &8• &f{poder}"); }
     public String getPlayerHoverClan() { return getConfiguredString(PATH_PLAYER_HOVER_CLAN, "&7ᴄʟᴀɴ &8• &f{clan}"); }
     public String getPlayerHoverKdr() { return getConfiguredString(PATH_PLAYER_HOVER_KDR, "&7 ᴋᴅʀ &8• &f{kdr}"); }
     public String getPlayerHoverOnlineTime() { return getConfiguredString(PATH_PLAYER_HOVER_ONLINE, "&7Tempo online: &f{tempo}"); }
