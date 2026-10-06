@@ -371,12 +371,11 @@ public final class ChatService {
     }
 
     private HoverEvent buildCargoHover(String prefix) {
-        // O hover do cargo mostra somente a tag fixa do cargo,
-        // preservando exatamente as cores do gradient exibidas no chat.
-        BaseComponent[] tag = TextComponent.fromLegacyText(
-                MessageUtil.colorize(prefix == null ? "" : prefix)
-        );
-        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, tag);
+        // O hover exibe apenas o nome limpo do cargo, sem "Cargo:" e
+        // sem os colchetes/formatacao visual usados pela tag no chat.
+        String displayName = cargoDisplayName(prefix);
+        BaseComponent[] text = TextComponent.fromLegacyText("§f" + displayName);
+        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text);
     }
 
     private void addPlayerAndAfter(List<BaseComponent> components, String template, Player player, String playerName, String cargoColor, boolean addVanishHover, Map<String, String> placeholders) {
