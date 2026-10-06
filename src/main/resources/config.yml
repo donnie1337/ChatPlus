@@ -28,16 +28,20 @@ chat:
   # Placeholders:
   # {player}  -> nickname do jogador
   # {cargo}   -> cargo/grupo do jogador
+  # {coins}   -> saldo de Coins
+  # {moedas}  -> saldo de Moedas
+  # {poder}   -> poder total do HabilidadesPlus
   # {clan}    -> clã do jogador
-  # {moedas}  -> saldo da economia
   # {kdr}     -> K/D ratio
   # {tempo}   -> tempo total online
   hover:
     jogador:
-      titulo: "&7◆ Informações de {player}"
-      clan: "&7 ᴄʟᴀɴ &8• &f{clan}"
-      moedas: "&7 ᴍᴏᴇᴅᴀs &8• &f{moedas}"
-      kdr: "&7 ᴋᴅʀ &8• &f{kdr}"
+      titulo: "&7Informações de {player}"
+      coins: "&7COINS &8• &f{coins}"
+      moedas: "&7ᴍᴏᴇᴅᴀs &8• &f{moedas}"
+      poder: "&7PODER &8• &f{poder}"
+      kdr: "&7ᴋᴅʀ &8• &f{kdr}"
+      clan: "&7ᴄʟᴀɴ &8• &f{clan}"
       tempo-online: "&7 ᴛᴇᴍᴘᴏ ᴏɴʟɪɴᴇ &8• &f{tempo}"
       conta-criada: "&7 ᴄᴏɴᴛᴀ ᴄʀɪᴀᴅᴀ &8• &f{conta-criada}"
       interacao: "&bClique aqui para interagir com este jogador."

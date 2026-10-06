@@ -522,39 +522,45 @@ public final class ChatService {
     }
 
     private BaseComponent[] buildPlayerProfileHover(Player player, String nickname, String cargoColor) {
-        String cargoValue = cargo.getGroup(player.getUniqueId());
-        if (cargoValue == null || cargoValue.isBlank()) cargoValue = "Desconhecido";
         String clanValue = cargo.getClanTag(player.getUniqueId());
         boolean hasClan = clanValue != null && !clanValue.isBlank();
         if (!hasClan) clanValue = "Nenhum";
         else clanValue = MessageUtil.colorize(clanValue);
-        String moneyValue = getMoney(player);
+
+        String balance = getEconomyBalance(player);
+        String coinsValue = balance;
+        String moedasValue = balance;
+        String powerValue = String.valueOf(getPowerLevel(player));
+
         int kills = player.getStatistic(Statistic.PLAYER_KILLS);
         int deaths = player.getStatistic(Statistic.DEATHS);
         double kdr = deaths <= 0 ? kills : (double) kills / deaths;
-        // O hover deve usar o nickname real e completo do jogador.
-        // Não derivar o nome do componente colorido para evitar truncamentos
-        // quando houver mais de um código de cor/formatação.
+
         String cleanNickname = player.getName();
         String nicknameDisplay = (cargoColor == null || cargoColor.isEmpty() ? "§f" : cargoColor) + cleanNickname;
 
         Map<String, String> hover = new HashMap<>();
         hover.put("{player}", nicknameDisplay);
-        hover.put("{cargo}", cargoValue);
-        hover.put("{clan}", clanValue);
-        hover.put("{moedas}", moneyValue);
+        hover.put("{coins}", coinsValue);
+        hover.put("{moedas}", moedasValue);
+        hover.put("{poder}", powerValue);
         hover.put("{kdr}", String.format(Locale.US, "%.2f", kdr));
+        hover.put("{clan}", clanValue);
         hover.put("{tempo}", formatOnlineTime(player));
         hover.put("{conta-criada}", getRegistrationDate(player));
 
         ComponentBuilder builder = new ComponentBuilder();
         appendConfiguredHoverLine(builder, config.getPlayerHoverTitle(), hover);
         builder.append("\n\n");
-        appendConfiguredHoverLine(builder, config.getPlayerHoverClan(), hover);
+        appendConfiguredHoverLine(builder, config.getPlayerHoverCoins(), hover);
         builder.append("\n");
-        appendConfiguredHoverLine(builder, config.getPlayerHoverMoney(), hover);
+        appendConfiguredHoverLine(builder, config.getPlayerHoverMoedas(), hover);
         builder.append("\n");
+        appendConfiguredHoverLine(builder, config.getPlayerHoverPower(), hover);
+        builder.append("\n\n");
         appendConfiguredHoverLine(builder, config.getPlayerHoverKdr(), hover);
+        builder.append("\n");
+        appendConfiguredHoverLine(builder, config.getPlayerHoverClan(), hover);
         builder.append("\n");
         appendConfiguredHoverLine(builder, config.getPlayerHoverOnlineTime(), hover);
         builder.append("\n");
@@ -592,22 +598,47 @@ public final class ChatService {
         }
     }
 
-    private String getMoney(Player player) {
+    private String getEconomyBalance(Player player) {
         try {
-            Class<?> economyClass = Class.forName("net.milkbowl.vault.economy.Economy");
-            Object registration = Bukkit.getServicesManager().getRegistration(economyClass);
-            if (registration == null) return "0,00";
-            Method providerMethod = registration.getClass().getMethod("getProvider");
-            Object provider = providerMethod.invoke(registration);
-            if (provider == null) return "0,00";
-            Method balanceMethod = provider.getClass().getMethod("getBalance", OfflinePlayer.class);
-            Object balance = balanceMethod.invoke(provider, player);
-            double value = balance instanceof Number ? ((Number) balance).doubleValue() : 0.0D;
+            Plugin economyPlugin = Bukkit.getPluginManager().getPlugin("CoinsEconomy");
+            if (economyPlugin == null) economyPlugin = Bukkit.getPluginManager().getPlugin("EconomiaPlus");
+            if (economyPlugin == null || !economyPlugin.isEnabled()) return "0";
+
+            Method getEconomyManager = economyPlugin.getClass().getMethod("getEconomyManager");
+            Object economyManager = getEconomyManager.invoke(economyPlugin);
+            if (economyManager == null) return "0";
+
+            Method getSaldo = economyManager.getClass().getMethod("getSaldo", java.util.UUID.class);
+            Object saldo = getSaldo.invoke(economyManager, player.getUniqueId());
+            if (!(saldo instanceof Number number)) return "0";
+
+            double value = number.doubleValue();
             DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(new Locale("pt", "BR"));
-            DecimalFormat format = new DecimalFormat("#,##0.00", symbols);
+            DecimalFormat format = new DecimalFormat("#,##0.##", symbols);
             return format.format(value);
         } catch (ReflectiveOperationException | LinkageError | RuntimeException ignored) {
-            return "0,00";
+            return "0";
+        }
+    }
+
+    private int getPowerLevel(Player player) {
+        try {
+            Plugin habilidades = Bukkit.getPluginManager().getPlugin("HabilidadesPlus");
+            if (habilidades == null || !habilidades.isEnabled()) return 0;
+
+            Method getDataManager = habilidades.getClass().getMethod("getDataManager");
+            Object dataManager = getDataManager.invoke(habilidades);
+            if (dataManager == null) return 0;
+
+            Method getProfile = dataManager.getClass().getMethod("getProfile", java.util.UUID.class);
+            Object profile = getProfile.invoke(dataManager, player.getUniqueId());
+            if (profile == null) return 0;
+
+            Method getPowerLevel = profile.getClass().getMethod("getPowerLevel");
+            Object power = getPowerLevel.invoke(profile);
+            return power instanceof Number number ? number.intValue() : 0;
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException ignored) {
+            return 0;
         }
     }
 
