@@ -49,6 +49,7 @@ public final class ChatService {
     private volatile Method vanishCheckMethod;
     private volatile Plugin marriagePlugin;
     private volatile Method marriageTagMethod;
+    private volatile Method marriagePartnerNameMethod;
 
     public ChatService(ConfigManager config, ChatDelayService delayService) {
         this.config = config;
@@ -225,7 +226,7 @@ public final class ChatService {
             // [CANAL] ❤ [MCMMO/HABILIDADE] [CLAN] [CARGO] Nickname
             String marriageTag = resolveMarriageTag((Player) sender);
             if (!marriageTag.isBlank()) {
-                addLegacy(components, MessageUtil.colorize(marriageTag));
+                addMarriageTagWithHover(components, marriageTag, (Player) sender);
                 addLegacy(components, " ");
             }
             String habilidadeTag = placeholders.getOrDefault(HABILIDADE_TAG_PLACEHOLDER, "");
@@ -285,6 +286,56 @@ public final class ChatService {
             return value == null ? "" : String.valueOf(value).trim();
         } catch (ReflectiveOperationException | LinkageError ex) {
             return "";
+        }
+    }
+
+    private String resolveMarriagePartnerName(Player player) {
+        if (player == null) return "";
+        Plugin essentials = Bukkit.getPluginManager().getPlugin("EssentialsPlus");
+        if (essentials == null || !essentials.isEnabled()) {
+            marriagePlugin = null;
+            marriageTagMethod = null;
+            marriagePartnerNameMethod = null;
+            return "";
+        }
+
+        Method method = marriagePartnerNameMethod;
+        if (marriagePlugin != essentials || method == null) {
+            synchronized (this) {
+                if (marriagePlugin != essentials || marriagePartnerNameMethod == null) {
+                    try {
+                        marriagePlugin = essentials;
+                        marriagePartnerNameMethod = essentials.getClass().getMethod(
+                                "getMarriagePartnerName", java.util.UUID.class);
+                    } catch (ReflectiveOperationException | LinkageError ex) {
+                        marriagePlugin = essentials;
+                        marriagePartnerNameMethod = null;
+                    }
+                }
+                method = marriagePartnerNameMethod;
+            }
+        }
+
+        if (method == null) return "";
+        try {
+            Object value = method.invoke(essentials, player.getUniqueId());
+            return value == null ? "" : String.valueOf(value).trim();
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return "";
+        }
+    }
+
+    private void addMarriageTagWithHover(List<BaseComponent> components, String displayTag, Player player) {
+        String partner = resolveMarriagePartnerName(player);
+        String hoverText = partner.isBlank() ? "Casado(a)" : "Casado(a) com " + partner;
+        HoverEvent hover = new HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                TextComponent.fromLegacyText("§f" + hoverText)
+        );
+        BaseComponent[] parsed = TextComponent.fromLegacyText(MessageUtil.colorize(displayTag));
+        for (BaseComponent component : parsed) {
+            component.setHoverEvent(hover);
+            components.add(component);
         }
     }
 
