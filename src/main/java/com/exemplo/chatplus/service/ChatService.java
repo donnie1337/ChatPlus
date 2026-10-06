@@ -50,6 +50,7 @@ public final class ChatService {
     private volatile Plugin marriagePlugin;
     private volatile Method marriageTagMethod;
     private volatile Method marriagePartnerNameMethod;
+    private volatile Method marriagePartnerUuidMethod;
 
     public ChatService(ConfigManager config, ChatDelayService delayService) {
         this.config = config;
@@ -325,13 +326,55 @@ public final class ChatService {
         }
     }
 
+    private java.util.UUID resolveMarriagePartnerUuid(Player player) {
+        if (player == null) return null;
+        Plugin essentials = Bukkit.getPluginManager().getPlugin("EssentialsPlus");
+        if (essentials == null || !essentials.isEnabled()) {
+            marriagePlugin = null;
+            marriageTagMethod = null;
+            marriagePartnerNameMethod = null;
+            marriagePartnerUuidMethod = null;
+            return null;
+        }
+
+        Method method = marriagePartnerUuidMethod;
+        if (marriagePlugin != essentials || method == null) {
+            synchronized (this) {
+                if (marriagePlugin != essentials || marriagePartnerUuidMethod == null) {
+                    try {
+                        marriagePlugin = essentials;
+                        marriagePartnerUuidMethod = essentials.getClass().getMethod(
+                                "getMarriagePartnerUuid", java.util.UUID.class);
+                    } catch (ReflectiveOperationException | LinkageError ex) {
+                        marriagePlugin = essentials;
+                        marriagePartnerUuidMethod = null;
+                    }
+                }
+                method = marriagePartnerUuidMethod;
+            }
+        }
+
+        if (method == null) return null;
+        try {
+            Object value = method.invoke(essentials, player.getUniqueId());
+            return value instanceof java.util.UUID uuid ? uuid : null;
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return null;
+        }
+    }
+
     private void addMarriageTagWithHover(List<BaseComponent> components, String displayTag, Player player) {
         String partner = resolveMarriagePartnerName(player);
-        String hoverText = partner.isBlank() ? "Casado(a)" : "Casado(a) com " + partner;
-        HoverEvent hover = new HoverEvent(
-                HoverEvent.Action.SHOW_TEXT,
-                TextComponent.fromLegacyText("§f" + hoverText)
-        );
+        java.util.UUID partnerUuid = resolveMarriagePartnerUuid(player);
+        String partnerColor = partnerUuid == null ? "" : cargo.getNicknameColor(partnerUuid);
+        if (partnerColor == null || partnerColor.isBlank()) partnerColor = "§f";
+        else partnerColor = MessageUtil.colorize(partnerColor);
+
+        BaseComponent[] hoverText = partner.isBlank()
+                ? TextComponent.fromLegacyText("§7Casado(a)")
+                : TextComponent.fromLegacyText("§7Casado(a) com " + partnerColor + partner);
+
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText);
         BaseComponent[] parsed = TextComponent.fromLegacyText(MessageUtil.colorize(displayTag));
         for (BaseComponent component : parsed) {
             component.setHoverEvent(hover);
