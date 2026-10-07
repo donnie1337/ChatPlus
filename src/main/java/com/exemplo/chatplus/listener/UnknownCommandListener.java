@@ -103,14 +103,15 @@ public final class UnknownCommandListener implements Listener {
     }
 
     private boolean isCargoPlusDevBukkitCommand(Player player, String label) {
-        if (player == null || label == null) return false;
+        if (label == null) return false;
 
         String normalized = label.toLowerCase(Locale.ROOT);
         if (!(normalized.equals("bukkit") || normalized.startsWith("bukkit:"))) {
             return false;
         }
 
-        return "dev".equalsIgnoreCase(cargoPlus.getGroup(player.getUniqueId()));
+        org.bukkit.plugin.Plugin cargoPlugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
+        return cargoPlugin != null && cargoPlugin.isEnabled();
     }
 
     private boolean isProtectedServerCommand(String label) {
