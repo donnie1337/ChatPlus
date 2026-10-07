@@ -45,6 +45,8 @@ public final class ChatService {
     private volatile Method registrationDateMethod;
     private volatile Plugin habilidadesPlugin;
     private volatile Method top1SkillNameMethod;
+    private volatile Plugin economiaPlugin;
+    private volatile Method magnataTagMethod;
     private volatile Plugin vanishPlugin;
     private volatile Method vanishCheckMethod;
     private volatile Plugin marriagePlugin;
@@ -224,7 +226,7 @@ public final class ChatService {
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
             // Ordem fixa da identidade no chat:
-            // [CANAL] ❤ [MCMMO/HABILIDADE] [CLAN] [CARGO] Nickname
+            // [CANAL] ❤ [MCMMO/HABILIDADE] [$ MAGNATA] [CLAN] [CARGO] Nickname
             String marriageTag = resolveMarriageTag((Player) sender);
             if (!marriageTag.isBlank()) {
                 addMarriageTagWithHover(components, marriageTag, (Player) sender);
@@ -233,6 +235,11 @@ public final class ChatService {
             String habilidadeTag = placeholders.getOrDefault(HABILIDADE_TAG_PLACEHOLDER, "");
             if (!habilidadeTag.isBlank()) {
                 addHabilidadeTagWithHover(components, bracketHabilidadeTag(habilidadeTag), (Player) sender);
+                addLegacy(components, " ");
+            }
+            String magnataTag = resolveMagnataTag((Player) sender);
+            if (!magnataTag.isBlank()) {
+                addLegacy(components, magnataTag);
                 addLegacy(components, " ");
             }
             if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
@@ -249,6 +256,18 @@ public final class ChatService {
         }
 
         placeholders.put(PREFIX_PLACEHOLDER, prefix);
+        if (sender instanceof Player player) {
+            String magnataTag = resolveMagnataTag(player);
+            if (!magnataTag.isBlank()) {
+                if (template.contains(HABILIDADE_TAG_PLACEHOLDER)) {
+                    template = template.replace(HABILIDADE_TAG_PLACEHOLDER,
+                            HABILIDADE_TAG_PLACEHOLDER + " " + magnataTag);
+                } else if (template.contains(PLAYER_PLACEHOLDER)) {
+                    template = template.replace(PLAYER_PLACEHOLDER,
+                            PLAYER_PLACEHOLDER + " " + magnataTag);
+                }
+            }
+        }
         String formatted = MessageUtil.apply(template, placeholders);
         BaseComponent[] result = addVanishHover ? parseWithVanishHover(formatted) : TextComponent.fromLegacyText(formatted);
         decorateChatTypeHover(result, chatType);
@@ -379,6 +398,42 @@ public final class ChatService {
         for (BaseComponent component : parsed) {
             component.setHoverEvent(hover);
             components.add(component);
+        }
+    }
+
+    private String resolveMagnataTag(Player player) {
+        if (player == null) return "";
+
+        Plugin economia = Bukkit.getPluginManager().getPlugin("EconomiaPlus");
+        if (economia == null || !economia.isEnabled()) {
+            economiaPlugin = null;
+            magnataTagMethod = null;
+            return "";
+        }
+
+        Method method = magnataTagMethod;
+        if (economiaPlugin != economia || method == null) {
+            synchronized (this) {
+                if (economiaPlugin != economia || magnataTagMethod == null) {
+                    try {
+                        economiaPlugin = economia;
+                        magnataTagMethod = economia.getClass().getMethod("getMagnataTag", java.util.UUID.class);
+                    } catch (ReflectiveOperationException | LinkageError ex) {
+                        economiaPlugin = economia;
+                        magnataTagMethod = null;
+                    }
+                }
+                method = magnataTagMethod;
+            }
+        }
+
+        if (method == null) return "";
+        try {
+            Object value = method.invoke(economia, player.getUniqueId());
+            return value == null ? "" : String.valueOf(value).trim();
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            magnataTagMethod = null;
+            return "";
         }
     }
 
