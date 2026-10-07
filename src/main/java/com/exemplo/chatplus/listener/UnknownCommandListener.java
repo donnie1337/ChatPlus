@@ -39,10 +39,8 @@ public final class UnknownCommandListener implements Listener {
         if (commandLabel.isBlank()) return;
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
-        // O CargoPlus trata os comandos Bukkit bloqueados do cargo DEV com a
-        // mensagem padronizada "ERRO • Comando não encontrado.". O ChatPlus
-        // não deve responder também, evitando mensagens duplicadas.
-        if (isCargoPlusDevBukkitCommand(player, normalizedLabel)) {
+        if (isBukkitCommand(normalizedLabel)) {
+            hideBukkitCommand(player, event);
             return;
         }
 
@@ -102,16 +100,10 @@ public final class UnknownCommandListener implements Listener {
         return permission;
     }
 
-    private boolean isCargoPlusDevBukkitCommand(Player player, String label) {
+    private boolean isBukkitCommand(String label) {
         if (label == null) return false;
-
         String normalized = label.toLowerCase(Locale.ROOT);
-        if (!(normalized.equals("bukkit") || normalized.startsWith("bukkit:"))) {
-            return false;
-        }
-
-        org.bukkit.plugin.Plugin cargoPlugin = Bukkit.getPluginManager().getPlugin("CargoPlus");
-        return cargoPlugin != null && cargoPlugin.isEnabled();
+        return normalized.equals("bukkit") || normalized.startsWith("bukkit:");
     }
 
     private boolean isProtectedServerCommand(String label) {
@@ -153,5 +145,10 @@ public final class UnknownCommandListener implements Listener {
     private void hideCommand(Player player, PlayerCommandPreprocessEvent event) {
         event.setCancelled(true);
         player.sendMessage(configManager.getMessage("comando-desconhecido"));
+    }
+
+    private void hideBukkitCommand(Player player, PlayerCommandPreprocessEvent event) {
+        event.setCancelled(true);
+        player.sendMessage("§c§lᴇʀʀᴏ §8• §cComando não encontrado.");
     }
 }
