@@ -39,6 +39,11 @@ public final class UnknownCommandListener implements Listener {
         if (commandLabel.isBlank()) return;
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
+        if (isGloballyDisabledCommand(normalizedLabel)) {
+            hideBukkitCommand(player, event);
+            return;
+        }
+
         if (isBukkitCommand(normalizedLabel)) {
             hideBukkitCommand(player, event);
             return;
@@ -65,6 +70,10 @@ public final class UnknownCommandListener implements Listener {
         event.getCommands().removeIf(label -> {
             String normalizedLabel = label.toLowerCase(Locale.ROOT);
             Command command = commandMap.getCommand(normalizedLabel);
+
+            if (isGloballyDisabledCommand(normalizedLabel)) {
+                return true;
+            }
 
             if (isProtectedServerCommand(normalizedLabel)) {
                 return !player.hasPermission(SERVER_COMMAND_PERMISSION);
@@ -98,6 +107,18 @@ public final class UnknownCommandListener implements Listener {
         String permission = command.getPermission();
         if (permission == null || permission.isBlank()) return fallbackPermission(label);
         return permission;
+    }
+
+    private boolean isGloballyDisabledCommand(String label) {
+        if (label == null) return false;
+
+        String normalized = label.toLowerCase(Locale.ROOT);
+        int separator = normalized.indexOf(':');
+        String base = separator >= 0 && separator + 1 < normalized.length()
+                ? normalized.substring(separator + 1)
+                : normalized;
+
+        return base.equals("?") || base.equals("about") || base.equals("me");
     }
 
     private boolean isBukkitCommand(String label) {
