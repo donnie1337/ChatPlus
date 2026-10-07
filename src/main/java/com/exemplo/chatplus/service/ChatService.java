@@ -417,7 +417,7 @@ public final class ChatService {
                 if (economiaPlugin != economia || magnataTagMethod == null) {
                     try {
                         economiaPlugin = economia;
-                        magnataTagMethod = economia.getClass().getMethod("getMagnataTag", java.util.UUID.class);
+                        magnataTagMethod = economia.getClass().getMethod("getMagnataChatTag", java.util.UUID.class);
                     } catch (ReflectiveOperationException | LinkageError ex) {
                         economiaPlugin = economia;
                         magnataTagMethod = null;
