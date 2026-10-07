@@ -39,6 +39,13 @@ public final class UnknownCommandListener implements Listener {
         if (commandLabel.isBlank()) return;
         String normalizedLabel = commandLabel.toLowerCase(Locale.ROOT);
 
+        // O CargoPlus trata os comandos Bukkit bloqueados do cargo DEV com a
+        // mensagem padronizada "ERRO • Comando não encontrado.". O ChatPlus
+        // não deve responder também, evitando mensagens duplicadas.
+        if (isCargoPlusDevBukkitCommand(player, normalizedLabel)) {
+            return;
+        }
+
         if (isProtectedServerCommand(normalizedLabel)) {
             if (!player.hasPermission(SERVER_COMMAND_PERMISSION)) hideCommand(player, event);
             return;
@@ -93,6 +100,17 @@ public final class UnknownCommandListener implements Listener {
         String permission = command.getPermission();
         if (permission == null || permission.isBlank()) return fallbackPermission(label);
         return permission;
+    }
+
+    private boolean isCargoPlusDevBukkitCommand(Player player, String label) {
+        if (player == null || label == null) return false;
+
+        String normalized = label.toLowerCase(Locale.ROOT);
+        if (!(normalized.equals("bukkit") || normalized.startsWith("bukkit:"))) {
+            return false;
+        }
+
+        return "dev".equalsIgnoreCase(cargoPlus.getGroup(player.getUniqueId()));
     }
 
     private boolean isProtectedServerCommand(String label) {
