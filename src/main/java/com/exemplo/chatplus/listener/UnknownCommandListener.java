@@ -113,6 +113,13 @@ public final class UnknownCommandListener implements Listener {
         if (label == null) return false;
 
         String normalized = label.toLowerCase(Locale.ROOT);
+
+        // Bloqueia todo o namespace vanilla, inclusive /minecraft e
+        // qualquer comando namespaced como /minecraft:give ou /minecraft:tp.
+        if (normalized.equals("minecraft") || normalized.startsWith("minecraft:")) {
+            return true;
+        }
+
         int separator = normalized.indexOf(':');
         String base = separator >= 0 && separator + 1 < normalized.length()
                 ? normalized.substring(separator + 1)
