@@ -239,7 +239,7 @@ public final class ChatService {
             }
             String magnataTag = resolveMagnataTag((Player) sender);
             if (!magnataTag.isBlank()) {
-                addLegacy(components, magnataTag);
+                addMagnataTagWithHover(components, magnataTag);
                 addLegacy(components, " ");
             }
             if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
@@ -480,6 +480,18 @@ public final class ChatService {
         String text = value.substring(index).trim();
         if (text.startsWith("[") && text.endsWith("]")) return value;
         return colors + "[" + text + "]";
+    }
+
+    private void addMagnataTagWithHover(List<BaseComponent> components, String displayTag) {
+        HoverEvent hover = new HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                TextComponent.fromLegacyText(MessageUtil.colorize("&fTop 1 em &aCoins (Magnata)"))
+        );
+        BaseComponent[] parsed = TextComponent.fromLegacyText(MessageUtil.colorize(displayTag));
+        for (BaseComponent component : parsed) {
+            component.setHoverEvent(hover);
+            components.add(component);
+        }
     }
 
     private void addHabilidadeTagWithHover(List<BaseComponent> components, String displayTag, Player player) {
