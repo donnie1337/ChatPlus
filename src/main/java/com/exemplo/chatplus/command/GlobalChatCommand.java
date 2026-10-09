@@ -2,6 +2,7 @@ package com.exemplo.chatplus.command;
 
 import com.exemplo.chatplus.config.ConfigManager;
 import com.exemplo.chatplus.service.ChatService;
+import com.exemplo.chatplus.service.CargoPlusBridge;
 import com.exemplo.chatplus.util.MessageUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,6 +12,7 @@ public final class GlobalChatCommand implements CommandExecutor {
 
     private final ConfigManager config;
     private final ChatService chatService;
+    private final CargoPlusBridge cargoPlus = new CargoPlusBridge();
 
     public GlobalChatCommand(ConfigManager config, ChatService chatService) {
         this.config = config;
@@ -19,7 +21,7 @@ public final class GlobalChatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("chatplus.global")) {
+        if (!hasPermission(sender, "chatplus.global")) {
             sender.sendMessage(config.getMessage("sem-permissao"));
             return true;
         }
@@ -46,5 +48,13 @@ public final class GlobalChatCommand implements CommandExecutor {
 
         chatService.sendGlobalMessage(sender, message);
         return true;
+    }
+
+    private boolean hasPermission(CommandSender sender, String permission) {
+        if (sender.hasPermission(permission)) return true;
+        if (sender instanceof org.bukkit.entity.Player player) {
+            return cargoPlus.hasCargoPermission(player.getUniqueId(), permission);
+        }
+        return false;
     }
 }
