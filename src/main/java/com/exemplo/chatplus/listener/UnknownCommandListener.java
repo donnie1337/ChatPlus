@@ -101,6 +101,10 @@ public final class UnknownCommandListener implements Listener {
      */
     private String permissionFor(Command command, String label) {
         String normalized = label.toLowerCase(Locale.ROOT);
+        if ("l".equals(normalized)) return "chatplus.local";
+        if ("g".equals(normalized)) return "chatplus.global";
+        if ("s".equals(normalized)) return "chatplus.staff";
+        if ("cor".equals(normalized)) return "chatplus.cor";
         if ("v".equals(normalized)) return "essentialsplus.vanish";
         if ("configurar".equals(normalized)) return "utilidadesplus.configurar";
 
