@@ -21,6 +21,8 @@ import org.bukkit.plugin.Plugin;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +33,10 @@ public final class ChatService {
     private static final String PREFIX_PLACEHOLDER = "{prefix}";
     private static final String TAG_PLACEHOLDER = "{tag}";
     private static final String PLAYER_PLACEHOLDER = "{player}";
+    private static final String MESSAGE_PLACEHOLDER = "{message}";
     private static final String HABILIDADE_TAG_PLACEHOLDER = "{habilidade_tag}";
+    private static final DateTimeFormatter MESSAGE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter MESSAGE_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final String STAFF_PERMISSION = "chatplus.staff";
     private static final String VANISH_PERMISSION = "essentialsplus.vanish";
     private static final String VANISH_SUFFIX_MARKER = "§0§0§0[ESSENTIALSPLUS_VANISH_HOVER]";
@@ -208,7 +213,7 @@ public final class ChatService {
         placeholders.put(PLAYER_PLACEHOLDER, playerName);
         placeholders.put(TAG_PLACEHOLDER, clanTag);
         placeholders.put(HABILIDADE_TAG_PLACEHOLDER, resolveHabilidadeTag(sender));
-        placeholders.put("{message}", chatColor + MessageUtil.sanitizePlayerText(message));
+        placeholders.put(MESSAGE_PLACEHOLDER, chatColor + MessageUtil.sanitizePlayerText(message));
         placeholders.put("{world}", world);
         String template = MessageUtil.colorize(format == null ? "" : format);
         // A tag Top 1 deve aparecer mesmo em configs antigas que ainda não
@@ -268,8 +273,7 @@ public final class ChatService {
                 }
             }
         }
-        String formatted = MessageUtil.apply(template, placeholders);
-        BaseComponent[] result = addVanishHover ? parseWithVanishHover(formatted) : TextComponent.fromLegacyText(formatted);
+        BaseComponent[] result = formatWithMessageTimestamp(template, placeholders, addVanishHover);
         decorateChatTypeHover(result, chatType);
         return result;
     }
@@ -573,8 +577,81 @@ public final class ChatService {
             addLegacyWithVanishHover(components, " " + VANISH_SUFFIX);
         }
 
-        if (addVanishHover) addLegacyWithVanishHover(components, MessageUtil.apply(afterPlayer, placeholders));
-        else addLegacy(components, MessageUtil.apply(afterPlayer, placeholders));
+        addTemplateWithMessageTimestamp(components, afterPlayer, placeholders, addVanishHover);
+    }
+
+    private void addTemplateWithMessageTimestamp(List<BaseComponent> components, String template,
+                                                 Map<String, String> placeholders, boolean addVanishHover) {
+        int messageIndex = template.indexOf(MESSAGE_PLACEHOLDER);
+        if (messageIndex < 0) {
+            String rendered = MessageUtil.apply(template, placeholders);
+            if (addVanishHover) addLegacyWithVanishHover(components, rendered);
+            else addLegacy(components, rendered);
+            return;
+        }
+
+        String beforeMessage = template.substring(0, messageIndex);
+        String afterMessage = template.substring(messageIndex + MESSAGE_PLACEHOLDER.length());
+
+        String renderedBefore = MessageUtil.apply(beforeMessage, placeholders);
+        if (addVanishHover) addLegacyWithVanishHover(components, renderedBefore);
+        else addLegacy(components, renderedBefore);
+
+        String renderedMessage = placeholders.getOrDefault(MESSAGE_PLACEHOLDER, "");
+        HoverEvent timestampHover = buildMessageTimestampHover();
+        for (BaseComponent component : TextComponent.fromLegacyText(renderedMessage)) {
+            component.setHoverEvent(timestampHover);
+            components.add(component);
+        }
+
+        String renderedAfter = MessageUtil.apply(afterMessage, placeholders);
+        if (addVanishHover) addLegacyWithVanishHover(components, renderedAfter);
+        else addLegacy(components, renderedAfter);
+    }
+
+    private BaseComponent[] formatWithMessageTimestamp(String template, Map<String, String> placeholders,
+                                                       boolean addVanishHover) {
+        List<BaseComponent> components = new ArrayList<>();
+        int messageIndex = template.indexOf(MESSAGE_PLACEHOLDER);
+        if (messageIndex < 0) {
+            String rendered = MessageUtil.apply(template, placeholders);
+            return addVanishHover ? parseWithVanishHover(rendered) : TextComponent.fromLegacyText(rendered);
+        }
+
+        String beforeMessage = MessageUtil.apply(template.substring(0, messageIndex), placeholders);
+        if (addVanishHover) {
+            for (BaseComponent component : parseWithVanishHover(beforeMessage)) components.add(component);
+        } else {
+            addLegacy(components, beforeMessage);
+        }
+
+        HoverEvent timestampHover = buildMessageTimestampHover();
+        String renderedMessage = placeholders.getOrDefault(MESSAGE_PLACEHOLDER, "");
+        for (BaseComponent component : TextComponent.fromLegacyText(renderedMessage)) {
+            component.setHoverEvent(timestampHover);
+            components.add(component);
+        }
+
+        String afterMessage = MessageUtil.apply(
+                template.substring(messageIndex + MESSAGE_PLACEHOLDER.length()), placeholders);
+        if (addVanishHover) {
+            for (BaseComponent component : parseWithVanishHover(afterMessage)) components.add(component);
+        } else {
+            addLegacy(components, afterMessage);
+        }
+
+        return components.toArray(BaseComponent[]::new);
+    }
+
+    private HoverEvent buildMessageTimestampHover() {
+        LocalDateTime sentAt = LocalDateTime.now();
+        String hover = config.getMessageHover()
+                .replace("{data}", MESSAGE_DATE_FORMAT.format(sentAt))
+                .replace("{hora}", MESSAGE_TIME_FORMAT.format(sentAt));
+        return new HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                TextComponent.fromLegacyText(MessageUtil.colorize(hover))
+        );
     }
 
     private String cargoDisplayName(Player player, String prefix, String group) {
