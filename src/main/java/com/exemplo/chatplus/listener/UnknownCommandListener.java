@@ -181,6 +181,6 @@ public final class UnknownCommandListener implements Listener {
 
     private void hideBukkitCommand(Player player, PlayerCommandPreprocessEvent event) {
         event.setCancelled(true);
-        player.sendMessage("§c§lᴇʀʀᴏ §8• §cComando não encontrado.");
+        player.sendMessage("§c[Erro] Comando não encontrado.");
     }
 }
