@@ -566,7 +566,7 @@ public final class ChatService {
         BaseComponent[] nicknameComponents = TextComponent.fromLegacyText(nickname);
         for (BaseComponent component : nicknameComponents) {
             component.setHoverEvent(nicknameHover);
-            component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/g " + player.getName() + " "));
+            component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/g " + player.getName() + ", "));
             components.add(component);
         }
 
