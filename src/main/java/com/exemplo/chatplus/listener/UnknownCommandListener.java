@@ -109,7 +109,7 @@ public final class UnknownCommandListener implements Listener {
         if ("configurar".equals(normalized)) return "utilidadesplus.configurar";
 
         String permission = command.getPermission();
-        if (permission == null || permission.isBlank()) return fallbackPermission(label);
+        if (permission == null || permission.isBlank()) return null;
         return permission;
     }
 
@@ -152,12 +152,6 @@ public final class UnknownCommandListener implements Listener {
                  "reload", "rl", "restart", "stop", "save-all", "save-on", "save-off", "trigger" -> true;
             default -> false;
         };
-    }
-
-    private String fallbackPermission(String label) {
-        return "chatplus.command." + label.toLowerCase(Locale.ROOT)
-                .replace(':', '.')
-                .replace('/', '.');
     }
 
     private CommandMap resolveCommandMap() {
