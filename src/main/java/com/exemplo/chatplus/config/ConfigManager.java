@@ -159,7 +159,21 @@ public final class ConfigManager {
     public String getCargoHover() { return getConfiguredString(PATH_HOVER_CARGO, "&fCargo: {cargo}"); }
     public String getVanishHover() { return getConfiguredString(PATH_HOVER_VANISH, "&fEste jogador está invisível."); }
     public String getChannelHover() { return getConfiguredString(PATH_HOVER_CHANNEL, "&7Canal: &f{canal}"); }
-    public String getMessageHover() { return getConfiguredString(PATH_HOVER_MESSAGE, "&7Data: &f{data}\n&7Horário: &f{hora}"); }
+    public String getMessageHover() {
+        String value = getConfiguredString(
+                PATH_HOVER_MESSAGE,
+                "&7Data de envio: &f{data} &7às &f{hora}"
+        );
+
+        // Migra automaticamente formatos antigos já presentes no config.yml.
+        if ("&7Data: &f{data}\n&7Horário: &f{hora}".equals(value)
+                || "&7Data: &f{data}\\n&7Horário: &f{hora}".equals(value)
+                || "&7Data: &f{data} &7Horário: &f{hora}".equals(value)) {
+            return "&7Data de envio: &f{data} &7às &f{hora}";
+        }
+
+        return value;
+    }
     public boolean isHabilidadeHoverEnabled() { return plugin.getConfig().getBoolean(PATH_HABILIDADE_HOVER_ENABLED, true); }
     public String getHabilidadeHoverFormat() {
         String value = getConfiguredString(PATH_HABILIDADE_HOVER_FORMAT, "&fTop 1 em &e{habilidade}&f.");
