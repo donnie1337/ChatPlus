@@ -51,6 +51,7 @@ chat:
   cargo: "&fCargo: {cargo}"
   invisibilidade: "&fEste jogador está invisível."
   canal: "&7Canal: &f{canal}"
+  mensagem: "&7Data: &f{data}\n&7Horário: &f{hora}"
 
   # HOVER DA TAG TOP 1
   # {habilidade} -> nome da habilidade em que o jogador é Top 1
