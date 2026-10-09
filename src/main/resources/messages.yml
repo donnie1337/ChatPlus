@@ -1,25 +1,25 @@
-sem-permissao: "&e&lᴄʜᴀᴛ &8• &cVocê não tem permissão para executar este comando."
-ao-autenticado: "&e&lᴄʜᴀᴛ &8• &cVocê precisa estar autenticado para executar este comando."
+sem-permissao: "&e[Chat] &r&cVocê não tem permissão para executar este comando."
+ao-autenticado: "&e[Chat] &r&cVocê precisa estar autenticado para executar este comando."
 comando-desconhecido: "&c&lᴇʀʀᴏ &8• &cComando não encontrado"
 
 # Prefixo global usado nas mensagens de sistema do ChatPlus.
-prefixo-sistema: "&e&lᴄʜᴀᴛ &8• &r"
+prefixo-sistema: "&e[Chat] &r&r"
 
-chat-global-desativado: "&e&lᴄʜᴀᴛ &8• &cO chat global está desativado."
-chat-local-desativado: "&e&lᴄʜᴀᴛ &8• &cO chat local está desativado."
-chat-staff-desativado: "&e&lᴄʜᴀᴛ &8• &cO chat da staff está desativado."
+chat-global-desativado: "&e[Chat] &r&cO chat global está desativado."
+chat-local-desativado: "&e[Chat] &r&cO chat local está desativado."
+chat-staff-desativado: "&e[Chat] &r&cO chat da staff está desativado."
 
-uso-global: "&e&lᴄʜᴀᴛ &8• &fUso: &e/g <mensagem>"
-uso-local: "&e&lᴄʜᴀᴛ &8• &fUso: &e/l <mensagem>"
-uso-staff: "&e&lᴄʜᴀᴛ &8• &fUso: &e/s <mensagem>"
-uso-chat-reload: "&e&lᴄʜᴀᴛ &8• &fUso: &e/chat reload"
+uso-global: "&e[Chat] &r&fUso: &e/g <mensagem>"
+uso-local: "&e[Chat] &r&fUso: &e/l <mensagem>"
+uso-staff: "&e[Chat] &r&fUso: &e/s <mensagem>"
+uso-chat-reload: "&e[Chat] &r&fUso: &e/chat reload"
 
-mensagem-vazia: "&e&lᴄʜᴀᴛ &8• &cVocê precisa informar uma mensagem."
-mensagem-muito-longa: "&e&lᴄʜᴀᴛ &8• &cA mensagem excede o limite permitido."
-chat-em-delay: "&e&lᴄʜᴀᴛ &8• &cAguarde antes de enviar outra mensagem."
+mensagem-vazia: "&e[Chat] &r&cVocê precisa informar uma mensagem."
+mensagem-muito-longa: "&e[Chat] &r&cA mensagem excede o limite permitido."
+chat-em-delay: "&e[Chat] &r&cAguarde antes de enviar outra mensagem."
 
-apenas-jogadores: "&e&lᴄʜᴀᴛ &8• &cEste comando só pode ser usado por jogadores."
+apenas-jogadores: "&e[Chat] &r&cEste comando só pode ser usado por jogadores."
 
-ninguem-por-perto: "&e&lᴄʜᴀᴛ &8• &eNinguém está por perto para ver sua mensagem."
+ninguem-por-perto: "&e[Chat] &r&eNinguém está por perto para ver sua mensagem."
 
-reload-sucesso: "&e&lᴄʜᴀᴛ &8• &aConfiguração recarregada com sucesso."
+reload-sucesso: "&e[Chat] &r&aConfiguração recarregada com sucesso."
