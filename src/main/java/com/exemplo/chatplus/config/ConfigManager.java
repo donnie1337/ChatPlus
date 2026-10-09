@@ -36,6 +36,7 @@ public final class ConfigManager {
     private static final String PATH_HOVER_CARGO = "chat.hover.cargo";
     private static final String PATH_HOVER_VANISH = "chat.hover.invisibilidade";
     private static final String PATH_HOVER_CHANNEL = "chat.hover.canal";
+    private static final String PATH_HOVER_MESSAGE = "chat.hover.mensagem";
     private static final String PATH_HABILIDADE_HOVER_ENABLED = "chat.hover.habilidade-top1.ativado";
     private static final String PATH_HABILIDADE_HOVER_FORMAT = "chat.hover.habilidade-top1.formato";
     private static final String PATH_HABILIDADE_HOVER_FALLBACK = "chat.hover.habilidade-top1.sem-habilidade";
@@ -158,6 +159,7 @@ public final class ConfigManager {
     public String getCargoHover() { return getConfiguredString(PATH_HOVER_CARGO, "&fCargo: {cargo}"); }
     public String getVanishHover() { return getConfiguredString(PATH_HOVER_VANISH, "&fEste jogador está invisível."); }
     public String getChannelHover() { return getConfiguredString(PATH_HOVER_CHANNEL, "&7Canal: &f{canal}"); }
+    public String getMessageHover() { return getConfiguredString(PATH_HOVER_MESSAGE, "&7Data: &f{data}\n&7Horário: &f{hora}"); }
     public boolean isHabilidadeHoverEnabled() { return plugin.getConfig().getBoolean(PATH_HABILIDADE_HOVER_ENABLED, true); }
     public String getHabilidadeHoverFormat() {
         String value = getConfiguredString(PATH_HABILIDADE_HOVER_FORMAT, "&fTop 1 em &e{habilidade}&f.");
