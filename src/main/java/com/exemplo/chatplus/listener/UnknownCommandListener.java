@@ -11,14 +11,27 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerCommandSendEvent;
+import org.bukkit.event.server.TabCompleteEvent;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Set;
 
 /** Centraliza a ocultação de comandos sem permissão para jogadores. */
 public final class UnknownCommandListener implements Listener {
     private static final String SERVER_COMMAND_PERMISSION = "chatplus.comandos.servidor";
     private static final String[] PROTECTED_NAMESPACES = {"bukkit", "spigot", "minecraft", "paper"};
+
+    private static final Set<String> PUBLIC_COMMANDS = Set.of(
+            "login", "registro", "register", "cadastrar",
+            "tpa", "tpaqui", "tpaccept", "tpaceitar", "tpdeny", "tpnegar", "tpacancel", "tpacancelar",
+            "home", "homes", "sethome", "delhome",
+            "clan", "clans", "pvp", "mcmmo", "habilidades",
+            "marry", "casar",
+            "terreno", "terrenos", "marcos", "marco",
+            "coins", "coin", "money", "banco", "pagar", "topcoins", "coinstop", "baltop"
+    );
 
     private final ConfigManager configManager;
     private final CommandMap commandMap;
@@ -67,20 +80,44 @@ public final class UnknownCommandListener implements Listener {
         if (commandMap == null) return;
 
         Player player = event.getPlayer();
-        event.getCommands().removeIf(label -> {
-            String normalizedLabel = label.toLowerCase(Locale.ROOT);
-            Command command = commandMap.getCommand(normalizedLabel);
+        event.getCommands().removeIf(label -> !isVisible(player, label));
+    }
 
-            if (isGloballyDisabledCommand(normalizedLabel)) {
-                return true;
-            }
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onTabComplete(TabCompleteEvent event) {
+        if (!(event.getSender() instanceof Player player)) return;
 
-            if (isProtectedServerCommand(normalizedLabel)) {
-                return !player.hasPermission(SERVER_COMMAND_PERMISSION);
-            }
+        String buffer = event.getBuffer();
+        if (buffer == null || buffer.isBlank()) return;
 
-            return command == null || !hasPermission(player, command, label);
-        });
+        String root = normalizeRoot(buffer);
+        if (root == null || !isVisible(player, root)) {
+            event.setCompletions(Collections.emptyList());
+        }
+    }
+
+    private boolean isVisible(Player player, String label) {
+        String normalizedLabel = normalizeRoot(label);
+        if (normalizedLabel == null || normalizedLabel.indexOf(':') >= 0) return false;
+
+        if (PUBLIC_COMMANDS.contains(normalizedLabel)) return true;
+        if (isGloballyDisabledCommand(normalizedLabel)) return false;
+
+        if (isProtectedServerCommand(normalizedLabel)) {
+            return player.hasPermission(SERVER_COMMAND_PERMISSION);
+        }
+
+        Command command = commandMap == null ? null : commandMap.getCommand(normalizedLabel);
+        return command != null && hasPermission(player, command, normalizedLabel);
+    }
+
+    private String normalizeRoot(String value) {
+        String command = value == null ? "" : value.trim();
+        if (command.startsWith("/")) command = command.substring(1);
+        int space = command.indexOf(' ');
+        if (space >= 0) command = command.substring(0, space);
+        if (command.isBlank()) return null;
+        return command.toLowerCase(Locale.ROOT);
     }
 
     private boolean hasPermission(Player player, Command command, String label) {
