@@ -225,6 +225,10 @@ public final class ConfigManager {
         if (raw == null) {
             raw = fallback;
         }
+        // Compatibilidade com messages.yml já existentes: converte a tag
+        // antiga em smallcaps/bold para o padrão atual sem exigir apagar o arquivo.
+        raw = raw.replace("&e&lᴄʜᴀᴛ &8• &", "&e[Chat] &r&")
+                .replace("&e&lᴄʜᴀᴛ &8• &r", "&e[Chat] &r");
         return MessageUtil.colorize(raw);
     }
 
