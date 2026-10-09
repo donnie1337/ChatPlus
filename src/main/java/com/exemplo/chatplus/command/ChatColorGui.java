@@ -21,6 +21,7 @@ import java.util.Map;
 
 public final class ChatColorGui implements Listener {
     private static final String PERMISSION = "chatplus.cor";
+    private static final int BACK_SLOT = 31;
 
     private final JavaPlugin plugin;
     private final ChatColorService colors;
@@ -49,10 +50,12 @@ public final class ChatColorGui implements Listener {
 
             meta.setDisplayName(color + entry.getKey());
             List<String> lore = new ArrayList<>();
+            lore.add("");
             lore.add("§7Cor aplicada somente à mensagem do chat.");
             lore.add("§7Exemplo: " + color + "Sua mensagem");
+            lore.add("");
             if (entry.getKey().equalsIgnoreCase(selected)) {
-                lore.add("§a✓ Cor atualmente selecionada");
+                lore.add("§aCor atualmente selecionada");
             } else {
                 lore.add("§eClique para selecionar");
             }
@@ -60,6 +63,17 @@ public final class ChatColorGui implements Listener {
             item.setItemMeta(meta);
             inventory.setItem(slots.get(index), item);
             index++;
+        }
+
+        if (BACK_SLOT < inventory.getSize()) {
+            ItemStack back = new ItemStack(Material.ARROW);
+            ItemMeta meta = back.getItemMeta();
+            if (meta != null) {
+                meta.setDisplayName("§cVoltar");
+                meta.setLore(List.of("", "§7Clique para voltar às configurações."));
+                back.setItemMeta(meta);
+            }
+            inventory.setItem(BACK_SLOT, back);
         }
 
         player.openInventory(inventory);
@@ -79,6 +93,11 @@ public final class ChatColorGui implements Listener {
         if (event.getClickedInventory() != top) return;
         if (event.getCursor() != null && !event.getCursor().getType().isAir()) return;
 
+        if (event.getRawSlot() == BACK_SLOT) {
+            openMessageSettings(player);
+            return;
+        }
+
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || clicked.getType().isAir() || !clicked.hasItemMeta()) return;
         ItemMeta meta = clicked.getItemMeta();
@@ -96,6 +115,22 @@ public final class ChatColorGui implements Listener {
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
         if (event.getView().getTopInventory().getHolder() instanceof ChatColorHolder) event.setCancelled(true);
+    }
+
+    private void openMessageSettings(Player player) {
+        var utilidades = plugin.getServer().getPluginManager().getPlugin("UtilidadesPlus");
+        if (utilidades == null || !utilidades.isEnabled()) {
+            player.performCommand("configurar");
+            return;
+        }
+
+        try {
+            utilidades.getClass()
+                    .getMethod("openMessageSettings", Player.class)
+                    .invoke(utilidades, player);
+        } catch (ReflectiveOperationException | LinkageError exception) {
+            player.performCommand("configurar");
+        }
     }
 
     private static Material woolFor(ChatColor color) {
