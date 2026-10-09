@@ -103,7 +103,13 @@ public final class ChatPlus extends JavaPlugin {
         PluginCommand command = getCommand(name);
         if (command != null) {
             command.setExecutor(executor);
-            if ("cor".equalsIgnoreCase(name)) {
+            if ("l".equalsIgnoreCase(name)
+                    || "g".equalsIgnoreCase(name)
+                    || "s".equalsIgnoreCase(name)
+                    || "cor".equalsIgnoreCase(name)) {
+                // Permissões dos chats são validadas pelo próprio ChatPlus/CargoPlus.
+                // Sem a permissão Bukkit no comando, o Brigadier do cliente
+                // reconhece /g, /l e /s e não pinta a entrada de vermelho.
                 command.setPermission(null);
             }
             if (executor instanceof org.bukkit.command.TabCompleter completer) {
