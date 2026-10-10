@@ -494,13 +494,21 @@ public final class ChatService {
     }
 
     private void addMagnataTagWithHover(List<BaseComponent> components, String displayTag) {
+        String hoverText = "&7Informações:\n\n"
+                + "&7Insígnia: &f" + displayTag + "\n"
+                + "&7Ranking: &fTop 1 em Coins\n\n"
+                + "&aEsse jogador é o Magnata do servidor.";
+
         HoverEvent hover = new HoverEvent(
                 HoverEvent.Action.SHOW_TEXT,
-                TextComponent.fromLegacyText(MessageUtil.colorize("&fTop 1 em &aCoins (Magnata)"))
+                TextComponent.fromLegacyText(MessageUtil.colorize(hoverText))
         );
+        ClickEvent click = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/insignias");
+
         BaseComponent[] parsed = TextComponent.fromLegacyText(MessageUtil.colorize(displayTag));
         for (BaseComponent component : parsed) {
             component.setHoverEvent(hover);
+            component.setClickEvent(click);
             components.add(component);
         }
     }
