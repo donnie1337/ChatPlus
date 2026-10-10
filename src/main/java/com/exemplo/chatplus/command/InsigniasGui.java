@@ -47,9 +47,9 @@ public final class InsigniasGui implements Listener {
             28, 29, 30, 31, 32, 33, 34
     };
 
-    private static final int COLLECTION_PREVIOUS_SLOT = 48;
+    private static final int COLLECTION_PREVIOUS_SLOT = 46;
     private static final int COLLECTION_BACK_SLOT = 49;
-    private static final int COLLECTION_NEXT_SLOT = 50;
+    private static final int COLLECTION_NEXT_SLOT = 52;
 
     private final ConfigManager config;
     private final PlaytimeTestService playtimeTests;
