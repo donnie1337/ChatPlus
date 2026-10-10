@@ -200,7 +200,7 @@ public final class ConfigManager {
 
     public String getPlaytimeTagHover() {
         return getConfiguredString(PATH_PLAYTIME_TAGS_HOVER,
-                "&7Tempo jogado: &f{tempo}\n&7Necessário: &f{horas}+ horas");
+                "&7Informações:\n\n&e• &dTempo jogado: &f{tempo}\n&e• &dRequisito da tag: &f{horas}+ horas\n\n&aContinue jogando para evoluir sua tag.");
     }
 
     public String getLocalChatFormat() {
