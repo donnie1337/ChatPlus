@@ -830,6 +830,7 @@ public final class ChatService {
 
     private void addPlaytimeTagWithHover(List<BaseComponent> components, PlaytimeTag tag, Player player) {
         String hoverText = config.getPlaytimeTagHover()
+                .replace("{tag}", tag.text())
                 .replace("{tempo}", formatOnlineTime(player))
                 .replace("{horas}", String.valueOf(tag.requiredHours()));
 
