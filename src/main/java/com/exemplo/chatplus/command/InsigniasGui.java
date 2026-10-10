@@ -93,7 +93,7 @@ public final class InsigniasGui implements Listener {
         List<Badge> badges = ownedBadges(player);
         int size = ownedInventorySize(badges.size());
         Inventory inventory = Bukkit.createInventory(new Holder(Type.OWNED, 0), size,
-                "§8Insígnias §7→ §fSuas insígnias");
+                "Insígnias • Suas insígnias");
 
         if (badges.isEmpty()) {
             inventory.setItem(EMPTY_SLOT_36, item(Material.GRAY_DYE, "§7Nenhuma insígnia", List.of(
@@ -124,7 +124,7 @@ public final class InsigniasGui implements Listener {
         Inventory inventory = Bukkit.createInventory(
                 new Holder(Type.ARSENAL, page),
                 ARSENAL_SIZE,
-                "§8Insígnias §7→ §fArsenal §8(" + (page + 1) + "/" + totalPages + ")"
+                "Insígnias • Arsenal (" + (page + 1) + "/" + totalPages + ")"
         );
 
         fillArsenalPage(inventory, badges, page);
