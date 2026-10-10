@@ -28,11 +28,11 @@ import java.util.Map;
 public final class InsigniasGui implements Listener {
 
     private static final int MAIN_SIZE = 27;
-    private static final int LIST_SIZE = 54;
+    private static final int ARSENAL_SIZE = 54;
+    private static final int OWNED_MIN_SIZE = 36;
     private static final int OWNED_SLOT = 11;
     private static final int ARSENAL_SLOT = 15;
-    private static final int EMPTY_SLOT = 22;
-    private static final int BACK_SLOT = 49;
+    private static final int EMPTY_SLOT_36 = 13;
 
     private static final int[] BADGE_SLOTS = {
             10, 11, 12, 13, 14, 15, 16,
@@ -78,12 +78,13 @@ public final class InsigniasGui implements Listener {
     }
 
     public void openOwned(Player player) {
-        Inventory inventory = Bukkit.createInventory(new Holder(Type.OWNED), LIST_SIZE,
+        List<Badge> badges = ownedBadges(player);
+        int size = ownedInventorySize(badges.size());
+        Inventory inventory = Bukkit.createInventory(new Holder(Type.OWNED), size,
                 "§8Insígnias §7→ §fSuas insígnias");
 
-        List<Badge> badges = ownedBadges(player);
         if (badges.isEmpty()) {
-            inventory.setItem(EMPTY_SLOT, item(Material.GRAY_DYE, "§7Nenhuma insígnia", List.of(
+            inventory.setItem(EMPTY_SLOT_36, item(Material.GRAY_DYE, "§7Nenhuma insígnia", List.of(
                     "",
                     "§7Você ainda não conquistou",
                     "§7nenhuma insígnia."
@@ -92,7 +93,7 @@ public final class InsigniasGui implements Listener {
             fillBadges(inventory, badges, true);
         }
 
-        inventory.setItem(BACK_SLOT, item(Material.ARROW, "§cVoltar", List.of(
+        inventory.setItem(backSlot(size), item(Material.ARROW, "§cVoltar", List.of(
                 "",
                 "§7Voltar ao menu de insígnias."
         )));
@@ -100,12 +101,12 @@ public final class InsigniasGui implements Listener {
     }
 
     public void openArsenal(Player player) {
-        Inventory inventory = Bukkit.createInventory(new Holder(Type.ARSENAL), LIST_SIZE,
+        Inventory inventory = Bukkit.createInventory(new Holder(Type.ARSENAL), ARSENAL_SIZE,
                 "§8Insígnias §7→ §fArsenal");
 
         fillBadges(inventory, arsenalBadges(), false);
 
-        inventory.setItem(BACK_SLOT, item(Material.ARROW, "§cVoltar", List.of(
+        inventory.setItem(backSlot(ARSENAL_SIZE), item(Material.ARROW, "§cVoltar", List.of(
                 "",
                 "§7Voltar ao menu de insígnias."
         )));
@@ -127,7 +128,7 @@ public final class InsigniasGui implements Listener {
             return;
         }
 
-        if (slot == BACK_SLOT) open(player);
+        if (slot == backSlot(event.getView().getTopInventory().getSize())) open(player);
     }
 
     @EventHandler
@@ -135,6 +136,16 @@ public final class InsigniasGui implements Listener {
         if (event.getView().getTopInventory().getHolder() instanceof Holder) {
             event.setCancelled(true);
         }
+    }
+
+    private int ownedInventorySize(int badgeCount) {
+        if (badgeCount <= 14) return OWNED_MIN_SIZE;
+        if (badgeCount <= 21) return 45;
+        return 54;
+    }
+
+    private int backSlot(int inventorySize) {
+        return inventorySize - 5;
     }
 
     private void fillBadges(Inventory inventory, List<Badge> badges, boolean owned) {
