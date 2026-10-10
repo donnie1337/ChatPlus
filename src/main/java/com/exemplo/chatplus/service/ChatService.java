@@ -495,9 +495,9 @@ public final class ChatService {
 
     private void addMagnataTagWithHover(List<BaseComponent> components, String displayTag) {
         String hoverText = "&7Informações:\n\n"
-                + "&7Insígnia: &f" + displayTag + "\n"
-                + "&7Ranking: &fTop 1 em Coins\n\n"
-                + "&aEsse jogador é o Magnata do servidor.";
+                + "&e• &7Insígnia: &f" + displayTag + "\n"
+                + "&e• &7Ranking: &fTop 1 em Coins\n\n"
+                + "&bClique aqui para ver suas insígnias.";
 
         HoverEvent hover = new HoverEvent(
                 HoverEvent.Action.SHOW_TEXT,
