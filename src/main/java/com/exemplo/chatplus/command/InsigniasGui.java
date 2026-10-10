@@ -1,11 +1,11 @@
 package com.exemplo.chatplus.command;
 
 import com.exemplo.chatplus.config.ConfigManager;
+import com.exemplo.chatplus.service.PlaytimeTestService;
 import com.exemplo.chatplus.util.MessageUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,9 +42,11 @@ public final class InsigniasGui implements Listener {
     };
 
     private final ConfigManager config;
+    private final PlaytimeTestService playtimeTests;
 
-    public InsigniasGui(ConfigManager config) {
+    public InsigniasGui(ConfigManager config, PlaytimeTestService playtimeTests) {
         this.config = config;
+        this.playtimeTests = playtimeTests;
     }
 
     public void open(Player player) {
@@ -235,7 +237,7 @@ public final class InsigniasGui implements Listener {
     }
 
     private long playedHours(Player player) {
-        return player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L / 60L / 60L;
+        return playtimeTests.resolveHours(player);
     }
 
     private String currentTopSkill(Player player) {
