@@ -61,6 +61,26 @@ chat:
     sem-habilidade: "&fTop 1."
 
   # ----------------------------------------------------------
+  # TAGS POR TEMPO JOGADO
+  # ----------------------------------------------------------
+  # O jogador recebe automaticamente a maior faixa que já alcançou.
+  # O tempo é lido da estatística PLAY_ONE_MINUTE do próprio Minecraft.
+  tags-tempo-jogado:
+    ativado: true
+    hover: "&7Tempo jogado: &f{tempo}\n&7Necessário: &f{horas}+ horas"
+    faixas:
+      - horas: 10
+        tag: "&7[Iniciante]"
+      - horas: 50
+        tag: "&a[Explorador]"
+      - horas: 100
+        tag: "&b[Experiente]"
+      - horas: 250
+        tag: "&6[Veterano]"
+      - horas: 500
+        tag: "&d[Lendário]"
+
+  # ----------------------------------------------------------
   # CHAT LOCAL
   # ----------------------------------------------------------
   local:
