@@ -4,6 +4,8 @@ import com.exemplo.chatplus.command.ChatColorCommand;
 import com.exemplo.chatplus.command.ChatColorGui;
 import com.exemplo.chatplus.command.ChatCommand;
 import com.exemplo.chatplus.command.GlobalChatCommand;
+import com.exemplo.chatplus.command.InsigniasCommand;
+import com.exemplo.chatplus.command.InsigniasGui;
 import com.exemplo.chatplus.command.LocalChatCommand;
 import com.exemplo.chatplus.command.StaffChatCommand;
 import com.exemplo.chatplus.config.ConfigManager;
@@ -24,6 +26,7 @@ public final class ChatPlus extends JavaPlugin {
     private ChatColorService chatColorService;
     private ChatColorGui chatColorGui;
     private ChatService chatService;
+    private InsigniasGui insigniasGui;
 
     @Override
     public void onEnable() {
@@ -34,11 +37,13 @@ public final class ChatPlus extends JavaPlugin {
         this.chatService = new ChatService(configManager, chatDelayService);
         this.chatColorService = new ChatColorService();
         this.chatColorGui = new ChatColorGui(this, chatColorService);
+        this.insigniasGui = new InsigniasGui(configManager);
 
         registerCommand("l", new LocalChatCommand(configManager, chatService));
         registerCommand("g", new GlobalChatCommand(configManager, chatService));
         registerCommand("s", new StaffChatCommand(configManager, chatService));
         registerCommand("cor", new ChatColorCommand(chatColorService, chatColorGui));
+        registerCommand("insignias", new InsigniasCommand(insigniasGui));
 
         ChatCommand chatCommand = new ChatCommand(configManager);
         PluginCommand chatPluginCommand = getCommand("chat");
@@ -50,6 +55,7 @@ public final class ChatPlus extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(chatColorGui, this);
+        getServer().getPluginManager().registerEvents(insigniasGui, this);
         getServer().getPluginManager().registerEvents(
                 new ChatListener(this, configManager, chatService, chatDelayService), this);
         getServer().getPluginManager().registerEvents(new UnknownCommandListener(configManager), this);
