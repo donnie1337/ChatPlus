@@ -519,8 +519,10 @@ public final class ChatService {
         hoverTemplate = hoverTemplate.replace("{insignia}", displayTag);
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 TextComponent.fromLegacyText(MessageUtil.colorize(hoverTemplate)));
+        ClickEvent click = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/insignias");
         for (BaseComponent component : parsed) {
             component.setHoverEvent(hover);
+            component.setClickEvent(click);
             components.add(component);
         }
     }
@@ -840,8 +842,10 @@ public final class ChatService {
                 HoverEvent.Action.SHOW_TEXT,
                 new ComponentBuilder(MessageUtil.colorize(hoverText)).create()
         );
+        ClickEvent click = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/insignias");
         for (BaseComponent component : parsed) {
             component.setHoverEvent(hover);
+            component.setClickEvent(click);
             components.add(component);
         }
     }
