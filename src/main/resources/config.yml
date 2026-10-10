@@ -69,16 +69,16 @@ chat:
     ativado: true
     hover: "&7Informações:\n\n&e• &dTag: &f{tag}\n&e• &dTempo jogado: &f{tempo}\n&e• &dRequisito da tag: &f{horas}+ horas\n\n&aContinue jogando para evoluir sua tag."
     faixas:
-      - horas: 10
-        tag: "&7[Iniciante]"
-      - horas: 50
-        tag: "&a[Explorador]"
       - horas: 100
-        tag: "&b[Experiente]"
-      - horas: 250
-        tag: "&6[Veterano]"
+        tag: "&7[✦]"
       - horas: 500
-        tag: "&d[Lendário]"
+        tag: "&a[✤]"
+      - horas: 1000
+        tag: "&b[◆]"
+      - horas: 2500
+        tag: "&6[★]"
+      - horas: 5000
+        tag: "&6[⏱]"
 
   # ----------------------------------------------------------
   # CHAT LOCAL
