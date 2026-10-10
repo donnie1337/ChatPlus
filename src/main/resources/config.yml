@@ -57,8 +57,8 @@ chat:
   # {habilidade} -> nome da habilidade em que o jogador é Top 1
   habilidade-top1:
     ativado: true
-    formato: "&7Informações:\n\n&7Insígnia: &f{insignia}\n&7Habilidade: &f{habilidade}\n\n&aEsse jogador é Top 1 desta habilidade."
-    sem-habilidade: "&7Informações:\n\n&7Insígnia: &f{insignia}\n&7Habilidade: &fTop 1\n\n&aEsse jogador é Top 1 desta habilidade."
+    formato: "&7Informações:\n\n&e• &7Insígnia: &f{insignia}\n&e• &7Habilidade: &f{habilidade}\n\n&bClique aqui para ver suas insígnias."
+    sem-habilidade: "&7Informações:\n\n&e• &7Insígnia: &f{insignia}\n&e• &7Habilidade: &fTop 1\n\n&bClique aqui para ver suas insígnias."
 
   # ----------------------------------------------------------
   # INSÍGNIAS POR TEMPO JOGADO
@@ -67,7 +67,7 @@ chat:
   # O tempo é lido da estatística PLAY_ONE_MINUTE do próprio Minecraft.
   tags-tempo-jogado:
     ativado: true
-    hover: "&7Informações:\n\n&7Insígnia: &f{tag}\n&7Tempo jogado: &f{tempo}\n&7Requisito: &f{horas}+ horas\n\n&aContinue jogando para evoluir sua insígnia."
+    hover: "&7Informações:\n\n&e• &7Insígnia: &f{tag}\n&e• &7Tempo jogado: &f{tempo}\n&e• &7Requisito: &f{horas}+ horas\n\n&bClique aqui para ver suas insígnias."
     faixas:
       - horas: 120
         tag: "&7[✦]"
