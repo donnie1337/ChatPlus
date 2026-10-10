@@ -132,21 +132,27 @@ public final class InsigniasGui implements Listener {
         if (page > 0) {
             inventory.setItem(COLLECTION_PREVIOUS_SLOT, item(
                     Material.ARROW,
-                    "§ePágina anterior",
-                    List.of("", "§7Voltar para a página " + page + ".", "", "§eClique para voltar")
+                    "§aAnterior",
+                    List.of(
+                            "",
+                            "§7Clique para voltar à página anterior."
+                    )
             ));
         }
 
-        inventory.setItem(COLLECTION_BACK_SLOT, item(Material.BARRIER, "§cVoltar", List.of(
+        inventory.setItem(COLLECTION_BACK_SLOT, item(Material.ARROW, "§cVoltar", List.of(
                 "",
-                "§7Voltar ao menu de insígnias."
+                "§7Clique para voltar às insígnias."
         )));
 
         if (page + 1 < totalPages) {
             inventory.setItem(COLLECTION_NEXT_SLOT, item(
                     Material.ARROW,
-                    "§ePróxima página",
-                    List.of("", "§7Ir para a página " + (page + 2) + ".", "", "§eClique para avançar")
+                    "§aPróxima",
+                    List.of(
+                            "",
+                            "§7Clique para avançar para a próxima página."
+                    )
             ));
         }
 
