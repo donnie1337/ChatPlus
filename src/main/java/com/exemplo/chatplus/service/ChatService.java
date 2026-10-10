@@ -44,6 +44,7 @@ public final class ChatService {
     private static final String VANISH_HOVER_TEXT = "§fEste jogador está invisível.";
     private final ConfigManager config;
     private final ChatDelayService delayService;
+    private final PlaytimeTestService playtimeTests;
     private final CargoPlusBridge cargo;
     private volatile Plugin authPlugin;
     private volatile Method authCheckMethod;
@@ -59,9 +60,10 @@ public final class ChatService {
     private volatile Method marriagePartnerNameMethod;
     private volatile Method marriagePartnerUuidMethod;
 
-    public ChatService(ConfigManager config, ChatDelayService delayService) {
+    public ChatService(ConfigManager config, ChatDelayService delayService, PlaytimeTestService playtimeTests) {
         this.config = config;
         this.delayService = delayService;
+        this.playtimeTests = playtimeTests;
         this.cargo = new CargoPlusBridge();
     }
 
@@ -811,7 +813,7 @@ public final class ChatService {
     private PlaytimeTag resolvePlaytimeTag(Player player) {
         if (player == null || !config.isPlaytimeTagsEnabled()) return null;
 
-        long playedHours = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L / 60L / 60L;
+        long playedHours = playtimeTests.resolveHours(player);
         PlaytimeTag selected = null;
 
         for (Map<?, ?> entry : config.getPlaytimeTagRanges()) {
@@ -853,6 +855,10 @@ public final class ChatService {
     private record PlaytimeTag(String text, long requiredHours) {}
 
     private String formatOnlineTime(Player player) {
+        if (playtimeTests.hasOverride(player)) {
+            return playtimeTests.resolveHours(player) + "h";
+        }
+
         long minutes = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L / 60L;
         long days = minutes / (24L * 60L);
         long hours = (minutes % (24L * 60L)) / 60L;
