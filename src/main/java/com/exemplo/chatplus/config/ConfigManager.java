@@ -179,7 +179,7 @@ public final class ConfigManager {
     }
     public boolean isHabilidadeHoverEnabled() { return plugin.getConfig().getBoolean(PATH_HABILIDADE_HOVER_ENABLED, true); }
     public String getHabilidadeHoverFormat() {
-        String value = getConfiguredString(PATH_HABILIDADE_HOVER_FORMAT, "&7Informações:\n\n&e• &dInsígnia: &f{insignia}\n&e• &dHabilidade: &f{habilidade}\n\n&aEsse jogador é Top 1 desta habilidade.");
+        String value = getConfiguredString(PATH_HABILIDADE_HOVER_FORMAT, "&7Informações:\n\n&8• &7ɪɴsɪ́ɢɴɪᴀ: &f{insignia}\n&8• &7ʜᴀʙɪʟɪᴅᴀᴅᴇ: &f{habilidade}\n\n&aEsse jogador é Top 1 desta habilidade.");
         // Migra automaticamente a mensagem antiga para o novo formato,
         // inclusive quando o config.yml já existia antes desta atualização.
         if ("&fEsse jogador é Top 1 em &e{habilidade}&f.".equals(value)
@@ -188,7 +188,7 @@ public final class ConfigManager {
         }
         return value;
     }
-    public String getHabilidadeHoverFallback() { return getConfiguredString(PATH_HABILIDADE_HOVER_FALLBACK, "&7Informações:\n\n&e• &dInsígnia: &f{insignia}\n&e• &dHabilidade: &fTop 1\n\n&aEsse jogador é Top 1 desta habilidade."); }
+    public String getHabilidadeHoverFallback() { return getConfiguredString(PATH_HABILIDADE_HOVER_FALLBACK, "&7Informações:\n\n&8• &7ɪɴsɪ́ɢɴɪᴀ: &f{insignia}\n&8• &7ʜᴀʙɪʟɪᴅᴀᴅᴇ: &fTop 1\n\n&aEsse jogador é Top 1 desta habilidade."); }
 
     public boolean isPlaytimeTagsEnabled() {
         return plugin.getConfig().getBoolean(PATH_PLAYTIME_TAGS_ENABLED, true);
