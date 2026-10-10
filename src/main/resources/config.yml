@@ -67,7 +67,7 @@ chat:
   # O tempo é lido da estatística PLAY_ONE_MINUTE do próprio Minecraft.
   tags-tempo-jogado:
     ativado: true
-    hover: "&7Tempo jogado: &f{tempo}\n&7Necessário: &f{horas}+ horas"
+    hover: "&7Informações:\n\n&e• &dTempo jogado: &f{tempo}\n&e• &dRequisito da tag: &f{horas}+ horas\n\n&aContinue jogando para evoluir sua tag."
     faixas:
       - horas: 10
         tag: "&7[Iniciante]"
