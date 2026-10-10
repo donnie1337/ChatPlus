@@ -263,8 +263,7 @@ public final class ChatService {
             }
             addPlayerAndAfter(components, afterTemplate, (Player) sender, playerName, cargoColor, addVanishHover, placeholders);
             BaseComponent[] result = components.toArray(BaseComponent[]::new);
-            decorateChatTypeHover(result, chatType);
-            return result;
+            return decorateChatTypeHover(result, chatType);
         }
 
         placeholders.put(PREFIX_PLACEHOLDER, prefix);
@@ -281,8 +280,7 @@ public final class ChatService {
             }
         }
         BaseComponent[] result = formatWithMessageTimestamp(template, placeholders, addVanishHover);
-        decorateChatTypeHover(result, chatType);
-        return result;
+        return decorateChatTypeHover(result, chatType);
     }
 
 
@@ -957,9 +955,62 @@ public final class ChatService {
         return parsed;
     }
 
-    private void decorateChatTypeHover(BaseComponent[] components, String chatType) {
-        if (components == null || chatType == null || chatType.isEmpty()) return;
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageUtil.colorize(config.getChannelHover().replace("{canal}", chatType))).create());
-        for (BaseComponent component : components) if (component.getHoverEvent() == null) component.setHoverEvent(hover);
+    private BaseComponent[] decorateChatTypeHover(BaseComponent[] components, String chatType) {
+        if (components == null || chatType == null || chatType.isEmpty()) return components;
+
+        String marker = switch (chatType.toLowerCase(Locale.ROOT)) {
+            case "global" -> "[G]";
+            case "local" -> "[L]";
+            case "staff" -> "[S]";
+            default -> "";
+        };
+        if (marker.isEmpty()) return components;
+
+        HoverEvent hover = new HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                new ComponentBuilder(MessageUtil.colorize(
+                        config.getChannelHover().replace("{canal}", chatType)
+                )).create()
+        );
+
+        List<BaseComponent> decorated = new ArrayList<>();
+        boolean applied = false;
+
+        for (BaseComponent component : components) {
+            if (!applied && component instanceof TextComponent textComponent
+                    && component.getHoverEvent() == null) {
+                String text = textComponent.getText();
+                int markerIndex = text.indexOf(marker);
+
+                if (markerIndex >= 0) {
+                    if (markerIndex > 0) {
+                        TextComponent before = new TextComponent(textComponent);
+                        before.setText(text.substring(0, markerIndex));
+                        before.setHoverEvent(null);
+                        decorated.add(before);
+                    }
+
+                    TextComponent channel = new TextComponent(textComponent);
+                    channel.setText(marker);
+                    channel.setHoverEvent(hover);
+                    decorated.add(channel);
+
+                    int afterIndex = markerIndex + marker.length();
+                    if (afterIndex < text.length()) {
+                        TextComponent after = new TextComponent(textComponent);
+                        after.setText(text.substring(afterIndex));
+                        after.setHoverEvent(null);
+                        decorated.add(after);
+                    }
+
+                    applied = true;
+                    continue;
+                }
+            }
+
+            decorated.add(component);
+        }
+
+        return decorated.toArray(BaseComponent[]::new);
     }
 }
