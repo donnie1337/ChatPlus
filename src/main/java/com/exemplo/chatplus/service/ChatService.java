@@ -231,7 +231,7 @@ public final class ChatService {
             List<BaseComponent> components = new ArrayList<>();
             addLegacy(components, before);
             // Ordem fixa da identidade no chat:
-            // [CANAL] ❤ [MCMMO/HABILIDADE] [$ MAGNATA] [CLAN] [CARGO] Nickname
+            // [CANAL] ❤ [MCMMO/HABILIDADE] [$ MAGNATA] [TEMPO] [CLAN] [CARGO] Nickname
             String marriageTag = resolveMarriageTag((Player) sender);
             if (!marriageTag.isBlank()) {
                 addMarriageTagWithHover(components, marriageTag, (Player) sender);
@@ -245,6 +245,11 @@ public final class ChatService {
             String magnataTag = resolveMagnataTag((Player) sender);
             if (!magnataTag.isBlank()) {
                 addMagnataTagWithHover(components, magnataTag);
+                addLegacy(components, " ");
+            }
+            PlaytimeTag playtimeTag = resolvePlaytimeTag((Player) sender);
+            if (playtimeTag != null) {
+                addPlaytimeTagWithHover(components, playtimeTag, (Player) sender);
                 addLegacy(components, " ");
             }
             if (!clanTag.isEmpty()) addClanTag(components, clanTag, cargoColor);
@@ -799,6 +804,47 @@ public final class ChatService {
             return 0;
         }
     }
+
+    private PlaytimeTag resolvePlaytimeTag(Player player) {
+        if (player == null || !config.isPlaytimeTagsEnabled()) return null;
+
+        long playedHours = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L / 60L / 60L;
+        PlaytimeTag selected = null;
+
+        for (Map<?, ?> entry : config.getPlaytimeTagRanges()) {
+            Object rawHours = entry.get("horas");
+            Object rawTag = entry.get("tag");
+            if (!(rawHours instanceof Number number) || rawTag == null) continue;
+
+            long requiredHours = Math.max(0L, number.longValue());
+            String tag = String.valueOf(rawTag).trim();
+            if (tag.isEmpty() || playedHours < requiredHours) continue;
+
+            if (selected == null || requiredHours > selected.requiredHours()) {
+                selected = new PlaytimeTag(tag, requiredHours);
+            }
+        }
+
+        return selected;
+    }
+
+    private void addPlaytimeTagWithHover(List<BaseComponent> components, PlaytimeTag tag, Player player) {
+        String hoverText = config.getPlaytimeTagHover()
+                .replace("{tempo}", formatOnlineTime(player))
+                .replace("{horas}", String.valueOf(tag.requiredHours()));
+
+        BaseComponent[] parsed = TextComponent.fromLegacyText(MessageUtil.colorize(tag.text()));
+        HoverEvent hover = new HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                new ComponentBuilder(MessageUtil.colorize(hoverText)).create()
+        );
+        for (BaseComponent component : parsed) {
+            component.setHoverEvent(hover);
+            components.add(component);
+        }
+    }
+
+    private record PlaytimeTag(String text, long requiredHours) {}
 
     private String formatOnlineTime(Player player) {
         long minutes = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L / 60L;
