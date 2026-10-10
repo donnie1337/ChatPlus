@@ -28,10 +28,10 @@ import java.util.Map;
 public final class InsigniasGui implements Listener {
 
     private static final int MAIN_SIZE = 27;
-    private static final int ARSENAL_SIZE = 54;
+    private static final int COLLECTION_SIZE = 54;
     private static final int OWNED_MIN_SIZE = 36;
     private static final int OWNED_SLOT = 11;
-    private static final int ARSENAL_SLOT = 15;
+    private static final int COLLECTION_SLOT = 15;
     private static final int EMPTY_SLOT_36 = 13;
 
     private static final int[] BADGE_SLOTS = {
@@ -41,15 +41,15 @@ public final class InsigniasGui implements Listener {
             37, 38, 39, 40, 41, 42, 43
     };
 
-    private static final int[] ARSENAL_BADGE_SLOTS = {
+    private static final int[] COLLECTION_BADGE_SLOTS = {
             10, 11, 12, 13, 14, 15, 16,
             19, 20, 21, 22, 23, 24, 25,
             28, 29, 30, 31, 32, 33, 34
     };
 
-    private static final int ARSENAL_PREVIOUS_SLOT = 48;
-    private static final int ARSENAL_BACK_SLOT = 49;
-    private static final int ARSENAL_NEXT_SLOT = 50;
+    private static final int COLLECTION_PREVIOUS_SLOT = 48;
+    private static final int COLLECTION_BACK_SLOT = 49;
+    private static final int COLLECTION_NEXT_SLOT = 50;
 
     private final ConfigManager config;
     private final PlaytimeTestService playtimeTests;
@@ -78,7 +78,7 @@ public final class InsigniasGui implements Listener {
         }
         inventory.setItem(OWNED_SLOT, head);
 
-        inventory.setItem(ARSENAL_SLOT, item(Material.BOOK, "§eArsenal de insígnias", List.of(
+        inventory.setItem(COLLECTION_SLOT, item(Material.BOOK, "§eColeção de insígnias", List.of(
                 "",
                 "§7Veja todas as insígnias",
                 "§7disponíveis no servidor.",
@@ -112,38 +112,38 @@ public final class InsigniasGui implements Listener {
         player.openInventory(inventory);
     }
 
-    public void openArsenal(Player player) {
-        openArsenal(player, 0);
+    public void openColeção(Player player) {
+        openColeção(player, 0);
     }
 
-    private void openArsenal(Player player, int requestedPage) {
-        List<Badge> badges = arsenalBadges();
-        int totalPages = Math.max(1, (badges.size() + ARSENAL_BADGE_SLOTS.length - 1) / ARSENAL_BADGE_SLOTS.length);
+    private void openColeção(Player player, int requestedPage) {
+        List<Badge> badges = collectionBadges();
+        int totalPages = Math.max(1, (badges.size() + COLLECTION_BADGE_SLOTS.length - 1) / COLLECTION_BADGE_SLOTS.length);
         int page = Math.max(0, Math.min(requestedPage, totalPages - 1));
 
         Inventory inventory = Bukkit.createInventory(
-                new Holder(Type.ARSENAL, page),
-                ARSENAL_SIZE,
-                "Insígnias • Arsenal (" + (page + 1) + "/" + totalPages + ")"
+                new Holder(Type.COLLECTION, page),
+                COLLECTION_SIZE,
+                "Insígnias • Coleção (" + (page + 1) + "/" + totalPages + ")"
         );
 
-        fillArsenalPage(inventory, badges, page);
+        fillColeçãoPage(inventory, badges, page);
 
         if (page > 0) {
-            inventory.setItem(ARSENAL_PREVIOUS_SLOT, item(
+            inventory.setItem(COLLECTION_PREVIOUS_SLOT, item(
                     Material.ARROW,
                     "§ePágina anterior",
                     List.of("", "§7Voltar para a página " + page + ".", "", "§eClique para voltar")
             ));
         }
 
-        inventory.setItem(ARSENAL_BACK_SLOT, item(Material.BARRIER, "§cVoltar", List.of(
+        inventory.setItem(COLLECTION_BACK_SLOT, item(Material.BARRIER, "§cVoltar", List.of(
                 "",
                 "§7Voltar ao menu de insígnias."
         )));
 
         if (page + 1 < totalPages) {
-            inventory.setItem(ARSENAL_NEXT_SLOT, item(
+            inventory.setItem(COLLECTION_NEXT_SLOT, item(
                     Material.ARROW,
                     "§ePróxima página",
                     List.of("", "§7Ir para a página " + (page + 2) + ".", "", "§eClique para avançar")
@@ -164,21 +164,21 @@ public final class InsigniasGui implements Listener {
         int slot = event.getRawSlot();
         if (holder.type() == Type.MAIN) {
             if (slot == OWNED_SLOT) openOwned(player);
-            else if (slot == ARSENAL_SLOT) openArsenal(player);
+            else if (slot == COLLECTION_SLOT) openColeção(player);
             return;
         }
 
-        if (holder.type() == Type.ARSENAL) {
-            if (slot == ARSENAL_BACK_SLOT) {
+        if (holder.type() == Type.COLLECTION) {
+            if (slot == COLLECTION_BACK_SLOT) {
                 open(player);
                 return;
             }
-            if (slot == ARSENAL_PREVIOUS_SLOT && holder.page() > 0) {
-                openArsenal(player, holder.page() - 1);
+            if (slot == COLLECTION_PREVIOUS_SLOT && holder.page() > 0) {
+                openColeção(player, holder.page() - 1);
                 return;
             }
-            if (slot == ARSENAL_NEXT_SLOT) {
-                openArsenal(player, holder.page() + 1);
+            if (slot == COLLECTION_NEXT_SLOT) {
+                openColeção(player, holder.page() + 1);
             }
             return;
         }
@@ -211,13 +211,13 @@ public final class InsigniasGui implements Listener {
         }
     }
 
-    private void fillArsenalPage(Inventory inventory, List<Badge> badges, int page) {
-        int start = page * ARSENAL_BADGE_SLOTS.length;
-        int end = Math.min(start + ARSENAL_BADGE_SLOTS.length, badges.size());
+    private void fillColeçãoPage(Inventory inventory, List<Badge> badges, int page) {
+        int start = page * COLLECTION_BADGE_SLOTS.length;
+        int end = Math.min(start + COLLECTION_BADGE_SLOTS.length, badges.size());
 
         for (int index = start; index < end; index++) {
             int slotIndex = index - start;
-            inventory.setItem(ARSENAL_BADGE_SLOTS[slotIndex], badgeItem(badges.get(index), false));
+            inventory.setItem(COLLECTION_BADGE_SLOTS[slotIndex], badgeItem(badges.get(index), false));
         }
     }
 
@@ -245,7 +245,7 @@ public final class InsigniasGui implements Listener {
         return badges;
     }
 
-    private List<Badge> arsenalBadges() {
+    private List<Badge> collectionBadges() {
         List<Badge> badges = new ArrayList<>(playtimeBadges());
         for (Map.Entry<String, String> entry : allSkillBadges().entrySet()) {
             badges.add(skillBadge(entry.getKey(), entry.getValue()));
@@ -397,6 +397,6 @@ public final class InsigniasGui implements Listener {
     private enum Type {
         MAIN,
         OWNED,
-        ARSENAL
+        COLLECTION
     }
 }
