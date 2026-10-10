@@ -14,6 +14,7 @@ import com.exemplo.chatplus.listener.UnknownCommandListener;
 import com.exemplo.chatplus.service.ChatColorService;
 import com.exemplo.chatplus.service.ChatDelayService;
 import com.exemplo.chatplus.service.ChatService;
+import com.exemplo.chatplus.service.PlaytimeTestService;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
@@ -27,6 +28,7 @@ public final class ChatPlus extends JavaPlugin {
     private ChatColorGui chatColorGui;
     private ChatService chatService;
     private InsigniasGui insigniasGui;
+    private PlaytimeTestService playtimeTestService;
 
     @Override
     public void onEnable() {
@@ -34,16 +36,17 @@ public final class ChatPlus extends JavaPlugin {
         configManager.load();
 
         ChatDelayService chatDelayService = new ChatDelayService(configManager);
-        this.chatService = new ChatService(configManager, chatDelayService);
+        this.playtimeTestService = new PlaytimeTestService();
+        this.chatService = new ChatService(configManager, chatDelayService, playtimeTestService);
         this.chatColorService = new ChatColorService();
         this.chatColorGui = new ChatColorGui(this, chatColorService);
-        this.insigniasGui = new InsigniasGui(configManager);
+        this.insigniasGui = new InsigniasGui(configManager, playtimeTestService);
 
         registerCommand("l", new LocalChatCommand(configManager, chatService));
         registerCommand("g", new GlobalChatCommand(configManager, chatService));
         registerCommand("s", new StaffChatCommand(configManager, chatService));
         registerCommand("cor", new ChatColorCommand(chatColorService, chatColorGui));
-        registerCommand("insignias", new InsigniasCommand(insigniasGui));
+        registerCommand("insignias", new InsigniasCommand(insigniasGui, playtimeTestService));
 
         ChatCommand chatCommand = new ChatCommand(configManager);
         PluginCommand chatPluginCommand = getCommand("chat");
