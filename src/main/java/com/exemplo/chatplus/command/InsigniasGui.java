@@ -174,6 +174,11 @@ public final class InsigniasGui implements Listener {
             badges.add(skillBadge(skill, skillTag));
         }
 
+        String magnataTag = currentMagnataTag(player);
+        if (!magnataTag.isBlank()) {
+            badges.add(magnataBadge(magnataTag));
+        }
+
         return badges;
     }
 
@@ -182,6 +187,7 @@ public final class InsigniasGui implements Listener {
         for (Map.Entry<String, String> entry : allSkillBadges().entrySet()) {
             badges.add(skillBadge(entry.getKey(), entry.getValue()));
         }
+        badges.add(magnataBadge("§a[$]"));
         return badges;
     }
 
@@ -219,6 +225,16 @@ public final class InsigniasGui implements Listener {
         );
     }
 
+    private Badge magnataBadge(String tag) {
+        return new Badge(
+                tag == null || tag.isBlank() ? "§a[$]" : tag.trim(),
+                "§aMagnata",
+                0L,
+                "§7Insígnia exclusiva do §fTop 1",
+                "§7no ranking de §fCoins§7."
+        );
+    }
+
     private ItemStack badgeItem(Badge badge, boolean owned) {
         List<String> lore = new ArrayList<>();
         lore.add("");
@@ -238,6 +254,19 @@ public final class InsigniasGui implements Listener {
 
     private long playedHours(Player player) {
         return playtimeTests.resolveHours(player);
+    }
+
+    private String currentMagnataTag(Player player) {
+        Plugin economia = Bukkit.getPluginManager().getPlugin("EconomiaPlus");
+        if (economia == null || !economia.isEnabled() || player == null) return "";
+
+        try {
+            Method method = economia.getClass().getMethod("getMagnataChatTag", java.util.UUID.class);
+            Object result = method.invoke(economia, player.getUniqueId());
+            return result == null ? "" : String.valueOf(result).trim();
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            return "";
+        }
     }
 
     private String currentTopSkill(Player player) {
