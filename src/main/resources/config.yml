@@ -53,21 +53,21 @@ chat:
   canal: "&7Canal: &f{canal}"
   mensagem: "&7Data de envio: &f{data} &7às &f{hora}"
 
-  # HOVER DA TAG TOP 1
+  # HOVER DA INSÍGNIA TOP 1
   # {habilidade} -> nome da habilidade em que o jogador é Top 1
   habilidade-top1:
     ativado: true
-    formato: "&7Informações:\n\n&e• &dHabilidade: &f{habilidade}\n\n&aEsse jogador é Top 1 desta habilidade."
-    sem-habilidade: "&7Informações:\n\n&e• &dHabilidade: &fTop 1\n\n&aEsse jogador é Top 1 desta habilidade."
+    formato: "&7Informações:\n\n&e• &dInsígnia: &f{insignia}\n&e• &dHabilidade: &f{habilidade}\n\n&aEsse jogador é Top 1 desta habilidade."
+    sem-habilidade: "&7Informações:\n\n&e• &dInsígnia: &f{insignia}\n&e• &dHabilidade: &fTop 1\n\n&aEsse jogador é Top 1 desta habilidade."
 
   # ----------------------------------------------------------
-  # TAGS POR TEMPO JOGADO
+  # INSÍGNIAS POR TEMPO JOGADO
   # ----------------------------------------------------------
   # O jogador recebe automaticamente a maior faixa que já alcançou.
   # O tempo é lido da estatística PLAY_ONE_MINUTE do próprio Minecraft.
   tags-tempo-jogado:
     ativado: true
-    hover: "&7Informações:\n\n&e• &dTag: &f{tag}\n&e• &dTempo jogado: &f{tempo}\n&e• &dRequisito da tag: &f{horas}+ horas\n\n&aContinue jogando para evoluir sua tag."
+    hover: "&7Informações:\n\n&e• &dInsígnia: &f{tag}\n&e• &dTempo jogado: &f{tempo}\n&e• &dRequisito da tag: &f{horas}+ horas\n\n&aContinue jogando para evoluir sua tag."
     faixas:
       - horas: 120
         tag: "&7[✦]"
