@@ -57,8 +57,8 @@ chat:
   # {habilidade} -> nome da habilidade em que o jogador é Top 1
   habilidade-top1:
     ativado: true
-    formato: "&fTop 1 em &e{habilidade}&f."
-    sem-habilidade: "&fTop 1."
+    formato: "&7Informações:\n\n&e• &dHabilidade: &f{habilidade}\n\n&aVocê é Top 1 desta habilidade."
+    sem-habilidade: "&7Informações:\n\n&e• &dHabilidade: &fTop 1\n\n&aVocê é Top 1 desta habilidade."
 
   # ----------------------------------------------------------
   # TAGS POR TEMPO JOGADO
