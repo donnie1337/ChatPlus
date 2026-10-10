@@ -41,6 +41,16 @@ public final class InsigniasGui implements Listener {
             37, 38, 39, 40, 41, 42, 43
     };
 
+    private static final int[] ARSENAL_BADGE_SLOTS = {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24, 25,
+            28, 29, 30, 31, 32, 33, 34
+    };
+
+    private static final int ARSENAL_PREVIOUS_SLOT = 48;
+    private static final int ARSENAL_BACK_SLOT = 49;
+    private static final int ARSENAL_NEXT_SLOT = 50;
+
     private final ConfigManager config;
     private final PlaytimeTestService playtimeTests;
 
@@ -50,7 +60,7 @@ public final class InsigniasGui implements Listener {
     }
 
     public void open(Player player) {
-        Inventory inventory = Bukkit.createInventory(new Holder(Type.MAIN), MAIN_SIZE, "§8Insígnias");
+        Inventory inventory = Bukkit.createInventory(new Holder(Type.MAIN, 0), MAIN_SIZE, "§8Insígnias");
 
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
@@ -82,7 +92,7 @@ public final class InsigniasGui implements Listener {
     public void openOwned(Player player) {
         List<Badge> badges = ownedBadges(player);
         int size = ownedInventorySize(badges.size());
-        Inventory inventory = Bukkit.createInventory(new Holder(Type.OWNED), size,
+        Inventory inventory = Bukkit.createInventory(new Holder(Type.OWNED, 0), size,
                 "§8Insígnias §7→ §fSuas insígnias");
 
         if (badges.isEmpty()) {
@@ -103,15 +113,43 @@ public final class InsigniasGui implements Listener {
     }
 
     public void openArsenal(Player player) {
-        Inventory inventory = Bukkit.createInventory(new Holder(Type.ARSENAL), ARSENAL_SIZE,
-                "§8Insígnias §7→ §fArsenal");
+        openArsenal(player, 0);
+    }
 
-        fillBadges(inventory, arsenalBadges(), false);
+    private void openArsenal(Player player, int requestedPage) {
+        List<Badge> badges = arsenalBadges();
+        int totalPages = Math.max(1, (badges.size() + ARSENAL_BADGE_SLOTS.length - 1) / ARSENAL_BADGE_SLOTS.length);
+        int page = Math.max(0, Math.min(requestedPage, totalPages - 1));
 
-        inventory.setItem(backSlot(ARSENAL_SIZE), item(Material.ARROW, "§cVoltar", List.of(
+        Inventory inventory = Bukkit.createInventory(
+                new Holder(Type.ARSENAL, page),
+                ARSENAL_SIZE,
+                "§8Insígnias §7→ §fArsenal §8(" + (page + 1) + "/" + totalPages + ")"
+        );
+
+        fillArsenalPage(inventory, badges, page);
+
+        if (page > 0) {
+            inventory.setItem(ARSENAL_PREVIOUS_SLOT, item(
+                    Material.ARROW,
+                    "§ePágina anterior",
+                    List.of("", "§7Voltar para a página " + page + ".", "", "§eClique para voltar")
+            ));
+        }
+
+        inventory.setItem(ARSENAL_BACK_SLOT, item(Material.BARRIER, "§cVoltar", List.of(
                 "",
                 "§7Voltar ao menu de insígnias."
         )));
+
+        if (page + 1 < totalPages) {
+            inventory.setItem(ARSENAL_NEXT_SLOT, item(
+                    Material.ARROW,
+                    "§ePróxima página",
+                    List.of("", "§7Ir para a página " + (page + 2) + ".", "", "§eClique para avançar")
+            ));
+        }
+
         player.openInventory(inventory);
     }
 
@@ -127,6 +165,21 @@ public final class InsigniasGui implements Listener {
         if (holder.type() == Type.MAIN) {
             if (slot == OWNED_SLOT) openOwned(player);
             else if (slot == ARSENAL_SLOT) openArsenal(player);
+            return;
+        }
+
+        if (holder.type() == Type.ARSENAL) {
+            if (slot == ARSENAL_BACK_SLOT) {
+                open(player);
+                return;
+            }
+            if (slot == ARSENAL_PREVIOUS_SLOT && holder.page() > 0) {
+                openArsenal(player, holder.page() - 1);
+                return;
+            }
+            if (slot == ARSENAL_NEXT_SLOT) {
+                openArsenal(player, holder.page() + 1);
+            }
             return;
         }
 
@@ -155,6 +208,16 @@ public final class InsigniasGui implements Listener {
         for (Badge badge : badges) {
             if (index >= BADGE_SLOTS.length) break;
             inventory.setItem(BADGE_SLOTS[index++], badgeItem(badge, owned));
+        }
+    }
+
+    private void fillArsenalPage(Inventory inventory, List<Badge> badges, int page) {
+        int start = page * ARSENAL_BADGE_SLOTS.length;
+        int end = Math.min(start + ARSENAL_BADGE_SLOTS.length, badges.size());
+
+        for (int index = start; index < end; index++) {
+            int slotIndex = index - start;
+            inventory.setItem(ARSENAL_BADGE_SLOTS[slotIndex], badgeItem(badges.get(index), false));
         }
     }
 
@@ -324,7 +387,7 @@ public final class InsigniasGui implements Listener {
 
     private record Badge(String tag, String name, long requiredHours, String line1, String line2) {}
 
-    private record Holder(Type type) implements InventoryHolder {
+    private record Holder(Type type, int page) implements InventoryHolder {
         @Override
         public Inventory getInventory() {
             return null;
