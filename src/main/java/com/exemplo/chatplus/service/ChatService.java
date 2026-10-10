@@ -516,6 +516,7 @@ public final class ChatService {
         String hoverTemplate = skillName.isBlank()
                 ? config.getHabilidadeHoverFallback()
                 : config.getHabilidadeHoverFormat().replace("{habilidade}", skillName);
+        hoverTemplate = hoverTemplate.replace("{insignia}", displayTag);
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 TextComponent.fromLegacyText(MessageUtil.colorize(hoverTemplate)));
         for (BaseComponent component : parsed) {
