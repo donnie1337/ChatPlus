@@ -57,8 +57,8 @@ chat:
   # {habilidade} -> nome da habilidade em que o jogador é Top 1
   habilidade-top1:
     ativado: true
-    formato: "&7Informações:\n\n&e• &dInsígnia: &f{insignia}\n&e• &dHabilidade: &f{habilidade}\n\n&aEsse jogador é Top 1 desta habilidade."
-    sem-habilidade: "&7Informações:\n\n&e• &dInsígnia: &f{insignia}\n&e• &dHabilidade: &fTop 1\n\n&aEsse jogador é Top 1 desta habilidade."
+    formato: "&7Informações:\n\n&8• &7ɪɴsɪ́ɢɴɪᴀ: &f{insignia}\n&8• &7ʜᴀʙɪʟɪᴅᴀᴅᴇ: &f{habilidade}\n\n&aEsse jogador é Top 1 desta habilidade."
+    sem-habilidade: "&7Informações:\n\n&8• &7ɪɴsɪ́ɢɴɪᴀ: &f{insignia}\n&8• &7ʜᴀʙɪʟɪᴅᴀᴅᴇ: &fTop 1\n\n&aEsse jogador é Top 1 desta habilidade."
 
   # ----------------------------------------------------------
   # INSÍGNIAS POR TEMPO JOGADO
