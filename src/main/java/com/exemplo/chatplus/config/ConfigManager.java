@@ -40,6 +40,9 @@ public final class ConfigManager {
     private static final String PATH_HABILIDADE_HOVER_ENABLED = "chat.hover.habilidade-top1.ativado";
     private static final String PATH_HABILIDADE_HOVER_FORMAT = "chat.hover.habilidade-top1.formato";
     private static final String PATH_HABILIDADE_HOVER_FALLBACK = "chat.hover.habilidade-top1.sem-habilidade";
+    private static final String PATH_PLAYTIME_TAGS_ENABLED = "chat.tags-tempo-jogado.ativado";
+    private static final String PATH_PLAYTIME_TAGS_RANGES = "chat.tags-tempo-jogado.faixas";
+    private static final String PATH_PLAYTIME_TAGS_HOVER = "chat.tags-tempo-jogado.hover";
 
     private static final String PATH_GLOBAL_ENABLED = "chat.global.ativado";
     private static final String PATH_GLOBAL_FORMAT = "chat.global.formato";
@@ -186,6 +189,19 @@ public final class ConfigManager {
         return value;
     }
     public String getHabilidadeHoverFallback() { return getConfiguredString(PATH_HABILIDADE_HOVER_FALLBACK, "&fEsse jogador é Top 1."); }
+
+    public boolean isPlaytimeTagsEnabled() {
+        return plugin.getConfig().getBoolean(PATH_PLAYTIME_TAGS_ENABLED, true);
+    }
+
+    public java.util.List<java.util.Map<?, ?>> getPlaytimeTagRanges() {
+        return plugin.getConfig().getMapList(PATH_PLAYTIME_TAGS_RANGES);
+    }
+
+    public String getPlaytimeTagHover() {
+        return getConfiguredString(PATH_PLAYTIME_TAGS_HOVER,
+                "&7Tempo jogado: &f{tempo}\n&7Necessário: &f{horas}+ horas");
+    }
 
     public String getLocalChatFormat() {
         return getConfiguredString(PATH_LOCAL_FORMAT, DEFAULT_LOCAL_FORMAT);
