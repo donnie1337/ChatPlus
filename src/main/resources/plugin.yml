@@ -32,6 +32,10 @@ commands:
     description: Gerencia o ChatPlus.
     usage: /chat reload
     permission: chatplus.admin
+  insignias:
+    description: Abre o menu de insígnias.
+    usage: /insignias
+    aliases: [insignia]
 
 permissions:
   chatplus.local:
